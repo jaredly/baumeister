@@ -47,6 +47,10 @@ export default class Db {
     return prom(done => this.cols[doc].get(id, done))
   }
 
+  del(doc, id) {
+    return prom(done => this.cols[doc].del(id, done))
+  }
+
   all(doc) {
     return prom(done => {
       const items = []

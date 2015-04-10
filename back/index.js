@@ -14,6 +14,11 @@ import Db from './db'
 
 export default run
 
+const SPEC = {
+  builds: ['project', 'num'],
+  projects: ['name'],
+}
+
 function run(port, ready) {
   if (arguments.length < 2) {
     ready = port
@@ -25,10 +30,7 @@ function run(port, ready) {
     }
   }
 
-  const db = new Db(__dirname + '/db.db', {
-    builds: ['project', 'num'],
-    projects: [],
-  })
+  const db = new Db(__dirname + '/db.db', SPEC)
   const runner = new Runner(db)
   const views = makeViews(runner)
 
@@ -38,6 +40,8 @@ function run(port, ready) {
   app.use(bodyParser.json({limit: '5mb'}))
 
   app.use('/api/builds', views.builds)
+  app.use('/api/projects', views.projects)
+
   /*
   app.use('/components/', views.component)
   app.use('/docs/', views.docs)

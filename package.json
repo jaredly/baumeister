@@ -35,6 +35,8 @@
     "compression": "^1.4.3",
     "connect": "^3.3.5",
     "cors": "^2.5.3",
+    "dockerode": "^2.1.1",
+    "event-stream": "^3.3.0",
     "eventemitter3": "^0.1.6",
     "flat-file-db": "^0.1.4",
     "flummox": "^3.5.1",
@@ -46,7 +48,12 @@
     "rcss": "^0.1.5",
     "react": "^0.13.0",
     "react-router": "^0.13.2",
+    "readable-stream": "^1.0.33",
     "serve-static": "^1.9.2",
+    "tar-fs": "^1.5.0",
+    "tar-stream": "^1.1.3",
+    "tcomb": "^1.0.1",
+    "tcomb-validation": "^1.0.3",
     "webpack": "git://github.com/webpack/webpack.git#webpack-2"
   }
 }

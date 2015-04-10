@@ -3,15 +3,11 @@ import expect from 'expect.js'
 
 import memdown from 'memdown'
 import Db from './db'
+import uuid from './uuid'
 
 const spec = {
   builds: ['project', 'num'],
   projects: [],
-}
-
-function uuid() {
-  var at = parseInt(Math.random() * 1000)
-  return Math.random().toString(35).slice(at, at + 32)
 }
 
 function rputs(vals) {
