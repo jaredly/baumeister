@@ -20,8 +20,10 @@
     "babel-core": "^4.7.4",
     "babel-loader": "^4.1.0",
     "css-loader": "^0.10.1",
+    "expect.js": "^0.3.1",
     "less": "^2.5.0",
     "less-loader": "^2.2.0",
+    "memdown": "^1.0.0",
     "react-hot-loader": "^1.2.2",
     "style-loader": "^0.10.1",
     "webpack": "^1.7.2",
@@ -29,13 +31,22 @@
   },
   "dependencies": {
     "bluebird": "^2.9.24",
+    "body-parser": "^1.12.2",
+    "compression": "^1.4.3",
+    "connect": "^3.3.5",
+    "cors": "^2.5.3",
     "eventemitter3": "^0.1.6",
     "flat-file-db": "^0.1.4",
     "flummox": "^3.5.1",
     "immutable": "^3.7.1",
+    "jsonquery-engine": "^1.0.2",
+    "level": "^0.18.0",
+    "level-queryengine": "^3.0.1",
+    "level-sublevel": "^6.4.6",
     "rcss": "^0.1.5",
     "react": "^0.13.0",
     "react-router": "^0.13.2",
+    "serve-static": "^1.9.2",
     "webpack": "git://github.com/webpack/webpack.git#webpack-2"
   }
 }
