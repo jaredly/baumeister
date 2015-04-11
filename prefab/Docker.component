@@ -1,0 +1,4 @@
+FROM google/nodejs
+
+RUN npm install -g component stylus
+

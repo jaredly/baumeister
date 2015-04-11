@@ -7,14 +7,10 @@ export default {
   }, 
   build: {
     prefab: 'jaredly/node',
-    /*
-    dockerfile: 'notablemind/Dockerfile',
-    context: false,
-    */
   },
   test: {
     cwd: 'notablemind',
-    cmd: 'echo "hi"', // 'babel-node test/mvp.js',
+    cmd: 'npm test', // 'babel-node test/mvp.js',
   }
 }
 

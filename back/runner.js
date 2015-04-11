@@ -1,95 +1,144 @@
 
-import EventEmitter from 'eventemitter3'
 import Docker from 'dockerode'
 
+import assign from 'object-assign'
+import providers from './providers'
+import Replayable from './replayable'
 import buildDocker from './build-docker'
 import getContext from './get-context'
 import runDocker from './run-docker'
+import path from 'path'
+import fs from 'fs'
 
-export default class Runner extends EventEmitter {
-  constructor() {
+function ensureDir(dir, done) {
+  fs.exists(dir, exists => {
+    if (exists) return done(null, true)
+    fs.mkdir(dir, err => {
+      if (err) return done(new Error(`Could not create path ${dir}`))
+      done(null, false)
+    })
+  })
+}
+
+export default class Runner extends Replayable {
+  constructor(project, basePath) {
+    super()
     this.docker = new Docker()
-    this.history = []
-    this.piping = []
+    this.project = project
+    this.basePath = basePath
+    this.state = {}
   }
 
-  pipe(em) {
-    // replay the past
-    this.history.forEach(v => em.emit(v.evt, v.val))
-    this.piping.push(em)
-  }
-
-  unpipe(em) {
-    const ix = this.piping.indexOf(em)
-    if (ix === -1) return false
-    this.piping.splice(ix, 1)
-    return true
-  }
-
-  on(evt, fn) {
-    EventEmitter.prototype.on.call(this, evt, fn)
-  }
-
-  emit(evt, val) {
-    this.history.push({evt, val, time: new Date()})
-    this.piping.forEach(p => p.emit(evt, val))
-    EventEmitter.prototype.emit.call(this, evt, val)
-  }
-
-  run(project, done) {
-    this.prepareImage(project, (err, name) => {
+  run(done) {
+    this.getProject((err) => {
       if (err) return done(err)
-      runDocker(this.docker, project, name, this, done)
+      this.prepareImage((err, name) => {
+        if (err) return done(err)
+        const config = assign({}, this.project.test, {
+          path: this.state.path,
+          stream: 'test',
+          image: name,
+        })
+        runDocker(this.docker, config, this, err => {
+          runDocker(this.docker, {
+            path: this.state.path,
+            stream: 'cleanup',
+            image: name,
+            cmd: 'chmod -R o+w /project',
+          }, this, _ => done(err))
+        })
+      })
     })
   }
 
-  prepareImage(project, done) {
-    this.emit('status', 'prepare')
-    if (project.build.prefab) {
-      this.emit('info', 'Using prefab image: ' + project.build.prefab)
-      return done(null, project.build.prefab)
+  getProject(done) {
+    console.log('getting')
+    if (this.project.source.path) {
+      this.state.path = this.project.source.path
+      this.state.inPlace = true
+      this.state.newPath = false
+      return done()
     }
-    const imname = 'docker-ci/' + project.name + ':test'
-    this.build(project, imname, err => {
-      done(err, imname)
+
+    if (!this.basePath) {
+      throw new Error('No basepath specified')
+    }
+    const dir = path.join(this.basePath, this.project.name)
+
+    ensureDir(dir, (err, exists) => {
+      if (err) return done(err)
+      this.state.path = dir
+      this.state.newPath = !exists
+
+      const pro = providers[this.project.source.provider]
+      if (!pro) {
+        return done(new Error(`Unknown provider ${this.project.source.provider}`))
+      }
+
+      const config = {dir, exists, source: this.project.source.config}
+
+      this.emit('status', 'get-project')
+      pro(this.docker, config, this, err => {
+        done(err)
+      })
     })
-    /* TODO maybe just dump this. Might be an interesting option, but not
-     * really?
+  }
+
+  prepareImage(done) {
+    this.emit('status', 'prepare')
+    if (this.project.build.prefab) {
+      this.emit('info', 'Using prefab image: ' + this.project.build.prefab)
+      return done(null, this.project.build.prefab)
+    }
+    const imname = 'docker-ci/' + this.project.name + ':test'
+    if (!this.project.build.noRebuild) {
+      return this.build(imname, err => {
+        done(err, imname)
+      })
+    }
     this.docker.listImages((err, images) => {
       if (err) return done(err)
-      const needToBuild = !images.some(im => im.RepoTags.indexOf(imname) !== -1)
-      // console.log(JSON.stringify(images, null, 2))
+      const needToBuild = !images.some(
+        im => im.RepoTags.indexOf(imname) !== -1)
       if (!needToBuild) {
         this.emit('info', `Image ${imname} already built`)
         return done(err, imname)
       }
+      this.build(imname, err => {
+        done(err, imname)
+      })
     })
-    */
   }
 
-  build(project, imname, done) {
-    if (!project.source.path) {
+  build(imname, done) {
+    if (!this.project.source.path) {
       return done(new Error('providers not yet supported'))
     }
+    this.emit('info', contextMessage(this.project.build.context))
     this.emit('status', 'build')
-    getContext(project, (err, stream, dockerText) => {
-      if (err) return done(err)
-      let ctx
-      if (project.build.context === true) {
-        ctx = 'will full project'
-      } else if (project.build.context === false) {
-        ctx = 'with an empty context'
-      } else {
-        ctx = `with context from ${project.build.context}`
-      }
 
-      this.emit('info', `Building ${imname} from ${project.build.dockerfile} ${ctx}`)
+    getContext(this.project, (err, stream, dockerText) => {
+      if (err) return done(err)
       this.emit('dockerfile', dockerText)
+
       buildDocker(this.docker, stream, {
-        dockerfile: project.build.dockerfile || 'Dockerfile',
+        dockerfile: this.project.build.dockerfile || 'Dockerfile',
         t: imname,
       }, this, done)
     })
   }
+}
+
+function contextMessage(value) {
+  let ctx
+  if (value === true) {
+    ctx = 'will full project'
+  } else if (value === false) {
+    ctx = 'with an empty context'
+  } else {
+    ctx = `with context from ${value}`
+  }
+
+  return `Building ${imname} from ${value} ${ctx}`
 }
 

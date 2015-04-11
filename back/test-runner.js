@@ -1,10 +1,8 @@
 
 import Runner from './runner'
-import EventEmitter from 'eventemitter3'
-import es from 'event-stream'
-import config from './notablemind.config.js'
+import config from './loco.config.js'
 
-const r = new Runner()
+const r = new Runner(config, __dirname + '/../.builds')
 
 r.on('status', val => console.log('[status]', val))
 r.on('info', val => console.log('[info]', val))
@@ -16,7 +14,7 @@ r.on('stream', val => {
   }
 })
 
-r.run(config, (err, res) => {
+r.run((err, res) => {
   if (err) {
     console.log('Err!', err)
   }
