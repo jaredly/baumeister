@@ -44,10 +44,9 @@ export default class ProjectConfig extends React.Component {
       <label className='text-label'>Project Name
         <input type='text' className='ProjectConfig_name' name="name" title="Name" placeholder="Project name"/>
       </label>
-      <section className='ProjectConfig_source'>
-        <h3>Source</h3>
         <Radio
           name='source'
+          title='Source'
           choices={{local: 'Local path', provider: 'Provider'}}
           switchOn={val => val.get('path') ? 'local' : 'provider'}
           defaultData={{
@@ -55,26 +54,24 @@ export default class ProjectConfig extends React.Component {
             provider: {provider: 'script', config: {}}
           }}
         >
-          <label className='ProjectConfig_source-local text-label'>
+          <label switchWhere='local' className='ProjectConfig_source-local text-label'>
             Local path:
             <input type='text' name='path' placeholder="local path to project"/>
           </label>
-          <div className='ProjectConfig_source-provider'>
-            <h4>Provider</h4>
-            <Radio
-              name=''
-              choices={{script: 'Bash script'}}
-              defaultData={defaultProviderData}
-              switchOn='provider'
-              body={current => makeProviderConfig(current)}/>
-          </div>
+          <Radio
+            name=''
+            switchWhere='provider'
+            className='ProjectConfig_source-provider'
+            title='Provider'
+            choices={{script: 'Bash script'}}
+            defaultData={defaultProviderData}
+            switchOn='provider'
+            body={current => makeProviderConfig(current)}/>
         </Radio>
-      </section>
 
-      <section className='ProjectConfig_build'>
-        <h3>Build Step</h3>
         <Radio
           name='build'
+          title='Build Step'
           choices={{
             file: 'From Dockerfile',
             prefab: 'From prefab image',
@@ -88,45 +85,52 @@ export default class ProjectConfig extends React.Component {
             if (typeof val === 'string') return 'file'
             return val.get('dockerfile') ? 'file' : 'prefab'
           }}>
-          <div className='ProjectConfig_dockerfile'>
+          <div switchWhere='file' className='ProjectConfig_dockerfile'>
             <label className='text-label'>
               Dockerfile location (within project):
               <input className='mono-text' type='text' name="dockerfile" placeholder="Dockerfile"/>
             </label>
-            <label>
-              <h4>Context</h4>
-              <Radio
-                name='context'
-                choices={{
-                  none: 'No context',
-                  full: 'Full project',
-                  path: 'Subdirectory',
-                }}
-                switchOn={val => {
-                  if (val === true) return 'full'
-                  if (val === false) return 'none'
-                  return 'path'
-                }}
-                defaultData={{
-                  full: true,
-                  none: false,
-                  path: 'some/subdir',
-                }}
-                >
-                <span/>
-                <span/>
-                <input className='mono-text' name='' type='text' placeholder='some/directory'/>
-              </Radio>
-            </label>
+            <Radio
+              name='context'
+              title='Context'
+              choices={{
+                none: 'No context',
+                full: 'Full project',
+                path: 'Subdirectory',
+              }}
+              switchOn={val => {
+                if (val === true) return 'full'
+                if (val === false) return 'none'
+                return 'path'
+              }}
+              defaultData={{
+                full: true,
+                none: false,
+                path: 'some/subdir',
+              }}
+              >
+              <input switchWhere='path' className='mono-text' name='' type='text' placeholder='some/directory'/>
+            </Radio>
             <label className='checkbox-label'>
               <input type="checkbox" name="noRebuild"/>
               Don't rebuild (use existing image if available)
             </label>
           </div>
-          <div classname='ProjectConfig_prefab'>
+          <div switchWhere='prefab' classname='ProjectConfig_prefab'>
             <label className='text-label'>Docker image name: <input type='text' name="prefab" placeholder="ubuntu:latest"/></label>
           </div>
         </Radio>
+
+      <section className='ProjectConfig_section'>
+        <div className='section-title'>Test Step</div>
+        <div className='ProjectConfig_section_body'>
+          <label className='text-label'>Working Directory
+            <input type='text' name='test.cwd'/>
+          </label>
+          <label className='text-label'>Test Command
+            <textarea name='test.cmd'/>
+          </label>
+        </div>
       </section>
       <button>Submit me!</button>
       <button name='action' value='cancel'>Cancel</button>

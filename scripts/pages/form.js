@@ -56,7 +56,7 @@ function formulate(data, setter, submitter) {
     const isInput = type === 'input'
     const isCheckbox = isInput && props.type === 'checkbox'
     const isRadio = isInput && props.type === 'radio'
-    if (typeof type === 'string' && !isInput) {
+    if (typeof type === 'string' && !isInput && type !== 'textarea') {
       return null
     }
     const parts = props.name === '' ? [] : props.name.split('.')
@@ -128,6 +128,20 @@ class Radio extends React.Component {
     return current
   }
 
+  getChildren(choices, current) {
+    let children = null
+    if (this.props.children) {
+      React.Children.forEach(this.props.children, one => {
+        if (one && one.props && one.props.switchWhere === current) {
+          children = one
+        }
+      })
+    } else {
+      children = this.props.body(current)
+    }
+    return children
+  }
+
   render() {
     let choices = Object.keys(this.props.choices)
     let current
@@ -136,18 +150,13 @@ class Radio extends React.Component {
     } else {
       current = this.props.switchOn(this.props.value) || choices[0]
     }
-    let children
-    if (this.props.children && this.props.children.length) {
-      children = this.props.children[choices.indexOf(current)]
-    } else {
-      children = this.props.body(current)
-    }
-    children = walkChildren(children, formulate(this.props.value, (path, val) => {
+    const children = walkChildren(this.getChildren(choices, current), formulate(this.props.value, (path, val) => {
       if (!path || !path.length) return this.props.onChange(val)
       this.props.onChange(this.props.value.setIn(path, val))
     }, null))
     return <div className={classnames('Radio', this.props.className)}>
       <div className='Radio_buttons'>
+        <span className='Radio_title'>{this.props.title}</span>
         {
           choices.map(val => <label key={val} className={
             classnames('Radio_button', val === current && 'Radio_button-active')

@@ -20,7 +20,7 @@ export default class Project extends React.Component {
   _toggleOpen() {
     if (this.props.isOpen) {
       this.props.onClose()
-    } else {
+    } else if (!this.state.config) {
       this.props.onOpen()
     }
   }
@@ -51,6 +51,7 @@ export default class Project extends React.Component {
     e.preventDefault()
     e.stopPropagation()
     this.setState({config: true})
+    this.props.onClose()
   }
 
   render () {
