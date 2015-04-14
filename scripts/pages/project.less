@@ -1,0 +1,64 @@
+
+.flex-spacer {
+  flex: 1;
+}
+
+.ProjectList {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.Project {
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+.Project-open {
+  box-shadow: 0 0 10px #aaa;
+}
+
+.Project_head {
+  display: flex;
+  cursor: pointer;
+  padding: 10px 15px;
+  border-radius: 5px;
+
+  &:hover {
+    background-color: #eee;
+  }
+}
+
+.Project_name {
+  margin: 0 10px;
+  width: 300px;
+}
+
+.Project_status {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background-color: red;
+
+  &-running {
+    background-color: blue;
+  }
+
+  &-succeeded {
+    background-color: green;
+  }
+
+  &-failed {
+    background-color: red;
+  }
+
+  &-errored {
+    background-color: orange;
+  }
+
+  &-inactive {
+    background-color: gray;
+  }
+}
+

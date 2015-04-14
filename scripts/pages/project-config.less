@@ -1,0 +1,83 @@
+
+.Form {
+  h1,h2,h3,h4,h5 {
+    margin-bottom: 0;
+    margin-top: 10px;
+  }
+}
+
+.Radio {
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0,0,0,.3) inset;
+  background-color: rgba(0,0,0, .1);
+  margin: 5px 0 10px 0;
+
+  .Radio_buttons {
+    margin-bottom: 10px;
+    background-color: rgba(0,0,0,.2);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+
+    .Radio_button:first-of-type {
+      border-top-left-radius: 4px;
+    }
+  }
+
+  .Radio_body {
+    padding: 10px;
+  }
+}
+
+.Radio_button {
+  padding: 10px 15px;
+  display: inline-block;
+  margin: 0;
+  cursor: pointer;
+  font-size: 14px;
+
+  box-shadow: 2px 2px 6px transparent;
+  transition: box-shadow .2s ease;
+
+  &:hover {
+    box-shadow: 2px 2px 6px #777;
+  }
+
+  input[type="radio"] {
+    display: none;
+  }
+
+  &-active {
+    background-color: rgb(129, 120, 255);
+  }
+}
+
+.ProjectConfig {
+  padding: 20px 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px #aaa inset;
+
+  .mono-text {
+    font-family: monospace;
+  }
+
+  .text-label {
+    font-size: 10px;
+  }
+
+  .checkbox-label {
+    font-size: 14px;
+    margin: 10px 0;
+  }
+
+  input[type='text'] {
+    display: block;
+    font-size: 16px;
+    padding: 3px 5px;
+    width: 100%;
+    margin-bottom: 4px;
+  }
+  input::before {
+    content: attr(title);
+  }
+}
+

@@ -24,7 +24,13 @@ module.exports = {
     loaders: [{
       test: /\.jsx?$/,
       loaders: ['react-hot', 'babel?optional=bluebirdCoroutines'],
-      include: path.join(__dirname, 'scripts')
+      include: [
+        path.join(__dirname, 'scripts'),
+        path.join(__dirname, 'lib')
+      ]
+    }, {
+      test: /\.json$/,
+      loader: 'json',
     }, {
       test: /\.less$/,
       loader: 'style!css!less',

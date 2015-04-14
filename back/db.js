@@ -1,18 +1,9 @@
 
 import levelup from 'level'
 import sublevel from 'level-sublevel'
-import Promise from 'bluebird'
 import jsonQueryEngine from 'jsonquery-engine'
 import levelQuery from 'level-queryengine'
-
-function prom(fn) {
-  return new Promise((res, rej) => {
-    fn((err, val) => {
-      if (err) return rej(err)
-      res(val)
-    })
-  })
-}
+import prom from './prom'
 
 export default class Db {
   constructor(path, cols, back) {
@@ -43,6 +34,10 @@ export default class Db {
     })
   }
 
+  nget(doc, id, done) {
+    this.cols[doc].get(id, done)
+  }
+
   get(doc, id) {
     return prom(done => this.cols[doc].get(id, done))
   }
@@ -56,7 +51,7 @@ export default class Db {
       const items = []
       this.cols[doc]
         .createReadStream()
-        .on('data', item => items.push(item))
+        .on('data', item => items.push(item.value))
         .on('error', done)
         .on('end', _ => done(null, items))
     })

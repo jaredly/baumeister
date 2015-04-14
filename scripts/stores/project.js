@@ -1,0 +1,91 @@
+
+import {Store, Actions} from 'flummox'
+import {List, Map} from 'immutable'
+
+class ProjectActions extends Actions {
+  constructor(api) {
+    super()
+    this.api = api
+  }
+
+  async getProjects() {
+    try {
+      return await this.api.getProjects()
+    } catch (e) {
+      console.error('failed to get projects')
+      console.log(e)
+      console.log(e.stack)
+      throw e
+    }
+  }
+
+  async startBuild(id) {
+    try {
+      return await this.api.startBuild(id)
+    } catch (e) {
+      console.error('failed to start build')
+      console.log(e)
+      console.log(e.stack)
+      throw e
+    }
+  }
+
+  newProject(project) {
+    return project
+  }
+}
+
+class ProjectStore extends Store {
+  constructor(flux) {
+    super()
+    const ids = flux.getActionIds('projects')
+    this.register(ids.getProjects, this.onProjects)
+    this.register(ids.newProject, this.onNewProject)
+    this.state = {projects: null}
+  }
+
+  gotNewBuild(build) {
+    this.setState({
+      projects: this.state.projects.update(build.project, proj => {
+        proj.latestBuild = build
+        return proj
+      })
+    })
+  }
+
+  updateBuildStatus(project, build, status) {
+    this.setState({
+      projects: this.state.projects.update(project, proj => {
+        if (!proj.latestBuild) {
+          console.error('Updating status for a project with no latest build...')
+          return proj
+        }
+        if (proj.latestBuild.id !== build) return proj
+        proj.latestBuild.status = status
+        return proj
+      })
+      /*
+      projects: this.projects.map(proj => {
+        if (proj.latestBuild.id === build.id) {
+          proj.latestBuild = build
+          return proj
+        }
+      })
+      */
+    })
+  }
+
+  onProjects(projects) {
+    this.setState({projects: new Map(projects)})
+  }
+
+  onNewProject(project) {
+    this.setState({
+      projects: this.state.projects.unshift(project)
+    })
+  }
+}
+
+export {ProjectStore, ProjectActions}
+
+

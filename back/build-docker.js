@@ -1,8 +1,16 @@
 
+import uuid from './uuid'
 import es from 'event-stream'
 
 export default function buildDocker(docker, stream, config, out, done) {
   let err = null
+  const sid = uuid()
+  const start = Date.now()
+  out.emit('stream-start', {
+    id: sid, 
+    time: start,
+    title: 'building docker image',
+  })
   docker.buildImage(stream, config, (err, stream) => {
     if (err) {
       return done(new Error('failed to build: ' + err.message))
@@ -14,10 +22,17 @@ export default function buildDocker(docker, stream, config, out, done) {
         if (value.error) {
           err = value
         } else {
-          out.emit('stream', {stream: 'build', value: value.stream})
+          out.emit('stream', {id: sid, value: value.stream, time: Date.now()})
         }
       }, () => {
-        out.emit('stream', {stream: 'build', end: true, error: err})
+        const end = Date.now()
+        const dur = end - start
+        out.emit('stream-end', {
+          id: sid,
+          time: end,
+          duration: dur,
+          error: err ? err.error : null,
+        })
         done(err)
       }))
   })

@@ -7,7 +7,6 @@ export default {
     runDocker(docker, {
       cmd,
       path: config.dir,
-      stream: 'get-project',
       image: config.source.base || 'ubuntu'
     }, out, err => {
       done(err)

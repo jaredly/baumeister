@@ -2,8 +2,8 @@
 import Promise from 'bluebird'
 
 export default {
-  get: send.bind('GET'),
-  post: send.bind('POST'),
+  get: send.bind(null, 'GET'),
+  post: send.bind(null, 'POST'),
 }
 
 function send(method, url, headers, body) {
@@ -39,8 +39,8 @@ function send(method, url, headers, body) {
       reject(new Error('Connection cancelled'))
     }
 
-    if (data) {
-      xhr.send(JSON.stringify(data))
+    if (body) {
+      xhr.send(JSON.stringify(body))
     } else {
       xhr.send()
     }

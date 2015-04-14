@@ -5,7 +5,7 @@ function json(res, data, stat) {
     console.log(data.stack)
     data = {message: data.message, stack: data.stack}
   }
-  const body = JSON.stringify(data)
+  const body = JSON.stringify(data, null, 2)
   res.writeHead(stat || 200, {
     'Content-type': 'application/json',
     'Content-length': body.length,
@@ -24,29 +24,35 @@ function disp(eps) {
   }
 }
 
-export default runner => {
+export default manager => {
   const views = {
     projects: {
       get(req, res, next) {
-        if (req.url === '/') {
-          runner.getProjects()
-            .then(projects => json(res, projects))
-            .catch(err => json(res, err, 500))
+        const path = req.purl.pathname
+        if (path === '/') {
+          let p
+          if (req.query.full) {
+            p = manager.getProjectsWithBuilds()
+          } else {
+            p = manager.getProjects()
+          }
+          p.then(projects => json(res, projects))
+           .catch(err => json(res, err, 500))
         } else {
-          runner.getProject(req.url.slice(1))
+          manager.getProject(path.slice(1))
             .then(project => json(res, project))
             .catch(err => json(res, err, 500))
         }
       },
 
       post(req, res, next) {
-        runner.addProject(req.body)
+        manager.addProject(req.body)
           .then(project => json(res, project))
           .catch(err => json(res, err, 500))
       },
 
       delete(req, res, next) {
-        runner.deleteProject(req.url.strip(1))
+        manager.deleteProject(req.url.strip(1))
           .then(() => json(res, 'success'))
           .catch(err => json(res, err, 500))
       }
@@ -55,15 +61,18 @@ export default runner => {
     builds: {
       get(req, res, next) {
         if (req.url === '/') {
-          return next()
+          manager.getBuilds()
+            .then(builds => json(res, builds))
+            .catch(err => json(res, err, 500))
+          return
         }
         const parts = req.url.replace(/^\//, '').replace(/\/$/, '').split('/')
         if (parts.length === 1) {
-          runner.getBuilds(req.url.slice(1))
+          manager.getBuilds(parts[0])
             .then(builds => json(res, builds))
             .catch(err => json(res, err, 500))
         } else if (parts.length === 2) {
-          runner.getBuild(parts[0], parts[1])
+          manager.getBuild(parts[0], parts[1])
             .then(build => {
               if (!build) return json(res, null, 404)
               json(res, build)
@@ -73,12 +82,22 @@ export default runner => {
       },
 
       post(req, res, next) {
-        json(res, new Error('not implemented'), 500)
+        const path = req.purl.path
+        if (path == '/') {
+          next()
+        }
+        const parts = req.url.replace(/^\//, '').replace(/\/$/, '').split('/')
+        if (parts.length !== 1) {
+          return json(res, new Error('invalid'), 500)
+        }
+        manager.startBuild(parts[0])
+          .then(id => json(res, id))
+          .catch(err => json(res, err, 500))
       },
 
       delete(req, res, next) {
         if (req.url) return json(res, 'not found', 404)
-        runner.deleteBuild(req.url.slice(1))
+        manager.deleteBuild(req.url.slice(1))
           .then(() => json(res, 'ok'))
           .catch(err => json(res, err, 500))
       }

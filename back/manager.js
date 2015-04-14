@@ -3,6 +3,10 @@ import Runner from './runner'
 import EventEmitter from 'eventemitter3'
 import validate from 'tcomb-validation'
 import uuid from './uuid'
+import prom from './prom'
+import async from 'async'
+import aggEvents from '../lib/agg-events'
+import Client from './ws-client'
 
 export default class Manager {
   constructor(db, basepath) {
@@ -11,6 +15,28 @@ export default class Manager {
     this.db = db
     this.running = {}
     this.subs = {}
+    this.clients = []
+  }
+
+  newConnection(socket) {
+    const client = new Client(socket)
+    this.clients.push(client)
+    client.on('build:view', val => {
+      if (!this.running[val]) {
+        return console.error('NO BUILD', val)
+      }
+      this.unSub(client.openBuild, client)
+      client.openBuild = val
+      this.addSub(client.openBuild, client)
+      client.send('build:history', {
+        id: val,
+        project: this.running[val].project.id,
+        events: aggEvents(this.running[val].history)
+      })
+    })
+    socket.on('close', _ => {
+      this.clients.splice(this.clients.indexOf(client), 1)
+    })
   }
 
   addProject(data) {
@@ -30,13 +56,50 @@ export default class Manager {
     const isId = +id.slice(0, 13) == id.slice(0, 13)
     if (isId) {
       return this.db.get('projects', id)
+        .catch(err => {
+          throw new Error(`Project not found "${id}"`)
+        })
     }
     return this.db.find('projects', {name: id})
-      .then(builds => builds[0])
+      .catch(err => {
+        throw new Error('DB query for project failed')
+      })
+      .then(projects => {
+        if (!projects.length) throw new Error(`Project "${id}" not found`)
+        if (projects.length > 1) throw new Error(`Multiple projects named "${id}"`)
+        return projects[0]
+      })
+  }
+
+  getProjectsWithBuilds() {
+    return this.db.all('projects')
+      .then(projects => {
+        const tasks = {}
+        const pmap = {}
+        projects.forEach(proj => {
+          pmap[proj.id] = proj
+          if (!proj.latestBuild) return
+          tasks[proj.id] = next => this.db.nget('builds', proj.latestBuild, next)
+        })
+        return prom(done => {
+          async.parallel(tasks, (err, res) => {
+            if (err) return done(err)
+            for (let name in res) {
+              pmap[name].latestBuild = res[name]
+            }
+            done(null, pmap)
+          })
+        })
+      })
   }
 
   getProjects() {
     return this.db.all('projects')
+      .then(projects => {
+        const pmap = {}
+        projects.forEach(p => pmap[p.id] = p)
+        return pmap
+      })
   }
 
   deleteProject(id) {
@@ -44,7 +107,13 @@ export default class Manager {
   }
 
   getBuilds(project) {
-    return this.db.find('builds', {project})
+    if (!project) {
+      return this.db.all('builds')
+    }
+    return this.getProject(project)
+      .then(proj => {
+        return this.db.find('builds', {project: proj.id})
+      })
   }
 
   runBuild(project, data) {
@@ -55,27 +124,40 @@ export default class Manager {
     const this_ = this
     r.pipe({
       emit(evt, val) {
-        this_.emit(data.id, evt, val)
+        console.log('evt', evt, val)
+        this_.emit(data.id, 'build:event', {
+          build: data.id,
+          project: project.id,
+          event: {evt, val}
+        })
       }
     })
 
-    let status = 'unstarted'
+    this.emit('build:new', data)
 
-    r.on('status', s => status = s)
+    let failed = false
 
-    r.run(err => {
-      console.log('Finished', data.id, err, status)
-      if (status === 'test:failed') {
-        data.status = 'failed'
-      } else if (err) {
+    /*
+    r.on('section', s => {
+      section = s
+    })
+    */
+
+    r.run((err, exitCode) => {
+      console.log('Finished', data.id, err)
+      if (err) {
         data.status = 'errored'
+      } else if (exitCode !== 0) {
+        data.status = 'failed'
       } else {
         data.status = 'succeeded'
       }
-      data.events = r.history
+      this.emit('build:status', {project: project.id, build: data.id, status: data.status})
+      data.events = aggEvents(r.history)
       data.finished = new Date()
       this.db.put('builds', data.id, data)
         .then(_ => {
+          this.emit(data.id, 'build:update', data)
           this.running[data.id] = null
         })
     })
@@ -90,14 +172,19 @@ export default class Manager {
           .then(num => {
             const data = {
               id: uuid(),
-              project,
+              project: project.id,
               started: Date.now(),
               finished: null,
-              status: 'unstarted',
+              status: 'running',
               num,
-              events: [],
+              events: null,
             }
+            project.latestBuild = data.id
+            project.modified = data.started
             return this.db.put('builds', data.id, data)
+              .then(_ => this.db.put('projects',
+                                     project.id,
+                                     project))
               .then(() => {
                 this.runBuild(project, data)
                 return data.id
@@ -107,22 +194,29 @@ export default class Manager {
   }
 
   emit(id, evt, val) {
+    if (arguments.length === 2) {
+      return this.clients.forEach(c => c.send(id, evt))
+    }
     if (!this.subs[id]) return
-    this.subs[id].forEach(f => f(id, evt, val))
+    this.subs[id].forEach(c => c.send(evt, val))
   }
 
   addSub(id, fn) {
     if (!this.running[id]) return
-    this.running[id].history.forEach(v => fn(id, v.evt, v.val))
+    // this.running[id].history.forEach(v => client.(id, v.evt, v.val))
     if (!this.subs[id]) this.subs[id] = [fn]
     else this.subs[id].push(fn)
   }
 
   unSub(id, fn) {
+    if (!id || !this.subs[id]) return
     const ix = this.subs[id].indexOf(fn)
     if (ix === -1) return false
     this.subs[id].splice(ix, 1)
     return true
+  }
+
+  getLatestBuilds(projects) {
   }
 
   getBuild(project, id) {

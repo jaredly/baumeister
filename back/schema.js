@@ -8,7 +8,7 @@ import {
 
 export default {
   Build: struct({
-    project: Str,
+    project: Str, // id
     started: Dat,
     finished: maybe(Dat),
     status: enums.of('unstarted running errored failed succeeded'),
@@ -23,6 +23,8 @@ export default {
   Project: struct({
     name: Str,
     modified: Dat,
+    status: Str,
+    latestBuild: maybe(Str),
     source: union([
       struct({
         path: Str,
@@ -37,8 +39,8 @@ export default {
     ], 'source'),
 
     build: union([
-      Str,
-      Bool,
+      // Str,
+      // Bool,
       struct({
         dockerfile: Str,
         context: maybe(union([Bool, Str])),

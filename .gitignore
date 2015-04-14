@@ -1,3 +1,4 @@
 /node_modules
 /back/db.db
 /.builds
+/back/.test.db

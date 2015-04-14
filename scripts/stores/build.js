@@ -1,6 +1,7 @@
 
 import {Store, Actions} from 'flummox'
-import {List} from 'immutable'
+import {List, Map} from 'immutable'
+import aggEvents from '../../lib/agg-events'
 
 class BuildActions extends Actions {
   constructor(api) {
@@ -8,19 +9,20 @@ class BuildActions extends Actions {
     this.api = api
   }
 
-  async getBuilds() {
+  setOpenBuild(id) {
+    this.api.send('build:view', id)
+  }
+
+  async getBuilds(project) {
     try {
-      return await this.api.getBuilds()
+      const builds = await this.api.getBuilds(project)
+      return {project, builds}
     } catch (e) {
       console.error('failed to get builds')
       console.log(e)
       console.log(e.stack)
       throw e
     }
-  }
-
-  newBuild(build) {
-    return build
   }
 }
 
@@ -30,16 +32,54 @@ class BuildStore extends Store {
     const ids = flux.getActionIds('builds')
     this.register(ids.getBuilds, this.onBuilds)
     this.register(ids.newBuild, this.onNewBuild)
-    this.state = {builds: null}
+    this.state = {builds: new Map()}
   }
 
   onBuilds(builds) {
-    this.setState({builds: new List(builds)})
+    this.setState({
+      builds: this.state.builds.set(
+        builds.project,
+        new List(builds.builds))
+    })
   }
 
-  onNewBuild(build) {
+  gotBuildHistory(id, project, events) {
+    let build = this.state.builds.get(project).find(b => b.id === id)
+    if (!build) {
+      return console.warn('got history for unknown build', id, project)
+    }
+    build.events = events
     this.setState({
-      builds: this.state.builds.unshift(build)
+      builds: this.state.builds// .updateIn([project, ix], events)
+    })
+  }
+
+  updateBuild(build) {
+    this.setState({
+      builds: this.state.builds.setIn([build.project, build.id], build)
+    })
+  }
+
+  getBuilds(id) {
+    return this.state.builds.get(id)
+  }
+
+  gotNewBuildEvent(project, id, event) {
+    let build = this.state.builds.get(project).find(b => b.id === id)
+    if (!build) {
+      return console.warn('got history for unknown build', id, project)
+    }
+    build.events = aggEvents([event], build.events)
+    this.setState({
+      builds: this.state.builds
+      // .updateIn([project, ix], events)
+    })
+  }
+
+  gotNewBuild(build) {
+    this.setState({
+      builds: this.state.builds
+        .updateIn([build.project], l => l ? l.unshift(build) : new List([build]))
     })
   }
 }

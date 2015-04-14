@@ -34,26 +34,15 @@ export default class Runner extends Replayable {
       if (err) return done(err)
       this.prepareImage((err, name) => {
         if (err) return done(err)
-        const config = assign({}, this.project.test, {
-          path: this.state.path,
-          stream: 'test',
-          image: name,
-        })
-        runDocker(this.docker, config, this, err => {
-          runDocker(this.docker, {
-            path: this.state.path,
-            stream: 'cleanup',
-            image: name,
-            cmd: 'chmod -R o+w /project',
-          }, this, _ => done(err))
-        })
+        this.test(name, done)
       })
     })
   }
 
   getProject(done) {
-    console.log('getting')
+    this.emit('section', 'get-project')
     if (this.project.source.path) {
+      this.emit('info', `Local project ${this.project.source.path}`)
       this.state.path = this.project.source.path
       this.state.inPlace = true
       this.state.newPath = false
@@ -72,12 +61,13 @@ export default class Runner extends Replayable {
 
       const pro = providers[this.project.source.provider]
       if (!pro) {
-        return done(new Error(`Unknown provider ${this.project.source.provider}`))
+        const err = new Error(`Unknown provider ${this.project.source.provider}`)
+        this.emit('error', err.message)
+        return done(err)
       }
 
       const config = {dir, exists, source: this.project.source.config}
 
-      this.emit('status', 'get-project')
       pro(this.docker, config, this, err => {
         done(err)
       })
@@ -85,7 +75,7 @@ export default class Runner extends Replayable {
   }
 
   prepareImage(done) {
-    this.emit('status', 'prepare')
+    this.emit('section', 'prepare-image')
     if (this.project.build.prefab) {
       this.emit('info', 'Using prefab image: ' + this.project.build.prefab)
       return done(null, this.project.build.prefab)
@@ -114,8 +104,7 @@ export default class Runner extends Replayable {
     if (!this.project.source.path) {
       return done(new Error('providers not yet supported'))
     }
-    this.emit('info', contextMessage(this.project.build.context))
-    this.emit('status', 'build')
+    this.emit('info', contextMessage(imname, this.project.build.context))
 
     getContext(this.project, (err, stream, dockerText) => {
       if (err) return done(err)
@@ -127,9 +116,30 @@ export default class Runner extends Replayable {
       }, this, done)
     })
   }
+
+  test(name, done) {
+    this.emit('section', 'test')
+    const config = assign({}, this.project.test, {
+      path: this.state.path,
+      stream: 'test',
+      image: name,
+    })
+    // TODO maybe get more fancy here at some point
+    runDocker(this.docker, config, this, (err, exitCode) => {
+      if (err) this.emit('status', 'test:errored')
+      else if (exitCode !== 0) this.emit('status', 'test:failed')
+      else this.emit('status', 'test:passed')
+      this.emit('section', 'cleanup')
+      runDocker(this.docker, {
+        path: this.state.path,
+        image: name,
+        cmd: 'chown -R `stat -c "%u:%g" /project` /project'
+      }, this, _ => done(err, exitCode))
+    })
+  }
 }
 
-function contextMessage(value) {
+function contextMessage(imname, value) {
   let ctx
   if (value === true) {
     ctx = 'will full project'
