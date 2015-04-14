@@ -25,6 +25,9 @@ export default function runDocker(docker, config, out, done) {
     WorkingDir: path.join('/project', config.cwd || ''),
     Entrypoint: ['/bin/sh', '-x', '-c'],
     PublishAllPorts: true,
+    OpenStdin: false,
+    StdinOnce: false,
+    AttachStdin: false,
     Env: config.env || [],
   }
 

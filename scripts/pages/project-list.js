@@ -2,6 +2,7 @@
 import React from 'react'
 import {Link} from 'react-router'
 import Project from './project'
+import NewProject from './new-project'
 
 import './project.less'
 
@@ -24,6 +25,9 @@ export default class ProjectList extends React.Component {
         return a.modified - b.modified
       })
     return <ul className='ProjectList'>
+      <li className='ProjectList_project'>
+        <NewProject flux={this.props.flux}/>
+      </li>
       {projects.map(proj => <li key={proj.id} className='ProjectList_project'>
         <Project
           onOpen={_ => this.setState({open: proj.id})}

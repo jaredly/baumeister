@@ -44,6 +44,10 @@ export default class Api extends EventEmitter {
   onClose() {
   }
 
+  newProject(data) {
+    return apost('/api/projects/', data)
+  }
+
   updateProject(data) {
     let payload = assign({}, data)
     if (payload.latestBuild && payload.latestBuild.id) {

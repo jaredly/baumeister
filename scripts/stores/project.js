@@ -35,7 +35,7 @@ class ProjectActions extends Actions {
   }
 
   newProject(project) {
-    return project
+    return this.api.newProject(project)
   }
 }
 
@@ -95,7 +95,7 @@ class ProjectStore extends Store {
 
   onNewProject(project) {
     this.setState({
-      projects: this.state.projects.unshift(project)
+      projects: this.state.projects.set(project.id, project)
     })
   }
 }

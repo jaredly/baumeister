@@ -23,7 +23,7 @@ export default {
   Project: struct({
     name: Str,
     modified: Dat,
-    status: Str,
+    status: maybe(Str),
     latestBuild: maybe(Str),
     source: union([
       struct({

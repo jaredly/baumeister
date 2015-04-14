@@ -19,6 +19,19 @@ export default class Manager {
     this.clients = []
   }
 
+  init() {
+    return this.db.all('builds')
+      .then(builds => {
+        let zombies = builds.filter(b => b.status == 'running')
+        if (!zombies) return
+        zombies.forEach(z => {
+          z.finished = new Date()
+          z.status = 'errored'
+        })
+        return this.db.batch('builds', zombies.map(z => ({type: 'put', key: z.id, value: z})))
+      })
+  }
+
   newConnection(socket) {
     const client = new Client(socket)
     this.clients.push(client)
@@ -68,6 +81,8 @@ export default class Manager {
     data.modified = new Date()
     const val = validate(data, Project)
     if (!val.isValid()) {
+      console.log(val)
+      console.log(val.errors)
       return Promise.reject(
         new Error('Invalid project data: \n' +
           val.errors.map(e => e.message).join('\n')))

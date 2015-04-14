@@ -4,17 +4,10 @@ import {Link} from 'react-router'
 import Convert from 'ansi-to-html'
 import classnames from 'classnames'
 
-import './build.less'
+import Ticker from './ticker'
+import mmSS from './mmSS'
 
-function mmSS(ms) {
-  let secs = parseInt(ms / 1000) % 60
-  let min = parseInt(ms / 1000 / 60)
-  ms %= 1000
-  if (secs < 10) secs = '0' + secs
-  if (ms < 10) ms = '00' + ms
-  else if (ms < 100) ms = '0' + ms
-  return `${min}:${secs}.${ms}s`
-}
+import './build.less'
 
 function ansiText(text) {
   text = text
@@ -25,24 +18,6 @@ function ansiText(text) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
   return new Convert().toHtml(text)
-}
-
-class Ticker extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {dur: Date.now() - props.start}
-    this._ival = setInterval(_ => {
-      this.setState({dur: Date.now() - this.props.start})
-    }, 83)
-  }
-
-  componentWillUnmount() {
-    clearInterval(this._ival)
-  }
-
-  render() {
-    return <span>{mmSS(this.state.dur)}</span>
-  }
 }
 
 export default class Build extends React.Component {

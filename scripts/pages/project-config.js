@@ -2,27 +2,52 @@ import classnames from 'classnames'
 
 import React from 'react'
 import {Link} from 'react-router'
-import FluxComponent from 'flummox/component'
 
 import {Form, Radio} from './form'
 import './project-config.less'
 
 const defaultProviderData = {
+  git: {
+    provider: 'git',
+    config: {
+      repo: 'https://github.com/you/yours',
+    }
+  },
   script: {
-    base: 'ubuntu',
-    get: '# get some data',
-    update: '# update the project',
+    provider: 'script',
+    config: {
+      base: 'ubuntu',
+      get: '# get some data',
+      update: '# update the project',
+    }
   }
 }
 
 function makeProviderConfig(provider) {
+  if (provider === 'git') {
+    return <div>
+      <label className='text-label'>
+        Git Repo
+        <input type='text' className='mono-text' name='config.repo' placeholder="Git repo"/>
+      </label>
+    </div>
+  }
   if (provider !== 'script') {
     return <span>Unconfigurable</span>
   }
   return <div>
-    <input type='text' name='config.base' placeholder="Docker image"/>
-    <input type='text' name='config.get' placeholder='Shell command to get data'/>
-    <input type='text' name='config.update' placeholder='Shell command to update data'/>
+    <label className='text-label'>
+      Docker image
+      <input type='text' className='mono-text' name='config.base' placeholder="Docker image"/>
+    </label>
+    <label className='text-label'>
+      Shell command to get the project
+      <input type='text' className='mono-text' name='config.get' placeholder='Shell command to get data'/>
+    </label>
+    <label className='text-label'>
+      Shell command to update the project
+      <input type='text' className='mono-text' name='config.update' placeholder='Shell command to update data'/>
+    </label>
   </div>
 }
 
@@ -36,7 +61,7 @@ export default class ProjectConfig extends React.Component {
     if (action === 'cancel') {
       return
     }
-    this.props.flux.getActions('projects').updateProject(data)
+    this.props.onSubmit(data, action)
   }
 
   render() {
@@ -52,7 +77,7 @@ export default class ProjectConfig extends React.Component {
         switchOn={val => val.get('path') ? 'local' : 'provider'}
         defaultData={{
           local: {path: '/'},
-          provider: {provider: 'script', config: {}}
+          provider: {provider: 'git', config: {repo: 'https://github.com/you/yours'}}
         }}
       >
         <label switchWhere='local' className='ProjectConfig_source-local text-label'>
@@ -64,7 +89,10 @@ export default class ProjectConfig extends React.Component {
           switchWhere='provider'
           className='ProjectConfig_source-provider'
           title='Provider'
-          choices={{script: 'Bash script'}}
+          choices={{
+            git: 'Git Repo',
+            script: 'Bash script',
+          }}
           defaultData={defaultProviderData}
           switchOn='provider'
           body={current => makeProviderConfig(current)}/>
@@ -114,7 +142,7 @@ export default class ProjectConfig extends React.Component {
           </Radio>
           <label className='checkbox-label'>
             <input type="checkbox" name="noRebuild"/>
-            Don't rebuild (use existing image if available)
+            Use existing image if available
           </label>
         </div>
         <div switchWhere='prefab' classname='ProjectConfig_prefab'>
@@ -133,8 +161,7 @@ export default class ProjectConfig extends React.Component {
           </label>
         </div>
       </section>
-      <button>Submit me!</button>
-      <button name='action' value='cancel'>Cancel</button>
+      <button>{this.props.actionText}</button>
     </Form>
   }
 }
