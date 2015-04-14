@@ -1,12 +1,13 @@
 
 import Runner from './runner'
 import EventEmitter from 'eventemitter3'
-import validate from 'tcomb-validation'
+import {validate} from 'tcomb-validation'
 import uuid from './uuid'
 import prom from './prom'
 import async from 'async'
 import aggEvents from '../lib/agg-events'
 import Client from './ws-client'
+import {Project, Build} from './schema'
 
 export default class Manager {
   constructor(db, basepath) {
@@ -39,9 +40,32 @@ export default class Manager {
     })
   }
 
+  updateProject(id, data) {
+    return this.getProject(id)
+      .then(project => {
+        for (let name in data) {
+          project[name] = data[name]
+        }
+        project.modified = new Date()
+        console.log('validate')
+        const val = validate(project, Project)
+        console.log(val, val.isValid)
+        if (!val.isValid()) {
+          console.log(JSON.stringify(val, null, 2))
+          return Promise.reject(
+            new Error('Invalid project data: \n' +
+              val.errors.map(e => e.message).join('\n')))
+        }
+        return this.db.put('projects', id, project)
+          .then(() => {
+            this.emit('project:update', project)
+          })
+      })
+  }
+
   addProject(data) {
     data.id = uuid()
-    data.modifieed = new Date()
+    data.modified = new Date()
     const val = validate(data, Project)
     if (!val.isValid()) {
       return Promise.reject(
@@ -113,6 +137,7 @@ export default class Manager {
     return this.getProject(project)
       .then(proj => {
         return this.db.find('builds', {project: proj.id})
+          .then(builds => builds.reduce((rev, n) => (rev.unshift(n), rev), []))
       })
   }
 
@@ -214,9 +239,6 @@ export default class Manager {
     if (ix === -1) return false
     this.subs[id].splice(ix, 1)
     return true
-  }
-
-  getLatestBuilds(projects) {
   }
 
   getBuild(project, id) {

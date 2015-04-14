@@ -17,8 +17,10 @@ function mmSS(ms) {
 }
 
 function ansiText(text) {
-  text = text//.replace(/^[^\n]+\x1b\[[12]K/gm, '')
+  text = text
+    .replace(/^[^\n]*\r([^\n])/gm, '$1')
     .replace(/^[^\n]*\x1b\[\d*G/gm, '')
+    .replace(/^[^\n]+\x1b\[[12]K/gm, '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -45,6 +47,22 @@ class Ticker extends React.Component {
 
 export default class Build extends React.Component {
 
+  renderStreamEnd(end) {
+    if (!end) {
+      return <div className='Stream_end Stream_end-running'>
+        Running...
+      </div>
+    }
+    if (end.error) {
+      return <div className='Stream_end Stream_end-error'>
+        Failed! {end.error}
+      </div>
+    }
+    return null /*<div className='Stream_end Stream_end-success'>
+      Success!!
+    </div>*/
+  }
+
   renderStream(evt) {
     const title = evt.cmd ? evt.cmd : evt.title
     const stream = this.props.build.events.streams[evt.id]
@@ -58,6 +76,7 @@ export default class Build extends React.Component {
         </span>
       </div>
       <div className='Stream_output' dangerouslySetInnerHTML={{__html: html}}/>
+      {this.renderStreamEnd(stream.end)}
     </li>
   }
 

@@ -70,7 +70,7 @@ function formulate(data, setter, submitter) {
       let val
       if (isCheckbox) val = e.target.checked
       else if (isRadio) val = props.value
-      else if (isInput) val = e.target.value
+      else if (isInput || type === 'textarea') val = e.target.value
       else val = e
 
       setter(parts, val)

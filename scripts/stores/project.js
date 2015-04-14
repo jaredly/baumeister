@@ -8,6 +8,10 @@ class ProjectActions extends Actions {
     this.api = api
   }
 
+  updateProject(data) {
+    return this.api.updateProject(data)
+  }
+
   async getProjects() {
     try {
       return await this.api.getProjects()
@@ -41,7 +45,17 @@ class ProjectStore extends Store {
     const ids = flux.getActionIds('projects')
     this.register(ids.getProjects, this.onProjects)
     this.register(ids.newProject, this.onNewProject)
+    // this.register(ids.updateProject, this.onUpdatedProject)
     this.state = {projects: null}
+  }
+
+  updateProject(project) {
+    if ('string' === typeof project.latestBuild) {
+      project.latestBuild = this.state.projects.get(project.id).latestBuild
+    }
+    this.setState({
+      projects: this.state.projects.set(project.id, project)
+    })
   }
 
   gotNewBuild(build) {

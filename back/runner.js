@@ -52,7 +52,7 @@ export default class Runner extends Replayable {
     if (!this.basePath) {
       throw new Error('No basepath specified')
     }
-    const dir = path.join(this.basePath, this.project.name)
+    const dir = path.join(this.basePath, this.project.id.replace(/:/, '_'))
 
     ensureDir(dir, (err, exists) => {
       if (err) return done(err)
@@ -129,6 +129,7 @@ export default class Runner extends Replayable {
       if (err) this.emit('status', 'test:errored')
       else if (exitCode !== 0) this.emit('status', 'test:failed')
       else this.emit('status', 'test:passed')
+      if (this.state.inPlace) return done(err, exitCode)
       this.emit('section', 'cleanup')
       runDocker(this.docker, {
         path: this.state.path,

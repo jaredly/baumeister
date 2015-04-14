@@ -1,7 +1,7 @@
 
 import {
   struct, union, maybe, enums,
-  List, Str, Num, Bool, Arr,
+  list, Str, Num, Bool, Arr,
   Obj, Func, Err,
   Re, Dat, Nil, Any
 } from 'tcomb'
@@ -13,7 +13,7 @@ export default {
     finished: maybe(Dat),
     status: enums.of('unstarted running errored failed succeeded'),
     num: Num,
-    events: List(struct({
+    events: list(struct({
       evt: Str,
       val: union([Obj, Str]),
       time: Dat,

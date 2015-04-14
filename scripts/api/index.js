@@ -1,5 +1,7 @@
 
 import EventEmitter from 'eventemitter3'
+import assign from 'object-assign'
+
 import {get, post} from './ajax'
 
 const HOST = 'localhost:3005'
@@ -40,6 +42,14 @@ export default class Api extends EventEmitter {
   }
 
   onClose() {
+  }
+
+  updateProject(data) {
+    let payload = assign({}, data)
+    if (payload.latestBuild && payload.latestBuild.id) {
+      payload.latestBuild = payload.latestBuild.id
+    }
+    return apost(`/api/projects/${data.id}`, payload)
   }
 
   startBuild(id) {

@@ -46,9 +46,16 @@ export default manager => {
       },
 
       post(req, res, next) {
-        manager.addProject(req.body)
-          .then(project => json(res, project))
-          .catch(err => json(res, err, 500))
+        const path = req.purl.pathname
+        if (path === '/') {
+          manager.addProject(req.body)
+            .then(project => json(res, project))
+            .catch(err => json(res, err, 500))
+        } else {
+          manager.updateProject(path.slice(1), req.body)
+            .then(project => json(res, project))
+            .catch(err => json(res, err, 500))
+        }
       },
 
       delete(req, res, next) {
