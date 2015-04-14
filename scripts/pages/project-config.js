@@ -142,7 +142,7 @@ export default class ProjectConfig extends React.Component {
           </Radio>
           <label className='checkbox-label'>
             <input type="checkbox" name="noRebuild"/>
-            Use existing image if available
+            Reuse previously built image if available
           </label>
         </div>
         <div switchWhere='prefab' classname='ProjectConfig_prefab'>
