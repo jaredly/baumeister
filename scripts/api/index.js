@@ -72,6 +72,10 @@ export default class Api extends EventEmitter {
     return apost(`/api/builds/${id}`)
   }
 
+  clearCache(id) {
+    return apost(`/api/projects/${id}/clear-cache`)
+  }
+
   getProjects() {
     return aget('/api/projects?full=true')
   }

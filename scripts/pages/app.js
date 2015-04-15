@@ -20,7 +20,7 @@ export default class App extends React.Component {
         const body = `Took ${mmSS(data.build.duration)}`
         const note = new Notification(title, {
           body,
-          icon: `/icon-${data.build.status}.png`
+          icon: `/static/icon-${data.build.status}.png`
         })
         setTimeout(_ => note.close(), 5000)
       }

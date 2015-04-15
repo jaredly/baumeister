@@ -36,10 +36,15 @@ export default class Project extends React.Component {
     this.props.flux.getActions('projects').updateProject(data)
   }
 
+  onClear() {
+    this.props.flux.getActions('projects').clearCache(this.props.project.id)
+  }
+
   renderBody() {
     if (this.state.config) {
       return <ProjectConfig
         actionText='Save'
+        onClear={this.onClear.bind(this)}
         onSubmit={this.onConfig.bind(this)} onClose={this.onCloseConfig.bind(this)} project={this.props.project}/>
     }
     return   <FluxComponent flux={this.props.flux} connectToStores={{

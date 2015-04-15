@@ -28,7 +28,6 @@ export default function makeApp(port, views, manager) {
   app.use('/api/projects', urlify)
   app.use('/api/projects', views.projects)
 
-
   app.run = function (ready) {
     const server = http.createServer(app)
     const WebSocketServer = require('ws').Server

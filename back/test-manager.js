@@ -1,7 +1,7 @@
 
 import Manager from './manager'
 
-import config from './loco.config.js'
+import config from './notablemind.config.js'
 import memdown from 'memdown'
 import Db from './db'
 import uuid from './uuid'
@@ -13,17 +13,28 @@ const spec = {
 
 const db = new Db(null, spec, memdown)
 
-const id = uuid()
+const id = '1429080316006_wu259y0rf1liqs5lysaa' // uuid()
+config.id = id
 
 db.put('projects', id, config)
   .then(_ => {
 
     const m = new Manager(db, __dirname + '/../.builds')
-    const fn = (id, evt, val) => console.log('[sub]', id, evt, val)
+    const fn = (evt, val) => {
+      if (evt === 'build:event') {
+        if (val.event.evt === 'stream') {
+          process.stdout.write(val.event.val.value)
+        } else if (val.event.evt === 'stream-start') {
+          console.log('[start]', val.event.val.cmd || val.event.val.title)
+        }
+      } else {
+        console.log('[sub]', evt, val)
+      }
+    }
 
-    m.startBuild('loco')
+    m.startBuild('notablemind')
       .then(id => {
-        m.addSub(id, fn)
+        m.addSub(id, {send: fn})
       })
       .catch(err => {
         console.log('failed?')

@@ -48,12 +48,18 @@ export default manager => {
       post(req, res, next) {
         const path = req.purl.pathname
         if (path === '/') {
-          manager.addProject(req.body)
+          return manager.addProject(req.body)
             .then(project => json(res, project))
             .catch(err => json(res, err, 500))
-        } else {
-          manager.updateProject(path.slice(1), req.body)
+        }
+        const parts = req.url.replace(/^\//, '').replace(/\/$/, '').split('/')
+        if (parts.length === 1) {
+          manager.updateProject(parts[0], req.body)
             .then(project => json(res, project))
+            .catch(err => json(res, err, 500))
+        } else if (parts[1] === 'clear-cache') {
+          manager.clearCache(parts[0], req.body)
+            .then(_ => json(res, 'Cleared'))
             .catch(err => json(res, err, 500))
         }
       },
@@ -75,7 +81,6 @@ export default manager => {
           .replace(/^\//, '')
           .replace(/\/$/, '').split('/')
         if (parts.length !== 3) {
-          // return json(res, new Error('invalid'), 500)
           return next()
         }
         if (parts[2] !== 'interrupt') {

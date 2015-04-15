@@ -8,6 +8,7 @@ export default class Docksh {
   constructor(docker, config) {
     this.docker = docker
     this.config = config
+    console.log('Docksh', config)
   }
 
   init() {
@@ -16,18 +17,19 @@ export default class Docksh {
         Image: this.config.image,
         Cmd: ['sleep infinity'],
         Entrypoint: ['/bin/sh', '-x', '-c'],
+        // VolumesFrom: this.config.volumesFrom,
         Tty: true,
         PublishAllPorts: true,
         Env: this.config.env || [],
-        // TODO think more about the working dir?
         WorkingDir: path.join('/project', this.config.cwd || ''),
       }, (err, container) => {
         if (err) return done(err)
         this.container = container
-        container.defaultOptions.start.Binds = [this.config.path + ':/project:rw'];
+        container.defaultOptions.start.Binds = this.config.binds
+        container.defaultOptions.start.VolumesFrom = this.config.volumesFrom
         container.start((err, data) => {
           if (err) return done(err)
-              done()
+          done()
         })
       })
     })
@@ -43,6 +45,39 @@ export default class Docksh {
 
   stopAndRemove() {
     return this.stop().then(_ => this.remove())
+  }
+
+  runSilent(cmd) {
+    return prom(done => {
+      this.container.exec({
+        Tty: true,
+        Cmd: ['/bin/sh', '-x', '-c', cmd],
+        AttachStdout: true,
+        AttachStderr: true,
+      }, (err, exec) => {
+        if (err) return done(err)
+        exec.start({}, (err, stream) => {
+          if (err) return done(err)
+          let out = ''
+          const start = Date.now()
+          stream.on('data', chunk => out += chunk.toString('utf8'))
+          .on('error', err => console.log("ERR", err))
+          .on('end', () => {
+            const duration = Date.now() - start
+            exec.inspect((err, data) => {
+              if (err) {
+                console.error('inspect exec', err)
+                return done(new Error('failed to inspect exec'))
+              }
+              if (data.Running) {
+                return done(new Error('exec is still running'))
+              }
+              done(null, {out, code: data.ExitCode, duration})
+            })
+          })
+        })
+      })
+    })
   }
 
   run(cmd, out) {

@@ -176,13 +176,13 @@ export default class Manager {
 
   runBuild(project, data) {
     console.log('running', project, data)
-    const r = new Runner(project, this.basepath)
+    const r = new Runner(project, data.id, this.basepath)
     this.running[data.id] = r
 
     const this_ = this
     r.pipe({
       emit(evt, val) {
-        console.log('evt', evt, val)
+        // console.log('evt', evt, val)
         this_.emit(data.id, 'build:event', {
           build: data.id,
           project: project.id,
@@ -200,7 +200,6 @@ export default class Manager {
     })
 
     r.run((err, exitCode) => {
-      console.log('Finished', data.id, err)
       if (err || interrupted) {
         data.status = 'errored'
       } else if (exitCode !== 0) {
@@ -251,6 +250,15 @@ export default class Manager {
                 return data.id
               })
           })
+      })
+  }
+
+  clearCache(id) {
+    return this.getProject(id)
+      .then(project => {
+        if (!project) throw new Error('Project not found')
+        return prom(done =>
+          new Runner(project, null).clearCache(done))
       })
   }
 

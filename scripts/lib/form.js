@@ -34,7 +34,7 @@ class Form extends React.Component {
   }
 
   render() {
-    return <form className={classnames('Form', this.props.className)} onSubmit={this.onSubmit}>
+    return <form className={classnames('Form', this.props.className)} onSubmit={this.onSubmit.bind(this)}>
       {this.makeChildren()}
     </form>
   }
@@ -43,6 +43,7 @@ class Form extends React.Component {
 function formulate(data, setter, submitter) {
   return function (props, type) {
     if (type === 'button') {
+      console.log('button', props)
       if (props.onClick) return null
       return {
         onClick: e => {
@@ -94,7 +95,7 @@ function formulate(data, setter, submitter) {
 
 function walkChildren(children, newProps) {
   return React.Children.map(children, child =>
-    typeof child === 'string' ? child :
+    (!child || typeof child === 'string') ? child :
     React.cloneElement(child, newProps(child.props, child.type), typeof child.type === 'string' ? walkChildren(child.props.children, newProps) : child.props.children)
   )
 }

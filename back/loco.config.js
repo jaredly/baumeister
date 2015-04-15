@@ -5,16 +5,17 @@ export default {
   source: {
     provider: 'script',
     config: {
+      cache: true,
       base: 'docker-ci/git',
       get: 'git clone https://github.com/notablemind/loco .',
-      update: 'git pull',
+      update: 'ls -a; git pull',
     },
   },
   build: {
     prefab: 'docker-ci/component',
   },
   test: {
-    cmd: 'make test',
+    cmd: 'pwd;ls;npm test',
   },
   cleanup: {
     rmdir: true,

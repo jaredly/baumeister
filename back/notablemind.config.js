@@ -3,7 +3,8 @@ export default {
   name: 'notablemind',
   modified: new Date(),
   source: {
-    path: '/home/jared/clone/nm/'
+    path: '/home/jared/clone/nm/',
+    inPlace: true,
   }, 
   build: {
     prefab: 'jaredly/node',

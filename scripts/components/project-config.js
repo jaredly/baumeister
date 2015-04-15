@@ -58,9 +58,6 @@ export default class ProjectConfig extends React.Component {
 
   onSubmit(data, action) {
     this.props.onClose()
-    if (action === 'cancel') {
-      return
-    }
     this.props.onSubmit(data, action)
   }
 
@@ -76,14 +73,20 @@ export default class ProjectConfig extends React.Component {
         choices={{local: 'Local path', provider: 'Provider'}}
         switchOn={val => val.get('path') ? 'local' : 'provider'}
         defaultData={{
-          local: {path: '/'},
+          local: {path: '/', inPlace: false},
           provider: {provider: 'git', config: {repo: 'https://github.com/you/yours'}}
         }}
       >
-        <label switchWhere='local' className='ProjectConfig_source-local text-label'>
-          Local path:
-          <input type='text' name='path' placeholder="local path to project"/>
-        </label>
+        <div switchWhere='local' >
+          <label className='ProjectConfig_source-local text-label'>
+            Local path:
+            <input type='text' name='path' placeholder="local path to project"/>
+          </label>
+          <label className='checkbox-label'>
+            <input type='checkbox' name='inPlace'/>
+            Mount on filesystem (don't copy into a container)
+          </label>
+        </div>
         <Radio
           name=''
           switchWhere='provider'
@@ -162,6 +165,8 @@ export default class ProjectConfig extends React.Component {
         </div>
       </section>
       <button>{this.props.actionText}</button>
+      {this.props.onClear &&
+        <button type='button' onClick={this.props.onClear}>Clear Cache</button>}
     </Form>
   }
 }

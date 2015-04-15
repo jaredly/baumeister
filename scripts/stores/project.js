@@ -12,6 +12,10 @@ class ProjectActions extends Actions {
     return this.api.updateProject(data)
   }
 
+  clearCache(id) {
+    return this.api.clearCache(id)
+  }
+
   async getProjects() {
     try {
       return await this.api.getProjects()
@@ -45,7 +49,6 @@ class ProjectStore extends Store {
     const ids = flux.getActionIds('projects')
     this.register(ids.getProjects, this.onProjects)
     this.register(ids.newProject, this.onNewProject)
-    // this.register(ids.updateProject, this.onUpdatedProject)
     this.state = {projects: null}
   }
 
@@ -78,14 +81,6 @@ class ProjectStore extends Store {
         proj.latestBuild.status = status
         return proj
       })
-      /*
-      projects: this.projects.map(proj => {
-        if (proj.latestBuild.id === build.id) {
-          proj.latestBuild = build
-          return proj
-        }
-      })
-      */
     })
   }
 

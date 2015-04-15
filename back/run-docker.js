@@ -29,10 +29,11 @@ export default function runDocker(docker, config, out, done) {
     WorkingDir: path.join('/project', config.cwd || ''),
     Entrypoint: ['/bin/sh', '-x', '-c'],
     PublishAllPorts: true,
-    OpenStdin: false,
-    StdinOnce: false,
-    AttachStdin: false,
     Env: config.env || [],
+  }
+
+  if (config.volumesFrom) {
+    create.VolumesFrom = config.volumesFrom
   }
 
   const cmd = config.cmd
@@ -73,7 +74,10 @@ export default function runDocker(docker, config, out, done) {
       done(null, data.StatusCode)
     }
   }).on('container', function (container) {
-    container.defaultOptions.start.Binds = [config.path + ':/project:rw'];
+    if (config.binds) {
+      container.defaultOptions.start.Binds = config.binds
+    }
+    container.defaultOptions.start.VolumesFrom = config.volumesFrom
     out.emit('info', `running in container ${container.id}`)
     out.emit('stream-start', {
       id: sid, 

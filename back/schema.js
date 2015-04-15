@@ -32,6 +32,7 @@ export default {
     source: union([
       struct({
         path: Str,
+        inPlace: maybe(Bool),
       }),
       struct({
         shell: Str,

@@ -20,23 +20,56 @@ function ensureDir(dir, done) {
   })
 }
 
+function ensureContainer(docker, id, volume, done) {
+  docker.getContainer(id).inspect((err, res) => {
+    if (err && err.statusCode !== 404) {
+      return done(err)
+    }
+    if (!err) {
+      return done(null, res.Id, false)
+    }
+    docker.createContainer({
+      name: '/' + id,
+      Image: 'busybox',
+      Volumes: {
+        [volume]: {}
+      },
+    }, (err, res) => {
+      if (err) return done(err)
+      console.log(res)
+      done(null, res.id, true)
+    })
+  })
+}
+
 export default class Runner extends Replayable {
-  constructor(project, basePath) {
+  constructor(project, id, basePath) {
     super()
+    this.id = id
     this.docker = new Docker()
     this.project = project
     this.basePath = basePath
     this.state = {}
     this.stopper = null
     this.stopped = false
+    this.cacheContainer = `dci-${this.project.id}-cache`
+    this.dataContainer = `dci-${this.id}-data`
+  }
+
+  clearCache(done) {
+    this.docker.getContainer(this.cacheContainer).remove({v: 1}, done)
   }
 
   run(done) {
-    this.getProject((err) => {
+    this.emit('section', 'get-project')
+    this.ensureDataContainers(err => {
       if (err) return done(err)
-      this.prepareImage((err, name) => {
+      this.getProject((err) => {
         if (err) return done(err)
-        this.test(name, done)
+        this.prepareImage((err, name) => {
+          if (err) return done(err)
+          this.test(name, done)
+        })
       })
     })
   }
@@ -45,14 +78,37 @@ export default class Runner extends Replayable {
     this.emit('interrupt', done)
   }
 
+  ensureDataContainers(done) {
+    const cache = this.cacheContainer
+    ensureContainer(this.docker, cache, '/cache', (err, id, created) => {
+      if (err) return done(err)
+      this.emit('info', `${created ? 'Created' : 'Using'} cache container ${cache} (${id})`)
+
+      if (this.project.source.path && this.project.source.inPlace) {
+        return done(null)
+      }
+
+      const data = this.dataContainer
+      this.docker.createContainer({name: '/' + data, Image: 'busybox', Volumes: {'/project': {}}}, (err, res) => {
+        if (err) return done(err)
+        this.emit('info', `Created data container ${data} (${res.id})`)
+        done(null)
+      })
+    })
+  }
+
   getProject(done) {
-    this.emit('section', 'get-project')
     if (this.project.source.path) {
-      this.emit('info', `Local project ${this.project.source.path}`)
-      this.state.path = this.project.source.path
-      this.state.inPlace = true
-      this.state.newPath = false
-      return done()
+      if (this.project.source.inPlace) {
+        this.emit('info', `Local project ${this.project.source.path}`)
+        return done()
+      }
+      return runDocker(this.docker, {
+        image: 'busybox',
+        binds: [this.project.source.path + ':/localProject:rw'],
+        volumesFrom: [this.dataContainer],
+        cmd: 'cp -r /localProject/* /project',
+      }, this, done)
     }
 
     if (!this.basePath) {
@@ -60,23 +116,20 @@ export default class Runner extends Replayable {
     }
     const dir = path.join(this.basePath, this.project.id.replace(/:/, '_'))
 
-    ensureDir(dir, (err, exists) => {
-      if (err) return done(err)
-      this.state.path = dir
-      this.state.newPath = !exists
+    const pro = providers[this.project.source.provider]
+    if (!pro) {
+      const err = new Error(`Unknown provider ${this.project.source.provider}`)
+      this.emit('error', err.message)
+      return done(err)
+    }
 
-      const pro = providers[this.project.source.provider]
-      if (!pro) {
-        const err = new Error(`Unknown provider ${this.project.source.provider}`)
-        this.emit('error', err.message)
-        return done(err)
-      }
+    const config = {
+      volumesFrom: [this.cacheContainer, this.dataContainer],
+      source: this.project.source.config
+    }
 
-      const config = {dir, exists, source: this.project.source.config}
-
-      pro(this.docker, config, this, err => {
-        done(err)
-      })
+    pro(this.docker, config, this, err => {
+      done(err)
     })
   }
 
@@ -125,17 +178,22 @@ export default class Runner extends Replayable {
 
   test(name, done) {
     this.emit('section', 'test')
+
     const config = assign({}, this.project.test, {
-      path: this.state.path,
-      stream: 'test',
+      volumesFrom: [this.cacheContainer, this.dataContainer],
       image: name,
     })
+    if (this.project.source.inPlace) {
+      config.volumesFrom = [this.cacheContainer]
+      config.binds = [this.project.source.path + ':/project']
+    }
     // TODO maybe get more fancy here at some point
     runDocker(this.docker, config, this, (err, exitCode) => {
       if (err) this.emit('status', 'test:errored')
       else if (exitCode !== 0) this.emit('status', 'test:failed')
       else this.emit('status', 'test:passed')
-      if (this.state.inPlace) return done(err, exitCode)
+      done(err, exitCode)
+      /*
       this.emit('section', 'cleanup')
       runDocker(this.docker, {
         path: this.state.path,
@@ -143,6 +201,7 @@ export default class Runner extends Replayable {
         rmOnSuccess: true,
         cmd: 'chown -R `stat -c "%u:%g" /project` /project'
       }, this, _ => done(err, exitCode))
+      */
     })
   }
 }
