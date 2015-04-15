@@ -56,6 +56,18 @@ export default class Api extends EventEmitter {
     return apost(`/api/projects/${data.id}`, payload)
   }
 
+  stopBuild(project, id) {
+    return apost(`/api/builds/${project}/${id}/interrupt`)
+  }
+
+  saveConfig(config) {
+    return apost('/api/config', config)
+  }
+
+  fetchConfig() {
+    return aget('/api/config')
+  }
+
   startBuild(id) {
     return apost(`/api/builds/${id}`)
   }

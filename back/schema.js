@@ -20,6 +20,10 @@ export default {
     })),
   }, 'Build'),
 
+  Config: struct({
+    notifications: enums.of('all none failures'),
+  }),
+
   Project: struct({
     name: Str,
     modified: Dat,

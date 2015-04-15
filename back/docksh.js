@@ -54,6 +54,11 @@ export default class Docksh {
       cmd: cmd
     })
 
+    let interrupt = done => {
+      this.container.stop(done)
+    }
+    out.on('interrupt', interrupt)
+
     return prom(done => {
       this.container.exec({
         Tty: true,
@@ -79,6 +84,7 @@ export default class Docksh {
               const end = Date.now()
               const dur = end - start
               exec.inspect((err, data) => {
+                out.off('interrupt', interrupt)
                 if (err) return done(new Error('failed to get info on `exec`'))
                 if (data.Running) {
                   return done(new Error("exec is still running..." + data.ID))

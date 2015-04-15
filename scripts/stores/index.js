@@ -2,6 +2,7 @@
 import {Flux} from 'flummox'
 import {BuildActions, BuildStore} from './build'
 import {ProjectActions, ProjectStore} from './project'
+import {ConfigActions, ConfigStore} from './config'
 
 export default class CiFlux extends Flux {
   constructor(api) {
@@ -13,6 +14,12 @@ export default class CiFlux extends Flux {
     const builds = this.createActions('builds', BuildActions, api)
     const bstore = this.createStore('builds', BuildStore, this)
 
+    this.createActions('config', ConfigActions, api)
+    const cstore = this.createStore('config', ConfigStore, this)
+
+    api.on('config:update', config => {
+      cstore.onFetch(config)
+    })
     api.on('build:new', build => {
       bstore.gotNewBuild(build)
       pstore.gotNewBuild(build)

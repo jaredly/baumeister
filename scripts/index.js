@@ -7,11 +7,12 @@ import routes from './routes';
 import CiFlux from './stores'
 import Api from './api'
 
+const api = new Api()
+const flux = new CiFlux(api)
+
 Router.run(routes, Handler => {
-  const api = new Api()
-  const flux = new CiFlux(api)
-  React.render(<FluxComponent flux={flux}>
-    <Handler />
+  React.render(<FluxComponent flux={flux} connectToStores={['config']}>
+    <Handler api={api}/>
   </FluxComponent>, document.getElementById('root'));
 })
 

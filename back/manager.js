@@ -2,6 +2,7 @@
 import Runner from './runner'
 import EventEmitter from 'eventemitter3'
 import {validate} from 'tcomb-validation'
+import Promise from 'bluebird'
 import uuid from './uuid'
 import prom from './prom'
 import async from 'async'
@@ -30,6 +31,16 @@ export default class Manager {
         })
         return this.db.batch('builds', zombies.map(z => ({type: 'put', key: z.id, value: z})))
       })
+  }
+
+  getConfig() {
+    return this.db.get('config', 'default')
+      .catch(err => ({notifications: 'all'}))
+  }
+
+  setConfig(data) {
+    return this.db.put('config', 'default', data)
+      .then(_ => data)
   }
 
   newConnection(socket) {
@@ -74,6 +85,13 @@ export default class Manager {
             this.emit('project:update', project)
           })
       })
+  }
+
+  stopBuild(id) {
+    if (!this.running[id]) {
+      return Promise.reject(new Error('build not running'))
+    }
+    return prom(done => this.running[id].stop(done))
   }
 
   addProject(data) {
@@ -175,17 +193,15 @@ export default class Manager {
 
     this.emit('build:new', data)
 
-    let failed = false
+    let interrupted = false
 
-    /*
-    r.on('section', s => {
-      section = s
+    r.on('interrupt', () => {
+      interrupted = true
     })
-    */
 
     r.run((err, exitCode) => {
       console.log('Finished', data.id, err)
-      if (err) {
+      if (err || interrupted) {
         data.status = 'errored'
       } else if (exitCode !== 0) {
         data.status = 'failed'
@@ -194,7 +210,12 @@ export default class Manager {
       }
       this.emit('build:status', {project: project.id, build: data.id, status: data.status})
       data.events = aggEvents(r.history)
-      data.finished = new Date()
+      data.finished = Date.now()
+      data.duration = data.finished - data.started
+      this.emit('build:done', {
+        project: {id: project.id, name: project.name},
+        build: {id: data.id, num: data.num, duration: data.duration, status: data.status}
+      })
       this.db.put('builds', data.id, data)
         .then(_ => {
           this.emit(data.id, 'build:update', data)
@@ -207,7 +228,7 @@ export default class Manager {
     return this.getProject(id)
       .then(project => {
         if (!project) throw new Error('Project not found')
-        return this.db.find('builds', {project: project.name})
+        return this.db.find('builds', {project: project.id})
           .then(builds => builds.length + 1)
           .then(num => {
             const data = {

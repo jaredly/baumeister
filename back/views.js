@@ -5,7 +5,7 @@ function json(res, data, stat) {
     console.log(data.stack)
     data = {message: data.message, stack: data.stack}
   }
-  const body = JSON.stringify(data, null, 2)
+  const body = JSON.stringify(data, null, 2) || ''
   res.writeHead(stat || 200, {
     'Content-type': 'application/json',
     'Content-length': body.length,
@@ -65,6 +65,39 @@ export default manager => {
       }
     },
 
+    stopBuild: {
+      post(req, res, next) {
+        const path = req.purl.path
+        if (path == '/') {
+          next()
+        }
+        const parts = req.url
+          .replace(/^\//, '')
+          .replace(/\/$/, '').split('/')
+        if (parts.length !== 3) {
+          // return json(res, new Error('invalid'), 500)
+          return next()
+        }
+        if (parts[2] !== 'interrupt') {
+          return next()
+        }
+      }
+    },
+
+    config: {
+      get(req, res, next) {
+        manager.getConfig()
+          .then(config => json(res, config))
+          .catch(err => json(res, err, 500))
+      },
+
+      post(req, res, next) {
+        manager.setConfig(req.body)
+          .then(config => json(res, config))
+          .catch(err => json(res, err, 500))
+      },
+    },
+
     builds: {
       get(req, res, next) {
         if (req.url === '/') {
@@ -85,6 +118,12 @@ export default manager => {
               json(res, build)
             })
             .catch(err => json(res, err, 500))
+        } else if (parts.length === 3 && parts[2] === 'interrupt') {
+          return manager.stopBuild(parts[1])
+            .then(_ => json(res, 'Ok'))
+            .catch(err => json(res, err, 500))
+        } else {
+          next()
         }
       },
 
@@ -94,6 +133,11 @@ export default manager => {
           next()
         }
         const parts = req.url.replace(/^\//, '').replace(/\/$/, '').split('/')
+        if (parts.length === 3 && parts[2] === 'interrupt') {
+          return manager.stopBuild(parts[1])
+            .then(_ => json(res, 'Ok'))
+            .catch(err => json(res, err, 500))
+        }
         if (parts.length !== 1) {
           return json(res, new Error('invalid'), 500)
         }

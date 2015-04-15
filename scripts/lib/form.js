@@ -136,8 +136,10 @@ class Radio extends React.Component {
           children = one
         }
       })
-    } else {
+    } else if (this.props.body) {
       children = this.props.body(current)
+    } else {
+      return []
     }
     return children
   }

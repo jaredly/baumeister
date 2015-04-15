@@ -3,7 +3,7 @@ import classnames from 'classnames'
 import React from 'react'
 import {Link} from 'react-router'
 
-import {Form, Radio} from './form'
+import {Form, Radio} from '../lib/form'
 import './project-config.less'
 
 const defaultProviderData = {

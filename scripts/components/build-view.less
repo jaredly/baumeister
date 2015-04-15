@@ -15,18 +15,23 @@
 }
 
 .BuildView_icon {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   overflow: hidden;
   background-color: pink;
   cursor: pointer;
   border-radius: 10px;
   border: 4px solid white;
   cursor: pointer;
-  color: transparent;
+  text-align: center;
+
+  padding: 7px;
+  box-sizing: border-box;
+  color: white;
+  font-weight: bold;
 
   &-active {
-    border-color: orange;
+    border-color: #555;
   }
 
   &-running {
@@ -42,7 +47,7 @@
   }
 
   &-errored {
-    background-color: gray;
+    background-color: orange;
   }
 }
 

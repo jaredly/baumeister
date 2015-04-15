@@ -10,6 +10,7 @@ import Db from './db'
 const spec = {
   builds: ['project', 'num', 'status'],
   projects: ['name', 'modified'],
+  config: [],
 }
 
 const db = new Db(__dirname + '/.test.db', spec)//, memdown)

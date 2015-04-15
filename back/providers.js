@@ -8,6 +8,7 @@ export default {
       cmd,
       path: config.dir,
       image: 'docker-ci/git',
+      rmOnSuccess: true,
       env: ['GIT_TERMINAL_PROMPT=0'],
     }, out, (err, code) => {
       if (err) return done(err)
@@ -23,6 +24,7 @@ export default {
     runDocker(docker, {
       cmd,
       path: config.dir,
+      rmOnSuccess: true,
       image: config.source.base || 'ubuntu'
     }, out, (err, code) => {
       if (err) return done(err)

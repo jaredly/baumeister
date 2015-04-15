@@ -4,8 +4,8 @@ import {Link} from 'react-router'
 import Convert from 'ansi-to-html'
 import classnames from 'classnames'
 
-import Ticker from './ticker'
-import mmSS from './mmSS'
+import Ticker from '../lib/ticker'
+import mmSS from '../lib/mmSS'
 
 import './build.less'
 
@@ -62,6 +62,9 @@ export default class Build extends React.Component {
     if (evt.evt === 'info') {
       return <li className='Evt Evt-info'>{evt.val}</li>
     }
+    if (evt.evt === 'interrupt') {
+      return <li className='Evt Evt-interrupt'>Build was interrupted</li>
+    }
     if (evt.evt === 'dockerfile') {
       return <li className='Evt Evt-dockerfile Dockerfile'>
         <div className='Dockerfile_title'>Dockerfile</div>
@@ -85,6 +88,7 @@ export default class Build extends React.Component {
     const build = this.props.build
     return <div className='Build'>
       <div className='Build_head'>
+      {build.status === 'running' && <button onClick={this.props.onStop}>Stop</button>}
       </div>
 
       <ul className='Build_sections'>

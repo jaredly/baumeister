@@ -27,6 +27,8 @@ export default class Runner extends Replayable {
     this.project = project
     this.basePath = basePath
     this.state = {}
+    this.stopper = null
+    this.stopped = false
   }
 
   run(done) {
@@ -37,6 +39,10 @@ export default class Runner extends Replayable {
         this.test(name, done)
       })
     })
+  }
+
+  stop(done) {
+    this.emit('interrupt', done)
   }
 
   getProject(done) {
@@ -134,6 +140,7 @@ export default class Runner extends Replayable {
       runDocker(this.docker, {
         path: this.state.path,
         image: name,
+        rmOnSuccess: true,
         cmd: 'chown -R `stat -c "%u:%g" /project` /project'
       }, this, _ => done(err, exitCode))
     })
@@ -143,13 +150,13 @@ export default class Runner extends Replayable {
 function contextMessage(imname, value) {
   let ctx
   if (value === true) {
-    ctx = 'will full project'
+    ctx = 'will full project context'
   } else if (value === false) {
     ctx = 'with an empty context'
   } else {
     ctx = `with context from ${value}`
   }
 
-  return `Building ${imname} from ${value} ${ctx}`
+  return `Building ${imname} ${ctx}`
 }
 

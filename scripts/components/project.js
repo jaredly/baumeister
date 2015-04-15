@@ -4,7 +4,8 @@ import {Link} from 'react-router'
 import FluxComponent from 'flummox/component'
 import classnames from 'classnames'
 
-import Ticker from './ticker'
+import Ticker from '../lib/ticker'
+
 import BuildView from './build-view'
 import ProjectConfig from './project-config'
 
@@ -46,7 +47,9 @@ export default class Project extends React.Component {
         builds: store.getBuilds(this.props.project.id)
       })
     }}>
-      <BuildView project={this.props.project}/>
+      <BuildView
+        router={this.props.router}
+        project={this.props.project}/>
     </FluxComponent>
   }
 
@@ -71,8 +74,10 @@ export default class Project extends React.Component {
       </div>
       {this.props.isOpen &&
         <div className='Project_body'>
-          <button onClick={this.onCloseConfig.bind(this)}>Builds</button>
-          <button onClick={this.openConfig.bind(this)}>Config</button>
+          <div className='Project_buttons'>
+            <button className={!this.state.config && 'active'} onClick={this.onCloseConfig.bind(this)}>Builds</button>
+            <button className={this.state.config && 'active'} onClick={this.openConfig.bind(this)}>Config</button>
+          </div>
           {this.renderBody()}
         </div>}
     </div>

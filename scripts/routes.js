@@ -4,7 +4,6 @@ import {Route, DefaultRoute, NotFoundRoute} from 'react-router'
 
 import App from './pages/app'
 import Home from './pages/home'
-import Build from './pages/build'
 import NotFound from './pages/not-found'
 
 const routes = <Route handler={App} path="/">

@@ -24,6 +24,7 @@ export default function makeApp(port, views, manager) {
 
   app.use('/api/builds', urlify)
   app.use('/api/builds', views.builds)
+  app.use('/api/config', views.config)
   app.use('/api/projects', urlify)
   app.use('/api/projects', views.projects)
 

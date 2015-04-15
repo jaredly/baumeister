@@ -5,13 +5,17 @@ import path from 'path'
 import uuid from './uuid'
 
 export default function runDocker(docker, config, out, done) {
+
+  let stopping = false
+  let stopper = null
+  let interrupt = done => {
+    stopping = done
+    if (stopper) stopper(done)
+  }
+  out.on('interrupt', interrupt)
+
   const sid = uuid()
   const start = Date.now()
-  out.emit('stream-start', {
-    id: sid, 
-    time: start,
-    cmd: config.cmd
-  })
   let err = null
   const stream = es.through()
   stream
@@ -36,6 +40,7 @@ export default function runDocker(docker, config, out, done) {
   docker.run(config.image, config.cmd, stream, create, (err, data, container) => {
     const end = Date.now()
     const dur = end - start
+    out.off('interrupt', interrupt)
     if (err) {
       out.emit('stream-end', {
         id: sid,
@@ -61,9 +66,28 @@ export default function runDocker(docker, config, out, done) {
       duration: dur,
       exitCode: data.StatusCode,
     })
-    done(null, data.StatusCode)
+    if (config.rmOnSuccess) {
+      out.emit('info', 'Removing container ' + container.id)
+      container.remove(err => done(err, data.StatusCode))
+    } else {
+      done(null, data.StatusCode)
+    }
   }).on('container', function (container) {
     container.defaultOptions.start.Binds = [config.path + ':/project:rw'];
+    out.emit('info', `running in container ${container.id}`)
+    out.emit('stream-start', {
+      id: sid, 
+      time: start,
+      cmd: config.cmd
+    })
+    setTimeout(_ => {
+      stopper = done => {
+        container.stop(done)
+      }
+      if (stopping) {
+        stopper(stopping)
+      }
+    }, 100)
   });
 }
 

@@ -9,6 +9,10 @@ class BuildActions extends Actions {
     this.api = api
   }
 
+  stopBuild(project, id) {
+    return this.api.stopBuild(project, id)
+  }
+
   setOpenBuild(id) {
     this.api.send('build:view', id)
   }
