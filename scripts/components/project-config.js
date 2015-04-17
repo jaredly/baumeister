@@ -5,6 +5,7 @@ import {Link} from 'react-router'
 
 import {Form, Radio} from '../lib/form'
 import './project-config.less'
+import '../lib/form.less'
 
 const defaultProviderData = {
   git: {
@@ -69,9 +70,9 @@ export default class ProjectConfig extends React.Component {
         </label>
 
         <div className='ProjectConfig_buttons'>
-          <button>{this.props.actionText}</button>
+          <button className='Button'>{this.props.actionText}</button>
           {this.props.onClear &&
-            <button type='button' onClick={this.props.onClear}>Clear Cache</button>}
+            <button className='Button ProjectConfig_clear' type='button' onClick={this.props.onClear}>Clear Cache</button>}
         </div>
       </div>
 

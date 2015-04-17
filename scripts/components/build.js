@@ -94,6 +94,8 @@ export default class Build extends React.Component {
     const build = this.props.build
     return <div className='Build'>
       <div className='Build_head'>
+        <span className={'Build_status Build_status-' + build.status}>{build.status}</span>
+        {build.duration && <span className='Build_time'> after {mmSS(build.duration)}</span>}
         {build.status === 'running' && <button onClick={this.props.onStop}>Stop</button>}
       </div>
 

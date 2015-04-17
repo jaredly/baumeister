@@ -181,13 +181,15 @@ export default class Manager {
     this.running[data.id] = r
 
     const this_ = this
+    let section = null
     r.pipe({
       emit(evt, val) {
         // console.log('evt', evt, val)
+        if (evt === 'section') section = val
         this_.emit(data.id, 'build:event', {
           build: data.id,
           project: project.id,
-          event: {evt, val}
+          event: {evt, val, section}
         })
       }
     })
@@ -213,10 +215,10 @@ export default class Manager {
       } else {
         data.status = 'succeeded'
       }
-      this.emit('build:status', {project: project.id, build: data.id, status: data.status})
       data.events = aggEvents(r.history)
       data.finished = Date.now()
       data.duration = data.finished - data.started
+      this.emit('build:status', {project: project.id, build: data.id, duration: data.duration, status: data.status})
       this.emit('build:done', {
         project: {id: project.id, name: project.name},
         build: {id: data.id, num: data.num, duration: data.duration, status: data.status}

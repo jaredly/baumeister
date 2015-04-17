@@ -70,7 +70,7 @@ class ProjectStore extends Store {
     })
   }
 
-  updateBuildStatus(project, build, status) {
+  updateBuildStatus(project, build, status, duration) {
     this.setState({
       projects: this.state.projects.update(project, proj => {
         if (!proj.latestBuild) {
@@ -79,6 +79,7 @@ class ProjectStore extends Store {
         }
         if (proj.latestBuild.id !== build) return proj
         proj.latestBuild.status = status
+        proj.latestBuild.duration = duration
         return proj
       })
     })

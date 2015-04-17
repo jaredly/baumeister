@@ -24,7 +24,7 @@ export default class CiFlux extends Flux {
       bstore.gotNewBuild(build)
       pstore.gotNewBuild(build)
     })
-    api.on('build:status', data => pstore.updateBuildStatus(data.project, data.build, data.status))
+    api.on('build:status', data => pstore.updateBuildStatus(data.project, data.build, data.status, data.duration))
     api.on('project:update', project => {
       pstore.updateProject(project)
     })

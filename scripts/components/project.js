@@ -11,6 +11,17 @@ import ProjectConfig from './project-config'
 
 import './project.less'
 
+function smallT(ms) {
+  if (!ms) return ''
+  if (ms < 100) return ms + 'ms'
+  if (ms < 1000) return parseInt(ms / 10) / 100 + 's'
+  if (ms < 10 * 1000) return parseInt(ms / 100) / 10 + 's'
+  if (ms < 100 * 1000) return parseInt(ms / 1000) + 's'
+  if (ms < 10 * 60 * 1000) return parseInt(ms / 1000) / 60 + 'm'
+  if (ms < 100 * 60 * 1000) return parseInt(ms / (60 * 1000)) + 'm'
+  return '>1h'
+}
+
 export default class Project extends React.Component {
   constructor(props) {
     super(props)
@@ -70,7 +81,9 @@ export default class Project extends React.Component {
     const project = this.props.project
     return <div className={classnames('Project', this.props.isOpen && 'Project-open')}>
       <div onClick={this._toggleOpen.bind(this)} className='Project_head'>
-        <span className={classnames('Project_status', 'Project_status-' + (project.latestBuild ? project.latestBuild.status : 'inactive'))}></span>
+        <span className={classnames('Project_status', 'Project_status-' + (project.latestBuild ? project.latestBuild.status : 'inactive'))}>
+          {project.latestBuild && smallT(project.latestBuild.duration)}
+        </span>
         <span className='Project_name'>{project.name}</span>
         <span className='flex-spacer'/>
         {project.latestBuild && project.latestBuild.status === 'running' ?

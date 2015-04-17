@@ -1,4 +1,6 @@
 
+import './app.less'
+
 import React from 'react'
 import {RouteHandler, Link} from 'react-router'
 import FluxComponent from 'flummox/component'
@@ -6,7 +8,6 @@ import {Form, Radio} from '../lib/form'
 import mmSS from '../lib/mmSS'
 import classnames from 'classnames'
 
-import './app.less'
 
 export default class App extends React.Component {
   constructor(props) {
@@ -71,7 +72,7 @@ export default class App extends React.Component {
   render () {
     return <div className='App'>
       <header className='App_header'>
-        <h1>CI</h1>
+        <h1>Jaeger</h1>
         {/*
         <nav>
           <Link to="home">All builds</Link>

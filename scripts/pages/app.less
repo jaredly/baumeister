@@ -1,4 +1,7 @@
 
+@import (reference) "../lib/colors.less";
+
+
 // Noto+Sans|Droid+Sans|Lato|PT+Sans|Muli|Montserrat|Open+Sans|Roboto|Oxygen|Nunito|
 @import url(http://fonts.googleapis.com/css?family=Raleway:400,600);
 @import url(//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css);
@@ -18,17 +21,20 @@ body {
 }
 
 .Button {
-  background-color: #E1F5FE;
+  background-color: @base-light;
   border: none;
   padding: 5px 10px;
   font-size: 18px;
   border-radius: 5px;
   box-shadow: none;
   transition: background-color .2s ease, box-shadow .2s ease;
+  color: #000;//white;
+  font-weight: bold;
+  box-shadow: 0 1px 3px #ddd;
 
   &:hover, &:focus {
-    background-color: #B3E5FC;
-    box-shadow: 0 0 5px #aaa;
+    background-color: @base;
+    box-shadow: 0 1px 5px #aaa;
   }
 }
 
@@ -52,7 +58,7 @@ button {
 
 .App_header {
   display: flex;
-  background-color: #55a;
+  background-color: @base;
 
   h1 {
     padding: 0px 40px;
