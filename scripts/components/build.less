@@ -4,7 +4,40 @@
 .Build_head {
   position: absolute;
   top: -43px;
-  line-height: 35px;
+  line-height: 33px;
+}
+
+.Build_status {
+  padding: 0px 10px;
+  display: inline-block;
+  color: white;
+  border-radius: 10px;
+  margin-right: 10px;
+
+  &-running {
+    background-color: @st-running;
+  }
+  &-failed {
+    background-color: @st-failed;
+  }
+  &-errored {
+    background-color: @st-errored;
+  }
+  &-succeeded {
+    background-color: @st-succeeded;
+  }
+}
+
+.Build_after {
+}
+
+.Build_time {
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.Build_ago {
+  margin-left: 10px;
 }
 
 .Build_events > li {

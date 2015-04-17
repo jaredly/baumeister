@@ -27,8 +27,9 @@ export default class Manager {
         if (!zombies) return
         console.log('cleaning up zombies')
         zombies.forEach(z => {
-          z.finished = new Date()
+          z.finished = Date.now()
           z.status = 'errored'
+          // TODO give streams a stopping point
         })
         return this.db.batch('builds', zombies.map(z => ({type: 'put', key: z.id, value: z})))
       })
@@ -201,6 +202,20 @@ export default class Manager {
       interrupted = true
     })
 
+    let saving = false
+    let saveAfter = false
+    let _saveInt = setInterval(() => {
+      data.events = aggEvents(r.history, null, true)
+      saving = true
+      this.db.put('builds', data.id, data)
+        .then(_ => {
+          saving = false
+          if (saveAfter) {
+            saveAfter()
+          }
+        })
+    }, 1000)
+
     r.run((err, exitCode) => {
       if (err || interrupted) {
         console.log('ERR build', err, interrupted)
@@ -222,13 +237,17 @@ export default class Manager {
         project: {id: project.id, name: project.name},
         build: {id: data.id, num: data.num, duration: data.duration, status: data.status}
       })
-      this.db.put('builds', data.id, data)
-        .then(_ => {
-          console.log('BUILD UPDATE')
-          console.log(JSON.stringify(data, null, 2))
-          this.emit('build:update', data)
-          this.running[data.id] = null
-        })
+      clearInterval(_saveInt)
+      saveAfter = () => {
+        this.db.put('builds', data.id, data)
+          .then(_ => {
+            console.log('BUILD UPDATE')
+            console.log(JSON.stringify(data, null, 2))
+            this.emit('build:update', data)
+            this.running[data.id] = null
+          })
+      }
+      if (!saving) saveAfter()
     })
   }
 
