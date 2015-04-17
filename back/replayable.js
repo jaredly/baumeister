@@ -25,7 +25,7 @@ export default class Replayable extends EventEmitter {
   }
 
   emit(evt, val) {
-    this.history.push({evt, val, time: new Date()})
+    this.history.push({evt, val, time: Date.now()})
     this.piping.forEach(p => p.emit(evt, val))
     EventEmitter.prototype.emit.call(this, evt, val)
   }

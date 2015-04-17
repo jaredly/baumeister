@@ -1,0 +1,50 @@
+
+@import (reference) "../lib/colors";
+
+.Stream {
+  background: black;
+  border-radius: 4px;
+  box-shadow: -3px -3px 0px rgba(0, 255, 0, .5) inset;
+  padding-bottom: 5px;
+}
+
+.Stream_duration {
+  float: right;
+}
+
+.Stream_output {
+  white-space: pre-wrap;
+  font-family: monospace;
+  color: white;
+  padding: 5px 10px;
+}
+
+.Stream_title {
+  color: #6cf;
+  font-family: monospace;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.Stream_end {
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  margin: 5px 10px 5px;
+  font-size: 18px;
+  font-weight: bold;
+  text-shadow: 2px 2px 1px black;
+
+  &-success {
+    background: @st-succeeded;
+  }
+  &-running {
+    background: @st-running;
+  }
+  &-error {
+    background: @st-failed;
+  }
+}
+

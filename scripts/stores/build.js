@@ -59,8 +59,10 @@ class BuildStore extends Store {
   }
 
   updateBuild(build) {
+    let ix = this.state.builds.get(build.project).findIndex(b => b.id === build.id)
+    if (ix === -1) return console.warn('got update for unknown build')
     this.setState({
-      builds: this.state.builds.setIn([build.project, build.id], build)
+      builds: this.state.builds.setIn([build.project, ix], build)
     })
   }
 

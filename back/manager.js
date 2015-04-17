@@ -184,12 +184,11 @@ export default class Manager {
     let section = null
     r.pipe({
       emit(evt, val) {
-        // console.log('evt', evt, val)
         if (evt === 'section') section = val
         this_.emit(data.id, 'build:event', {
           build: data.id,
           project: project.id,
-          event: {evt, val, section}
+          event: {evt, val, section, time: Date.now()}
         })
       }
     })
@@ -215,7 +214,7 @@ export default class Manager {
       } else {
         data.status = 'succeeded'
       }
-      data.events = aggEvents(r.history)
+      data.events = aggEvents(r.history, null, true)
       data.finished = Date.now()
       data.duration = data.finished - data.started
       this.emit('build:status', {project: project.id, build: data.id, duration: data.duration, status: data.status})
@@ -225,6 +224,8 @@ export default class Manager {
       })
       this.db.put('builds', data.id, data)
         .then(_ => {
+          console.log('BUILD UPDATE')
+          console.log(JSON.stringify(data, null, 2))
           this.emit('build:update', data)
           this.running[data.id] = null
         })

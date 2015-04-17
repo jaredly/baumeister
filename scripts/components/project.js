@@ -82,7 +82,10 @@ export default class Project extends React.Component {
     return <div className={classnames('Project', this.props.isOpen && 'Project-open')}>
       <div onClick={this._toggleOpen.bind(this)} className='Project_head'>
         <span className={classnames('Project_status', 'Project_status-' + (project.latestBuild ? project.latestBuild.status : 'inactive'))}>
-          {project.latestBuild && smallT(project.latestBuild.duration)}
+          {project.latestBuild && (
+            project.latestBuild.status === 'running' ?
+              <i className='fa fa-cog fa-spin'/>
+            : smallT(project.latestBuild.duration))}
         </span>
         <span className='Project_name'>{project.name}</span>
         <span className='flex-spacer'/>

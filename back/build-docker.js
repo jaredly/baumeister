@@ -6,15 +6,15 @@ export default function buildDocker(docker, stream, config, out, done) {
   let err = null
   const sid = uuid()
   const start = Date.now()
-  out.emit('stream-start', {
-    id: sid, 
-    time: start,
-    title: 'building docker image',
-  })
   docker.buildImage(stream, config, (err, stream) => {
     if (err) {
-      return done(new Error('failed to build: ' + err.message))
+      return done(new Error('failed to build docker image: ' + err.message))
     }
+    out.emit('stream-start', {
+      id: sid, 
+      time: start,
+      title: 'building docker image',
+    })
     stream
       .pipe(es.split())
       .pipe(es.parse())
@@ -33,7 +33,7 @@ export default function buildDocker(docker, stream, config, out, done) {
           duration: dur,
           error: err ? err.error : null,
         })
-        done(err)
+        done(null, 27)
       }))
   })
 }

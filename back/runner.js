@@ -75,8 +75,8 @@ export default class Runner extends Replayable {
       if (err) return finish(err)
       this.getProject((err) => {
         if (err) return finish(err)
-        this.prepareImage((err, name) => {
-          if (err) return finish(err)
+        this.prepareImage((err, exitCode, name) => {
+          if (err || exitCode) return finish(err, exitCode)
           this.test(name, finish)
         })
       })
@@ -146,12 +146,12 @@ export default class Runner extends Replayable {
     this.emit('section', 'prepare-image')
     if (this.project.build.prefab) {
       this.emit('info', 'Using prefab image: ' + this.project.build.prefab)
-      return done(null, this.project.build.prefab)
+      return done(null, null, this.project.build.prefab)
     }
     const imname = 'docker-ci/' + this.project.name + ':test'
     if (!this.project.build.noRebuild) {
-      return this.build(imname, err => {
-        done(err, imname)
+      return this.build(imname, (err, exitCode) => {
+        done(err, exitCode, imname)
       })
     }
     this.docker.listImages((err, images) => {
@@ -160,10 +160,10 @@ export default class Runner extends Replayable {
         im => im.RepoTags.indexOf(imname) !== -1)
       if (!needToBuild) {
         this.emit('info', `Image ${imname} already built`)
-        return done(err, imname)
+        return done(err, null, imname)
       }
-      this.build(imname, err => {
-        done(err, imname)
+      this.build(imname, (err, exitCode) => {
+        done(err, exitCode, imname)
       })
     })
   }
@@ -178,6 +178,7 @@ export default class Runner extends Replayable {
       if (err) return done(err)
       this.emit('dockerfile', dockerText)
 
+      console.log("BUILD TONG SFKDSLF")
       buildDocker(this.docker, stream, {
         dockerfile: this.project.build.dockerfile || 'Dockerfile',
         t: imname,

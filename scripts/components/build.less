@@ -1,7 +1,8 @@
 
 .Build_head {
   position: absolute;
-  top: -30px;
+  top: -43px;
+  line-height: 35px;
 }
 
 .Build_events > li {
@@ -13,41 +14,6 @@
 
   &:last-of-type {
     margin-bottom: 0;
-  }
-}
-
-.Evt-config-error,
-.Evt-interrupt,
-.Evt-info {
-  background-color: #ddd;
-  color: #555;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-weight: bold;
-  text-shadow: 1px 1px 0px rgb(182, 208, 255);
-}
-
-.Evt-interrupt {
-  background-color: orange;
-  color: white;
-  padding: 10px 20px;
-  font-size: 30px;
-  text-shadow: 2px 2px 3px black;
-}
-
-.Evt-config-error {
-  background-color: orange;
-  padding: 10px 20px;
-  text-shadow: none;
-  color: white;
-
-  &-title {
-    text-shadow: 2px 2px 3px black;
-    color: white;
-    margin-bottom: 10px;
-    font-weight: bold;
-    display: block;
-    font-size: 30px;
   }
 }
 
@@ -70,58 +36,11 @@
   }
 }
 
-.Stream {
-  background: black;
-  border-radius: 4px;
-  box-shadow: -3px -3px 0px rgba(0, 255, 0, .5) inset;
-  padding-bottom: 5px;
-}
-
-.Stream_duration {
-  float: right;
-}
-
-.Stream_output {
-  white-space: pre-wrap;
-  font-family: monospace;
-  color: white;
-  padding: 5px 10px;
-}
-
-.Stream_title {
-  color: #6cf;
-  font-family: monospace;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.Stream_end {
-  color: white;
-  padding: 10px 20px;
-  border-radius: 10px;
-  margin: 5px 10px 5px;
-  font-size: 18px;
-  font-weight: bold;
-  text-shadow: 2px 2px 1px black;
-
-  &-success {
-    background: green;
-  }
-  &-running {
-    background: blue;
-  }
-  &-error {
-    background: red;
-  }
-}
-
 ul.Build_events {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    padding: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  padding: 10px;
 }
 
 ul.Build_sections {
@@ -131,19 +50,27 @@ ul.Build_sections {
 }
 
 li.Build_section {
-    /* margin: 10px 0; */
-    border-radius: 4px;
-    box-shadow: 0 0 10px #ccc;
+  border-radius: 2px;
+  box-shadow: 0 1px 5px #ccc;
+
+  &:not(:last-child) {
+    margin-bottom: 15px;
+  }
 }
 
 .Build_section_title {
-    padding: 10px 15px;
-    background-color: #D28F00;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    text-shadow: 1px 1px 2px rgb(255, 202, 120);
-    font-size: 120%;
-    font-weight: bold;
-    color: black;
+  padding: 10px 15px;
+  // background-color: #D28F00;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  text-shadow: 1px 1px 2px rgb(255, 202, 120);
+  font-size: 120%;
+  font-weight: bold;
+  color: black;
+  cursor: pointer;
+}
+
+.Build_section_time {
+  float: right;
 }
 

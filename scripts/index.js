@@ -10,7 +10,14 @@ import Api from './api'
 const api = new Api()
 const flux = new CiFlux(api)
 
-Router.run(routes, Handler => {
+const router = Router.create({
+  routes,
+  scrollBehavior: {
+    updateScrollPosition: function () {}
+  }
+})
+
+router.run(Handler => {
   React.render(<FluxComponent flux={flux} connectToStores={['config']}>
     <Handler api={api}/>
   </FluxComponent>, document.getElementById('root'));

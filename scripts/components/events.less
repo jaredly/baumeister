@@ -1,0 +1,52 @@
+
+@import (reference) "../lib/colors";
+
+.Evt-server-error,
+.Evt-config-error,
+.Evt-interrupt,
+.Evt-info {
+  background-color: #ddd;
+  color: #555;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  text-shadow: 1px 1px 0px rgb(182, 208, 255);
+}
+
+.Evt-interrupt {
+  background-color: @st-errored-light;;
+  color: white;
+  padding: 10px 20px;
+  font-size: 30px;
+  text-shadow: 2px 2px 3px black;
+}
+
+.Evt-server-error,
+.Evt-config-error {
+  background-color: @st-errored-light;
+  padding: 10px 20px;
+  text-shadow: none;
+  color: @dark-text;;
+
+  &-title {
+    text-shadow: 2px 2px 3px black;
+    color: white;
+    margin-bottom: 10px;
+    font-weight: bold;
+    display: block;
+    font-size: 30px;
+  }
+}
+
+.Evt-server-error {
+  font-family: @mono-font;
+  background-color: @st-failed;
+  white-space: pre;
+  overflow: auto;
+  color: white;
+
+  &-title {
+    font-family: @base-font;
+  }
+}
+
