@@ -4,6 +4,7 @@ import {RouteHandler, Link} from 'react-router'
 import FluxComponent from 'flummox/component'
 import {Form, Radio} from '../lib/form'
 import mmSS from '../lib/mmSS'
+import classnames from 'classnames'
 
 import './app.less'
 
@@ -43,7 +44,7 @@ export default class App extends React.Component {
         initialData: store.getConfig()
       })
     }}>
-      <Form onSubmit={this.saveConfig.bind(this)}>
+      <Form className='GlobalConfig' onSubmit={this.saveConfig.bind(this)}>
         <h1>Global Configuration</h1>
         <Radio
           name=''
@@ -62,7 +63,7 @@ export default class App extends React.Component {
           >
           {null}
         </Radio>
-        <button>Save</button>
+        <button className='Button GlobalConfig_save'>Save</button>
       </Form>
     </FluxComponent>
   }
@@ -77,7 +78,7 @@ export default class App extends React.Component {
           <Link to="latest">Latest build</Link>
         </nav>
         */}
-       <button onClick={_ => this.toggleConfig()}>Config</button>
+       <button className={classnames('App_header_button', this.state.config && 'App_header_button-active')} onClick={_ => this.toggleConfig()}>Config</button>
       </header>
       <section className='App_main'>
         {this.state.config && this.renderConfig()}

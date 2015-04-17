@@ -1,6 +1,9 @@
 
 import React from 'react'
 import ProjectConfig from './project-config'
+import classnames from 'classnames'
+
+import './new-project.less'
 
 export default class NewProject extends React.Component {
   constructor(props) {
@@ -26,10 +29,11 @@ export default class NewProject extends React.Component {
   }
 
   render() {
-    return <div className='Project NewProject'>
+    return <div className={classnames('Project NewProject', this.state.open && 'Project-open')}>
       <div className='Project_head NewProject_head'
         onClick={this.toggleOpen.bind(this)}
         >
+        <i className='fa fa-plus'/>
         New Project
       </div>
       {this.state.open &&

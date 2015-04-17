@@ -1,15 +1,18 @@
 
 import tar from 'tar-stream'
 import tarfs from 'tar-fs'
-import fs from 'fs'
 import path from 'path'
+import fs from 'fs'
+
+import ConfigError from './config-error'
 
 export default function getContext(project, done) {
   const name = project.build.dockerfile || 'Dockerfile'
   const fpath = path.join(project.source.path, name)
   fs.readFile(fpath, (err, data) => {
     if (err) {
-      return done(new Error(`Dockerfile ${fpath} not found!`))
+      console.log('Failed to get dockerfile', err)
+      return done(new ConfigError(`Dockerfile ${fpath} not found!`))
     }
     const dockerText = data.toString()
     if (project.build.context === true) {

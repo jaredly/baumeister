@@ -71,6 +71,12 @@ export default class Build extends React.Component {
         <pre>{evt.val.trim()}</pre>
       </li>
     }
+    if (evt.evt === 'config-error') {
+      return <li className='Evt Evt-config-error'>
+        <span className='Evt-config-error-title'>Configuration Error</span>
+        {evt.val}
+      </li>
+    }
     if (evt.evt === 'status') return
     return <li className='Evt'>{evt.evt}: {evt.val}</li>
   }
@@ -88,7 +94,7 @@ export default class Build extends React.Component {
     const build = this.props.build
     return <div className='Build'>
       <div className='Build_head'>
-      {build.status === 'running' && <button onClick={this.props.onStop}>Stop</button>}
+        {build.status === 'running' && <button onClick={this.props.onStop}>Stop</button>}
       </div>
 
       <ul className='Build_sections'>

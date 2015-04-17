@@ -1,14 +1,15 @@
 
 import Docker from 'dockerode'
+import path from 'path'
+import fs from 'fs'
 
 import assign from 'object-assign'
 import providers from './providers'
 import Replayable from './replayable'
 import buildDocker from './build-docker'
+import ConfigError from './config-error'
 import getContext from './get-context'
 import runDocker from './run-docker'
-import path from 'path'
-import fs from 'fs'
 
 function ensureDir(dir, done) {
   fs.exists(dir, exists => {
@@ -61,14 +62,22 @@ export default class Runner extends Replayable {
   }
 
   run(done) {
+    let finish = (err, exitCode) => {
+      if (err instanceof ConfigError) {
+        this.emit('config-error', {message: err.message, stack: err.stack})
+      } else if (err) {
+        this.emit('server-error', {message: err.message, stack: err.stack})
+      }
+      done(err, exitCode)
+    }
     this.emit('section', 'get-project')
     this.ensureDataContainers(err => {
-      if (err) return done(err)
+      if (err) return finish(err)
       this.getProject((err) => {
-        if (err) return done(err)
+        if (err) return finish(err)
         this.prepareImage((err, name) => {
-          if (err) return done(err)
-          this.test(name, done)
+          if (err) return finish(err)
+          this.test(name, finish)
         })
       })
     })
@@ -112,13 +121,13 @@ export default class Runner extends Replayable {
     }
 
     if (!this.basePath) {
-      throw new Error('No basepath specified')
+      throw new ConfigError('No basepath specified')
     }
     const dir = path.join(this.basePath, this.project.id.replace(/:/, '_'))
 
     const pro = providers[this.project.source.provider]
     if (!pro) {
-      const err = new Error(`Unknown provider ${this.project.source.provider}`)
+      const err = new ConfigError(`Unknown provider ${this.project.source.provider}`)
       this.emit('error', err.message)
       return done(err)
     }
@@ -161,7 +170,7 @@ export default class Runner extends Replayable {
 
   build(imname, done) {
     if (!this.project.source.path) {
-      return done(new Error('providers not yet supported'))
+      return done(new ConfigError('providers not yet supported'))
     }
     this.emit('info', contextMessage(imname, this.project.build.context))
 
@@ -190,18 +199,12 @@ export default class Runner extends Replayable {
     // TODO maybe get more fancy here at some point
     runDocker(this.docker, config, this, (err, exitCode) => {
       if (err) this.emit('status', 'test:errored')
-      else if (exitCode !== 0) this.emit('status', 'test:failed')
-      else this.emit('status', 'test:passed')
+      else if (exitCode !== 0) {
+        this.emit('status', 'test:failed')
+      } else {
+        this.emit('status', 'test:passed')
+      }
       done(err, exitCode)
-      /*
-      this.emit('section', 'cleanup')
-      runDocker(this.docker, {
-        path: this.state.path,
-        image: name,
-        rmOnSuccess: true,
-        cmd: 'chown -R `stat -c "%u:%g" /project` /project'
-      }, this, _ => done(err, exitCode))
-      */
     })
   }
 }

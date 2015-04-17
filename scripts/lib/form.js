@@ -43,7 +43,6 @@ class Form extends React.Component {
 function formulate(data, setter, submitter) {
   return function (props, type) {
     if (type === 'button') {
-      console.log('button', props)
       if (props.onClick) return null
       return {
         onClick: e => {

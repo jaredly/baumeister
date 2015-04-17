@@ -9,6 +9,8 @@ import Ticker from '../lib/ticker'
 import BuildView from './build-view'
 import ProjectConfig from './project-config'
 
+import './project.less'
+
 export default class Project extends React.Component {
   constructor(props) {
     super(props)
@@ -73,8 +75,8 @@ export default class Project extends React.Component {
         <span className='flex-spacer'/>
         {project.latestBuild && project.latestBuild.status === 'running' ?
           <Ticker className='Project_ticker' start={project.latestBuild.started}/> : null}
-        {(!project.latestBuild || project.latestBuild.status !== 'running') ? <button onClick={ e => {e.preventDefault();e.stopPropagation();this._startBuild()} }>
-          Start Build
+        {(!project.latestBuild || project.latestBuild.status !== 'running') ? <button className="Project_start" onClick={ e => {e.preventDefault();e.stopPropagation();this._startBuild()} }>
+          <i className='fa fa-play'/>
         </button> : null}
       </div>
       {this.props.isOpen &&

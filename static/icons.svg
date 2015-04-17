@@ -14,7 +14,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.5 r10040"
-   sodipodi:docname="New document 1">
+   sodipodi:docname="icons.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -25,11 +25,11 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="15.839192"
-     inkscape:cx="90.186889"
-     inkscape:cy="932.67959"
+     inkscape:cx="87.661508"
+     inkscape:cy="930.15421"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
-     showgrid="true"
+     showgrid="false"
      inkscape:snap-bbox="true"
      inkscape:window-width="1920"
      inkscape:window-height="1031"
@@ -58,16 +58,16 @@
      id="layer1">
     <path
        sodipodi:type="arc"
-       style="fill:#00ff00;"
+       style="fill:#00ff00;stroke:#338000"
        id="path2987"
        sodipodi:cx="87.5"
        sodipodi:cy="109.86218"
        sodipodi:rx="7.5"
        sodipodi:ry="7.5"
        d="m 95,109.86218 a 7.5,7.5 0 1 1 -15,0 7.5,7.5 0 1 1 15,0 z"
-       inkscape:export-filename="/home/jared/clone/nm/ci/icon-succeeded.png"
-       inkscape:export-xdpi="192"
-       inkscape:export-ydpi="192" />
+       inkscape:export-filename="/home/jared/clone/nm/ci/static/icon-succeeded.png"
+       inkscape:export-xdpi="180"
+       inkscape:export-ydpi="180" />
     <path
        style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 83,110.36218 3,3 6,-6"
@@ -78,16 +78,16 @@
        inkscape:export-xdpi="192"
        inkscape:export-ydpi="192" />
     <path
-       inkscape:export-ydpi="192"
-       inkscape:export-xdpi="192"
-       inkscape:export-filename="/home/jared/clone/nm/ci/icon-failed.png"
+       inkscape:export-ydpi="180"
+       inkscape:export-xdpi="180"
+       inkscape:export-filename="/home/jared/clone/nm/ci/static/icon-failed.png"
        d="m 95,109.86218 a 7.5,7.5 0 1 1 -15,0 7.5,7.5 0 1 1 15,0 z"
        sodipodi:ry="7.5"
        sodipodi:rx="7.5"
        sodipodi:cy="109.86218"
        sodipodi:cx="87.5"
        id="path2991"
-       style="fill:#ff0000"
+       style="fill:#ff0000;stroke:#800000"
        sodipodi:type="arc"
        transform="translate(20,0)" />
     <path
@@ -111,24 +111,24 @@
     <path
        transform="translate(15,20.000003)"
        sodipodi:type="arc"
-       style="fill:#ff6600"
+       style="fill:#ff6600;stroke:#803300"
        id="path2997"
        sodipodi:cx="87.5"
        sodipodi:cy="109.86218"
        sodipodi:rx="7.5"
        sodipodi:ry="7.5"
        d="m 95,109.86218 a 7.5,7.5 0 1 1 -15,0 7.5,7.5 0 1 1 15,0 z"
-       inkscape:export-filename="/home/jared/clone/nm/ci/icon-errored.png"
-       inkscape:export-xdpi="192"
-       inkscape:export-ydpi="192" />
+       inkscape:export-filename="/home/jared/clone/nm/ci/static/icon-errored.png"
+       inkscape:export-xdpi="180"
+       inkscape:export-ydpi="180" />
     <path
        style="fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 97.50508,129.80409 9.99996,0"
        id="path2999"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc"
-       inkscape:export-filename="/home/jared/clone/nm/ci/icon-errored.png"
-       inkscape:export-xdpi="192"
-       inkscape:export-ydpi="192" />
+       inkscape:export-filename="/home/jared/clone/nm/ci/static/icon-errored.png"
+       inkscape:export-xdpi="180"
+       inkscape:export-ydpi="180" />
   </g>
 </svg>

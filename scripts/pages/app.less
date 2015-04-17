@@ -1,12 +1,53 @@
 
+// Noto+Sans|Droid+Sans|Lato|PT+Sans|Muli|Montserrat|Open+Sans|Roboto|Oxygen|Nunito|
+@import url(http://fonts.googleapis.com/css?family=Raleway:400,600);
+@import url(//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css);
+
 html,
 body {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
+
+  /*
+  font-family: Noto Sans;
+  font-family: muli;
+  font-family: open sans;
+  font-family: oxygen;
+  */
+  font-family: raleway;
+}
+
+.Button {
+  background-color: #E1F5FE;
+  border: none;
+  padding: 5px 10px;
+  font-size: 18px;
+  border-radius: 5px;
+  box-shadow: none;
+  transition: background-color .2s ease, box-shadow .2s ease;
+
+  &:hover, &:focus {
+    background-color: #B3E5FC;
+    box-shadow: 0 0 5px #aaa;
+  }
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
 }
 
 .App {
+}
+
+.GlobalConfig {
+  border-bottom: 5px solid #eee;
+  padding-bottom: 20px;
+}
+
+.GlobalConfig_save {
+  margin-top: 10px;
 }
 
 .App_header {
@@ -38,6 +79,21 @@ body {
   }
 }
 
+.App_header_button {
+  background: transparent;
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 0 20px;
+  outline: none;
+
+  &-active {
+    background: white;
+    color: black;
+  }
+}
+
 .App_main {
-  padding: 30px;
+  max-width: 1000px;
+  margin: 0 auto;
 }

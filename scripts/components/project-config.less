@@ -65,8 +65,25 @@
 }
 
 .ProjectConfig {
-  padding: 20px 20px;
+  padding: 0 15px 15px;
   border-radius: 5px;
+
+  &_top {
+    display: flex;
+  }
+
+  &_name {
+    flex: 1;
+  }
+
+  &_buttons {
+    padding-top: 15px;
+    font-size: 19px;
+
+    button {
+      margin-left: 5px;
+    }
+  }
 
   label {
     cursor: pointer;

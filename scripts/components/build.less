@@ -1,4 +1,9 @@
 
+.Build_head {
+  position: absolute;
+  top: -30px;
+}
+
 .Build_events > li {
   margin: 10px 0;
 
@@ -11,6 +16,7 @@
   }
 }
 
+.Evt-config-error,
 .Evt-interrupt,
 .Evt-info {
   background-color: #ddd;
@@ -22,11 +28,27 @@
 }
 
 .Evt-interrupt {
-  background-color: red;
+  background-color: orange;
   color: white;
   padding: 10px 20px;
   font-size: 30px;
   text-shadow: 2px 2px 3px black;
+}
+
+.Evt-config-error {
+  background-color: orange;
+  padding: 10px 20px;
+  text-shadow: none;
+  color: white;
+
+  &-title {
+    text-shadow: 2px 2px 3px black;
+    color: white;
+    margin-bottom: 10px;
+    font-weight: bold;
+    display: block;
+    font-size: 30px;
+  }
 }
 
 .Dockerfile {

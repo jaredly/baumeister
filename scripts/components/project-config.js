@@ -63,9 +63,17 @@ export default class ProjectConfig extends React.Component {
 
   render() {
     return <Form className='ProjectConfig' initialData={this.props.project} onSubmit={this.onSubmit.bind(this)}>
-      <label className='text-label'>Project Name
-        <input type='text' className='ProjectConfig_name' name="name" title="Name" placeholder="Project name"/>
-      </label>
+      <div className='ProjectConfig_top'>
+        <label className='text-label ProjectConfig_name'>Project Name
+          <input type='text' className='ProjectConfig_name' name="name" title="Name" placeholder="Project name"/>
+        </label>
+
+        <div className='ProjectConfig_buttons'>
+          <button>{this.props.actionText}</button>
+          {this.props.onClear &&
+            <button type='button' onClick={this.props.onClear}>Clear Cache</button>}
+        </div>
+      </div>
 
       <Radio
         name='source'
@@ -164,9 +172,6 @@ export default class ProjectConfig extends React.Component {
           </label>
         </div>
       </section>
-      <button>{this.props.actionText}</button>
-      {this.props.onClear &&
-        <button type='button' onClick={this.props.onClear}>Clear Cache</button>}
     </Form>
   }
 }

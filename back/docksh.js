@@ -139,7 +139,7 @@ export default class Docksh {
                   time: end,
                   duration: dur,
                 })
-                done()
+                done(null, data.ExitCode)
               })
             })
         })

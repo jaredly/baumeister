@@ -25,6 +25,7 @@ export default class Manager {
       .then(builds => {
         let zombies = builds.filter(b => b.status == 'running')
         if (!zombies) return
+        console.log('cleaning up zombies')
         zombies.forEach(z => {
           z.finished = new Date()
           z.status = 'errored'
@@ -201,9 +202,14 @@ export default class Manager {
 
     r.run((err, exitCode) => {
       if (err || interrupted) {
+        console.log('ERR build', err, interrupted)
         data.status = 'errored'
-      } else if (exitCode !== 0) {
+        data.interrupted = true
+        data.error = err
+      } else if (exitCode) {
+        console.log('Nonzero exit code', exitCode)
         data.status = 'failed'
+        data.error = 'Nonzero status code'
       } else {
         data.status = 'succeeded'
       }
@@ -217,7 +223,7 @@ export default class Manager {
       })
       this.db.put('builds', data.id, data)
         .then(_ => {
-          this.emit(data.id, 'build:update', data)
+          this.emit('build:update', data)
           this.running[data.id] = null
         })
     })
