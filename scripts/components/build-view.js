@@ -58,7 +58,7 @@ export default class BuildView extends React.Component {
 
   render() {
     if (!this.props.builds) {
-      return <span>Loading</span>
+      return <span className='BuildView BuildView-loading'>Loading</span>
     }
     if (!this.props.builds.size) {
       return <div className='BuildView'>

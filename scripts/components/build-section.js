@@ -63,7 +63,7 @@ export default class BuildSection extends React.Component {
   render() {
     const {section} = this.props
     if (!section) return <span/>
-    return <li className='Build_section'>
+    return <li className={classnames('Build_section', !this.state.open && 'Build_section-closed')}>
       <div onClick={this.toggleOpen.bind(this)} className='Build_section_title'>
         {section.name}
         <span className='Build_section_time'>
