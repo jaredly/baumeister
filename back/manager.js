@@ -48,6 +48,13 @@ export default class Manager {
   newConnection(socket) {
     const client = new Client(socket)
     this.clients.push(client)
+    client.on('build:start', project => {
+      this.startBuild(project, id => {
+        this.unSub(client.openBuild, client)
+        client.openBuild = id
+        this.addSub(client.openBuild, client)
+      })
+    })
     client.on('build:view', val => {
       if (!this.running[val]) {
         return console.error('NO BUILD', val)
@@ -251,7 +258,7 @@ export default class Manager {
     })
   }
 
-  startBuild(id) {
+  startBuild(id, onId) {
     return this.getProject(id)
       .then(project => {
         if (!project) throw new Error('Project not found')
@@ -267,6 +274,7 @@ export default class Manager {
               num,
               events: null,
             }
+            onId(data.id)
             project.latestBuild = data.id
             project.modified = data.started
             return this.db.put('builds', data.id, data)

@@ -56,6 +56,31 @@ button {
   margin-top: 10px;
 }
 
+.App_flex {
+  flex: 1;
+}
+
+.App_conn {
+  width: 15px;
+  height: 15px;
+  background-color: white;
+  border-radius: 20px;
+  margin: 10px 15px;
+  border: 2px solid white;
+
+  &-connecting {
+    background-color: blue;
+  }
+
+  &-connected {
+    background-color: green;
+  }
+
+  &-disconnected {
+    background-color: red;
+  }
+}
+
 .App_header {
   display: flex;
   background-color: @base;

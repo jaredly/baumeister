@@ -17,7 +17,8 @@ export default class App extends React.Component {
     window.addEventListener('blur', () => focused = false)
     props.api.on('build:done', data => {
       if (focused) return
-      if (this.props.config.notifications === 'all') {
+      if (this.props.config.notifications === 'all' ||
+         (this.props.config.Notifications === 'failures' && data.build.status === 'failed')) {
         const title = `Build ${data.build.num} for ${data.project.name} ${data.build.status}`
         const body = `Took ${mmSS(data.build.duration)}`
         const note = new Notification(title, {
@@ -27,7 +28,13 @@ export default class App extends React.Component {
         setTimeout(_ => note.close(), 5000)
       }
     })
-    this.state = {config: null}
+
+    props.api.on('ws:state', state => {
+      this.setState({
+        connState: state,
+      })
+    })
+    this.state = {config: null, connState: this.props.api.state}
   }
 
   toggleConfig() {
@@ -37,6 +44,14 @@ export default class App extends React.Component {
   saveConfig(data) {
     this.props.flux.getActions('config').save(data)
     this.setState({config: false})
+  }
+
+  renderConnState() {
+    const st = this.state.connState
+    if (st === 'connecting') return <span className='App_conn App_conn-connecting'/>
+    if (st === 'connected') return <span className='App_conn App_conn-connected'/>
+    if (st === 'disconnected') return <span className='App_conn App_conn-disconnected'/>
+    return <span className='App_conn'>Websocket disconnected....</span>
   }
 
   renderConfig() {
@@ -80,6 +95,10 @@ export default class App extends React.Component {
         </nav>
         */}
        <button className={classnames('App_header_button', this.state.config && 'App_header_button-active')} onClick={_ => this.toggleConfig()}>Config</button>
+
+       <span className='App_flex'/>
+
+       {this.renderConnState()}
       </header>
       <section className='App_main'>
         {this.state.config && this.renderConfig()}

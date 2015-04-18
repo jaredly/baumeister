@@ -27,15 +27,8 @@ class ProjectActions extends Actions {
     }
   }
 
-  async startBuild(id) {
-    try {
-      return await this.api.startBuild(id)
-    } catch (e) {
-      console.error('failed to start build')
-      console.log(e)
-      console.log(e.stack)
-      throw e
-    }
+  startBuild(id) {
+    this.api.startBuild(id)
   }
 
   newProject(project) {

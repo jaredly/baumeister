@@ -33,7 +33,7 @@ export default function buildDocker(docker, stream, config, out, done) {
           duration: dur,
           error: err ? err.error : null,
         })
-        done(null, 27)
+        done(null, err ? 27 : null)
       }))
   })
 }

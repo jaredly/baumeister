@@ -20,15 +20,42 @@ export default class Api extends EventEmitter {
   constructor() {
     super()
 
-    this.ws = new WebSocket('ws://' + HOST + '/api/ws')
-    this.ws.addEventListener('message', this.onMessage.bind(this))
-    this.ws.addEventListener('error', this.onError.bind(this))
-    this.ws.addEventListener('close', this.onClose.bind(this))
+    this.open = false
+    this.state = 'connecting'
+    this.init()
+  }
 
-    // TODO connect websocket
+  setState(state) {
+    this.state = state
+    this.emit('ws:state', state)
+  }
+
+  init() {
+    this.setState('connecting')
+    let ws = new WebSocket('ws://' + HOST + '/api/ws')
+    ws.addEventListener('open', () => {
+      this.open = true
+      this.setState('connected')
+      this.ws = ws
+      this.ws.addEventListener('message', this.onMessage.bind(this))
+      this.ws.addEventListener('error', this.onError.bind(this))
+      this.ws.removeEventListener('close', onClose)
+      this.ws.addEventListener('close', this.onClose.bind(this))
+    })
+    let onClose = () => {
+      this.setState('disconnected')
+      console.log('no connection')
+      setTimeout(() => {
+        this.init()
+      }, 1500)
+    }
+    ws.addEventListener('close', onClose)
   }
 
   send(evt, val) {
+    if (!this.open) {
+      return console.warn('not connected...')
+    }
     const data = JSON.stringify({evt, val})
     this.ws.send(data)
   }
@@ -38,10 +65,16 @@ export default class Api extends EventEmitter {
     this.emit(data.evt, data.val)
   }
 
-  onError(err) {
+  onClose() {
+    console.warn('SOCKET CLSOED!')
+    this.setState('disconnected')
+    this.open = false
+    setTimeout(() => {
+      this.init()
+    }, 1500)
   }
 
-  onClose() {
+  onError(err) {
   }
 
   newProject(data) {
@@ -69,7 +102,7 @@ export default class Api extends EventEmitter {
   }
 
   startBuild(id) {
-    return apost(`/api/builds/${id}`)
+    this.send('build:start', id)
   }
 
   clearCache(id) {
