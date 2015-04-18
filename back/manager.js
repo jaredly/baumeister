@@ -236,7 +236,7 @@ export default class Manager {
       } else {
         data.status = 'succeeded'
       }
-      data.events = aggEvents(r.history, null, true)
+      data.events = aggEvents(r.history, null, true, err || exitCode)
       data.finished = Date.now()
       data.duration = data.finished - data.started
       this.emit('build:status', {project: project.id, build: data.id, duration: data.duration, status: data.status})

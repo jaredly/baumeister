@@ -13,13 +13,20 @@ export default class BuildSection extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      open: props.section.name === 'test' || !props.section.end,
+      open: props.section.name === 'test' || !props.section.end || props.section.errored,
       running: !props.section.end,
     }
   }
 
   componentWillReceiveProps(props) {
-    if (props.section.name !== 'test' && props.section.end && this.state.running) {
+    if (props.section !== this.props.section) {
+      this.setState({
+        open: props.section.name === 'test' || !props.section.end || props.section.errored,
+        running: !props.section.end,
+      })
+      return
+    }
+    if (props.section.name !== 'test' && props.section.end && this.state.running && !props.section.errored) {
       this.setState({open: false, running: false})
     }
   }
