@@ -94,6 +94,8 @@ li.Build_section {
     &:after {
       content: ' ';
       position: absolute;
+      transform: translateY(-6px);
+      transition: transform .2s ease;
       left: 2px;
       right: 2px;
       background-color: @base-light;
@@ -103,7 +105,9 @@ li.Build_section {
       top: 100%;
       height: 10px;
       box-shadow: 0 0 3px @base-light;
-      margin-top: -6px;
+    }
+    &:hover:after {
+      transform: translateY(-3px);
     }
   }
 

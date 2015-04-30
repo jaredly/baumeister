@@ -2,13 +2,12 @@
 import React from 'react'
 import {Link} from 'react-router'
 import classnames from 'classnames'
+import {fluxify} from 'flammable/react'
 
 import Build from './build'
 
 import './build-view.less'
 
-// TODO TODO TODO TODO get this going
-/*
 @fluxify({
   data(props) {
     return {
@@ -18,15 +17,19 @@ import './build-view.less'
     }
   },
   actions(props) {
-    return {}
+    return {
+      getBuilds: ['builds.fetch', props.projectId],
+      setOpenBuild: 'builds.setOpen',
+      stopBuild: ['builds.stop', props.projectId],
+    }
   }
 })
-*/
 export default class BuildView extends React.Component {
   componentDidMount() {
     if (this.props.builds) {
       this.setOpenBuild(null)
     }
+    this.props.getBuilds()
     /*
     setTimeout(() => {
       this.props.flux.getActions('builds')
@@ -44,6 +47,7 @@ export default class BuildView extends React.Component {
   setOpenBuild(id, builds) {
     const build = this.getCurrentBuild(id, builds)
     if (!build) return console.warn('tried to open unknown build', id)
+    this.props.setOpenBuild(build.id)
     // this.props.flux.getActions('builds').setOpenBuild(build.id)
     if (id) {
       this.props.router.replaceWith('build', {
@@ -55,6 +59,7 @@ export default class BuildView extends React.Component {
   }
 
   onStop(build) {
+    this.props.stopBuild(build.id)
     // this.props.flux.getActions('builds').stopBuild(build.project, build.id)
   }
 
@@ -64,16 +69,23 @@ export default class BuildView extends React.Component {
     }
     builds = builds || this.props.builds
     if (!id) {
-      return builds.get(0)
+      return builds[0]
     }
-    return builds.find(b => b.id === id)
+    for (let i=0; i<builds.length; i++) {
+      if (builds[i].id === id) return builds[i]
+    }
+    throw new Error('id not found')
+  }
+
+  static contextTypes = {
+    router: React.PropTypes.func
   }
 
   render() {
     if (!this.props.builds) {
       return <span className='BuildView BuildView-loading'>Loading</span>
     }
-    if (!this.props.builds.size) {
+    if (!this.props.builds.length) {
       return <div className='BuildView'>
         No builds for this project!
       </div>
@@ -94,9 +106,5 @@ export default class BuildView extends React.Component {
       </ul>
     </div>
   }
-}
-
-BuildView.contextTypes = {
-  router: React.PropTypes.func
 }
 

@@ -35,6 +35,7 @@ export default class ProjectList extends React.Component {
   }
 
   render() {
+    // TODO loading state?
     if (!this.props.projects || !Object.keys(this.props.projects).length) {
       return <span>Loading</span>
     }
@@ -50,7 +51,7 @@ export default class ProjectList extends React.Component {
           onClose={_ => this.onClose()}
           isOpen={open === projects[name].id}
           router={this.context.router}
-          project={projects[name]}/>
+          id={projects[name].id}/>
       </li>)}
       <li className='ProjectList_project'>
         <NewProject/>

@@ -70,12 +70,12 @@ export default class Api extends EventEmitter {
     return this.post('/api/projects/', data)
   }
 
-  updateProject(data) {
+  updateProject(id, data) {
     let payload = assign({}, data)
     if (payload.latestBuild && payload.latestBuild.id) {
       payload.latestBuild = payload.latestBuild.id
     }
-    return this.post(`/api/projects/${data.id}`, payload)
+    return this.post(`/api/projects/${id}`, payload)
   }
 
   stopBuild(project, id) {
@@ -96,14 +96,15 @@ export default class Api extends EventEmitter {
 
   clearCache(id) {
     return this.post(`/api/projects/${id}/clear-cache`)
+      .then(_ => id)
   }
 
   getProjects() {
     return this.get('/api/projects?full=true')
   }
 
-  getBuilds(project) {
-    return this.get(`/api/builds/${project}`)
+  getBuilds(projectId) {
+    return this.get(`/api/builds/${projectId}`)
   }
 
   // utils

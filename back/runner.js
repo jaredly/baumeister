@@ -58,7 +58,13 @@ export default class Runner extends Replayable {
   }
 
   clearCache(done) {
-    this.docker.getContainer(this.cacheContainer).remove({v: 1}, done)
+    this.docker.getContainer(this.cacheContainer).remove({v: 1}, (err, data) => {
+      if (err) {
+        if (err.statusCode === 404) return done()
+        return done(err)
+      }
+      done()
+    })
   }
 
   run(done) {

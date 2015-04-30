@@ -7,6 +7,7 @@ import Ticker from '../lib/ticker'
 
 import BuildView from './build-view'
 import ProjectConfig from './project-config'
+import {fluxify} from 'flammable/react'
 
 import './project.less'
 
@@ -21,6 +22,32 @@ function smallT(ms) {
   return '>1h'
 }
 
+@fluxify({
+  actions(props) {
+    const id = props.id
+    return {
+      startBuild: ['projects.startBuild', id],
+      updateProject: ['projects.update', id],
+      clearCache: ['projects.clearCache', id],
+    }
+  },
+  data(props) {
+    return {
+      projects: {
+        [props.id]: 'project',
+      },
+      projects$status: {
+        [props.id]: {
+          clearCache: {
+            latest: {
+              value: 'cacheStatus',
+            }
+          }
+        }
+      }
+    }
+  }
+})
 export default class Project extends React.Component {
   constructor(props) {
     super(props)
@@ -29,7 +56,7 @@ export default class Project extends React.Component {
 
   _startBuild() {
     this.props.onOpen()
-    this.props.flux.getActions('projects').startBuild(this.props.project.id)
+    this.props.startBuild()
   }
 
   _toggleOpen() {
@@ -45,11 +72,11 @@ export default class Project extends React.Component {
   }
 
   onConfig(data) {
-    this.props.flux.getActions('projects').updateProject(data)
+    this.props.updateProject(data)
   }
 
   onClear() {
-    this.props.flux.getActions('projects').clearCache(this.props.project.id)
+    this.props.clearCache()
   }
 
   renderBody() {
@@ -57,9 +84,14 @@ export default class Project extends React.Component {
       return <ProjectConfig
         actionText='Save'
         onClear={this.onClear.bind(this)}
-        onSubmit={this.onConfig.bind(this)} onClose={this.onCloseConfig.bind(this)} project={this.props.project}/>
+        clearStatus={this.props.project.cache}
+        onSubmit={this.onConfig.bind(this)}
+        onClose={this.onCloseConfig.bind(this)}
+        cacheStatus={this.props.cacheStatus}
+        project={this.props.project}/>
     }
     return <BuildView
+      projectId={this.props.project.id}
       router={this.props.router}
       project={this.props.project}/>
   }

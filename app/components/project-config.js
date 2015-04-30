@@ -8,6 +8,69 @@ import {Radio, Panes, Form} from '../../../form'
 import './project-config.less'
 import '../lib/form.less'
 
+export default class ProjectConfig extends React.Component {
+  constructor(props) {
+    super(props)
+  }
+
+  onSubmit(data, action) {
+    this.props.onClose()
+    this.props.onSubmit(data, action)
+  }
+
+  renderClearButton() {
+    if (!this.props.onClear) return
+    let text = 'Clear Cache'
+    let disabled = false
+    if (this.props.cacheStatus === true) {
+      text = 'Clearing...'
+      disabled = true
+    } else if (this.props.cacheStatus) {
+      text = 'Try Again'
+    }
+    return <button
+      className='Button ProjectConfig_clear'
+      type='button'
+      disabled={disabled}
+      onClick={this.props.onClear}>
+      {text}
+    </button>
+  }
+
+  render() {
+    return <Form className='ProjectConfig' initialData={this.props.project} onSubmit={this.onSubmit.bind(this)}>
+      <Panes
+        formPass={true}
+        defaultPane='general'
+        panes={{
+          general: 'General',
+          plugins: 'Plugins',
+        }}
+      >
+        <div paneId='general'>
+          <div className='ProjectConfig_top'>
+            <label className='text-label ProjectConfig_name'>Project Name
+              <input type='text' className='ProjectConfig_name' name="name" title="Name" placeholder="Project name"/>
+            </label>
+
+            <div className='ProjectConfig_buttons'>
+              <button className='Button'>{this.props.actionText}</button>
+              {this.renderClearButton()}
+            </div>
+          </div>
+          {sourceConfig()}
+          {buildConfig()}
+          {testConfig()}
+        </div>
+        <div paneId='plugins'>
+          Plugins!!!
+          {pluginConfig()}
+        </div>
+      </Panes>
+    </Form>
+  }
+}
+
 const defaultProviderData = {
   git: {
     provider: 'git',
@@ -174,49 +237,4 @@ function pluginConfig() {
   return <div>
     <GitPlugin name='*'/>
   </div>
-}
-
-export default class ProjectConfig extends React.Component {
-  constructor(props) {
-    super(props)
-  }
-
-  onSubmit(data, action) {
-    this.props.onClose()
-    this.props.onSubmit(data, action)
-  }
-
-  render() {
-    return <Form className='ProjectConfig' initialData={this.props.project} onSubmit={this.onSubmit.bind(this)}>
-      <Panes
-        formPass={true}
-        defaultPane='general'
-        panes={{
-          general: 'General',
-          plugins: 'Plugins',
-        }}
-      >
-        <div paneId='general'>
-          <div className='ProjectConfig_top'>
-            <label className='text-label ProjectConfig_name'>Project Name
-              <input type='text' className='ProjectConfig_name' name="name" title="Name" placeholder="Project name"/>
-            </label>
-
-            <div className='ProjectConfig_buttons'>
-              <button className='Button'>{this.props.actionText}</button>
-              {this.props.onClear &&
-                <button className='Button ProjectConfig_clear' type='button' onClick={this.props.onClear}>Clear Cache</button>}
-            </div>
-          </div>
-          {sourceConfig()}
-          {buildConfig()}
-          {testConfig()}
-        </div>
-        <div paneId='plugins'>
-          Plugins!!!
-          {pluginConfig()}
-        </div>
-      </Panes>
-    </Form>
-  }
 }
