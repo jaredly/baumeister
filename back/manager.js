@@ -274,7 +274,7 @@ export default class Manager {
               num,
               events: null,
             }
-            onId(data.id)
+            if (onId) onId(data.id)
             project.latestBuild = data.id
             project.modified = data.started
             return this.db.put('builds', data.id, data)
