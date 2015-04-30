@@ -25,6 +25,8 @@ module.exports = {
       'react$': path.join(__dirname, 'node_modules/react'),
       'react/lib/ReactMount': path.join(__dirname, 'node_modules/react/lib/ReactMount'),
       'react-hot': path.join(__dirname, 'node_modules/react-hot'),
+      'frm$': path.join(__dirname, '../form'),
+      'flammable$': path.join(__dirname, '../flammable'),
     },
   },
   module: {
@@ -34,7 +36,8 @@ module.exports = {
       include: [
         path.join(__dirname, 'app'),
         path.join(__dirname, 'lib'),
-        path.join(__dirname, '../form')
+        path.join(__dirname, '../form'),
+        path.join(__dirname, '../flammable'),
       ]
     }, {
       test: /\.json$/,
