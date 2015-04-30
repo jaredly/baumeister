@@ -1,7 +1,6 @@
 
 import React from 'react'
 import {Link} from 'react-router'
-import FluxComponent from 'flummox/component'
 import classnames from 'classnames'
 
 import Ticker from '../lib/ticker'
@@ -60,15 +59,9 @@ export default class Project extends React.Component {
         onClear={this.onClear.bind(this)}
         onSubmit={this.onConfig.bind(this)} onClose={this.onCloseConfig.bind(this)} project={this.props.project}/>
     }
-    return   <FluxComponent flux={this.props.flux} connectToStores={{
-      builds: store => ({
-        builds: store.getBuilds(this.props.project.id)
-      })
-    }}>
-      <BuildView
-        router={this.props.router}
-        project={this.props.project}/>
-    </FluxComponent>
+    return <BuildView
+      router={this.props.router}
+      project={this.props.project}/>
   }
 
   openConfig(e) {

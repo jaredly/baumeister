@@ -22,11 +22,11 @@ module.exports = {
   resolve: {
     extensions: ['', '.js', '.jsx'],
     alias: {
-      'react$': path.join(__dirname, 'node_modules/react'),
+      'react': path.join(__dirname, 'node_modules/react'),
       'react/lib/ReactMount': path.join(__dirname, 'node_modules/react/lib/ReactMount'),
       'react-hot': path.join(__dirname, 'node_modules/react-hot'),
-      'frm$': path.join(__dirname, '../form'),
-      'flammable$': path.join(__dirname, '../flammable'),
+      'frm': path.join(__dirname, '../form'),
+      'flammable': path.join(__dirname, '../flammable'),
     },
   },
   module: {

@@ -1,22 +1,38 @@
 
 import React from 'react'
 import {Link} from 'react-router'
-import FluxComponent from 'flummox/component'
 import classnames from 'classnames'
 
 import Build from './build'
 
 import './build-view.less'
 
+// TODO TODO TODO TODO get this going
+/*
+@fluxify({
+  data(props) {
+    return {
+      builds: {
+        [props.projectId]: 'builds',
+      }
+    }
+  },
+  actions(props) {
+    return {}
+  }
+})
+*/
 export default class BuildView extends React.Component {
   componentDidMount() {
     if (this.props.builds) {
       this.setOpenBuild(null)
     }
+    /*
     setTimeout(() => {
       this.props.flux.getActions('builds')
         .getBuilds(this.props.project.id)
     }, 0)
+    */
   }
 
   componentWillReceiveProps(nextProps) {
@@ -28,7 +44,7 @@ export default class BuildView extends React.Component {
   setOpenBuild(id, builds) {
     const build = this.getCurrentBuild(id, builds)
     if (!build) return console.warn('tried to open unknown build', id)
-    this.props.flux.getActions('builds').setOpenBuild(build.id)
+    // this.props.flux.getActions('builds').setOpenBuild(build.id)
     if (id) {
       this.props.router.replaceWith('build', {
         project: build.project, build: id})
@@ -39,7 +55,7 @@ export default class BuildView extends React.Component {
   }
 
   onStop(build) {
-    this.props.flux.getActions('builds').stopBuild(build.project, build.id)
+    // this.props.flux.getActions('builds').stopBuild(build.project, build.id)
   }
 
   getCurrentBuild(id, builds) {

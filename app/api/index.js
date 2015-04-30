@@ -4,22 +4,11 @@ import assign from 'object-assign'
 
 import {get, post} from './ajax'
 
-const HOST = 'localhost:3005'
-
-const apost = function () {
-  arguments[0] = 'http://' + HOST + arguments[0]
-  return post.apply(this, arguments)
-}
-
-const aget = function () {
-  arguments[0] = 'http://' + HOST + arguments[0]
-  return get.apply(this, arguments)
-}
-
 export default class Api extends EventEmitter {
-  constructor() {
+  constructor(host) {
     super()
 
+    this.host = host
     this.open = false
     this.state = 'connecting'
     this.init()
@@ -32,7 +21,7 @@ export default class Api extends EventEmitter {
 
   init() {
     this.setState('connecting')
-    let ws = new WebSocket('ws://' + HOST + '/api/ws')
+    let ws = new WebSocket('ws://' + this.host + '/api/ws')
     ws.addEventListener('open', () => {
       this.open = true
       this.setState('connected')
@@ -78,7 +67,7 @@ export default class Api extends EventEmitter {
   }
 
   newProject(data) {
-    return apost('/api/projects/', data)
+    return this.post('/api/projects/', data)
   }
 
   updateProject(data) {
@@ -86,19 +75,19 @@ export default class Api extends EventEmitter {
     if (payload.latestBuild && payload.latestBuild.id) {
       payload.latestBuild = payload.latestBuild.id
     }
-    return apost(`/api/projects/${data.id}`, payload)
+    return this.post(`/api/projects/${data.id}`, payload)
   }
 
   stopBuild(project, id) {
-    return apost(`/api/builds/${project}/${id}/interrupt`)
+    return this.post(`/api/builds/${project}/${id}/interrupt`)
   }
 
   saveConfig(config) {
-    return apost('/api/config', config)
+    return this.post('/api/config', config)
   }
 
   fetchConfig() {
-    return aget('/api/config')
+    return this.get('/api/config')
   }
 
   startBuild(id) {
@@ -106,15 +95,26 @@ export default class Api extends EventEmitter {
   }
 
   clearCache(id) {
-    return apost(`/api/projects/${id}/clear-cache`)
+    return this.post(`/api/projects/${id}/clear-cache`)
   }
 
   getProjects() {
-    return aget('/api/projects?full=true')
+    return this.get('/api/projects?full=true')
   }
 
   getBuilds(project) {
-    return aget(`/api/builds/${project}`)
+    return this.get(`/api/builds/${project}`)
+  }
+
+  // utils
+  post() {
+    arguments[0] = 'http://' + this.host + arguments[0]
+    return post.apply(null, arguments)
+  }
+
+  get() {
+    arguments[0] = 'http://' + this.host + arguments[0]
+    return get.apply(null, arguments)
   }
 }
 

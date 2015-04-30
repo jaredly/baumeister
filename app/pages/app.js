@@ -3,48 +3,21 @@ import './app.less'
 
 import React from 'react'
 import {RouteHandler, Link} from 'react-router'
-import FluxComponent from 'flummox/component'
 import classnames from 'classnames'
 
-import {Form, Radio} from '../../../form'
 import mmSS from '../lib/mmSS'
+
+import AppConfig from '../components/app-config'
 
 
 export default class App extends React.Component {
   constructor(props) {
     super(props)
-    let focused = true
-    window.addEventListener('focus', () => focused = true)
-    window.addEventListener('blur', () => focused = false)
-    props.api.on('build:done', data => {
-      if (focused) return
-      if (this.props.config.notifications === 'all' ||
-         (this.props.config.Notifications === 'failures' && data.build.status === 'failed')) {
-        const title = `Build ${data.build.num} for ${data.project.name} ${data.build.status}`
-        const body = `Took ${mmSS(data.build.duration)}`
-        const note = new Notification(title, {
-          body,
-          icon: `/static/icon-${data.build.status}.png`
-        })
-        setTimeout(_ => note.close(), 5000)
-      }
-    })
-
-    props.api.on('ws:state', state => {
-      this.setState({
-        connState: state,
-      })
-    })
-    this.state = {config: null, connState: this.props.api.state}
+    this.state = {config: null}
   }
 
   toggleConfig() {
     this.setState({config: !this.state.config})
-  }
-
-  saveConfig(data) {
-    this.props.flux.getActions('config').save(data)
-    this.setState({config: false})
   }
 
   renderConnState() {
@@ -53,36 +26,6 @@ export default class App extends React.Component {
     if (st === 'connected') return <span className='App_conn App_conn-connected'/>
     if (st === 'disconnected') return <span className='App_conn App_conn-disconnected'/>
     return <span className='App_conn'>Websocket disconnected....</span>
-  }
-
-  renderConfig() {
-    return <FluxComponent connectToStores={{
-      config: store => ({
-        initialData: store.getConfig()
-      })
-    }}>
-      <Form className='GlobalConfig' onSubmit={this.saveConfig.bind(this)}>
-        <h1>Global Configuration</h1>
-        <Radio
-          name=''
-          title='Notifications'
-          switchOn='notifications'
-          defaultData={{
-            all: {notifications: 'all'},
-            none: {notifications: 'none'},
-            failures: {notifications: 'failures'},
-          }}
-          choices={{
-            all: 'All',
-            none: 'None',
-            failures: 'Failures'
-          }}
-          >
-          {null}
-        </Radio>
-        <button className='Button GlobalConfig_save'>Save</button>
-      </Form>
-    </FluxComponent>
   }
 
   render () {
@@ -102,7 +45,7 @@ export default class App extends React.Component {
        {this.renderConnState()}
       </header>
       <section className='App_main'>
-        {this.state.config && this.renderConfig()}
+        {this.state.config && <AppConfig onClose={() => this.setState({config: false})}/>}
         <RouteHandler/>
       </section>
     </div>
