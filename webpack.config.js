@@ -1,32 +1,40 @@
 var path = require('path');
 var webpack = require('webpack');
 
+var BASE = path.join(__dirname, 'node_modules')
+
 module.exports = {
   devtool: 'eval',
   entry: [
     'webpack-dev-server/client?http://localhost:' + (process.env.PORT || 3000),
     'webpack/hot/only-dev-server',
-    './scripts/index'
+    './app/index'
   ],
   output: {
     path: path.join(__dirname, 'build'),
     filename: 'bundle.js',
-    publicPath: '/scripts/'
+    publicPath: '/app/'
   },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin()
   ],
   resolve: {
-    extensions: ['', '.js', '.jsx']
+    extensions: ['', '.js', '.jsx'],
+    alias: {
+      'react$': path.join(__dirname, 'node_modules/react'),
+      'react/lib/ReactMount': path.join(__dirname, 'node_modules/react/lib/ReactMount'),
+      'react-hot': path.join(__dirname, 'node_modules/react-hot'),
+    },
   },
   module: {
     loaders: [{
       test: /\.jsx?$/,
-      loaders: ['react-hot', 'babel?optional=bluebirdCoroutines'],
+      loaders: [BASE + '/react-hot-loader', BASE + '/babel-loader?optional=bluebirdCoroutines&stage=0'],
       include: [
-        path.join(__dirname, 'scripts'),
-        path.join(__dirname, 'lib')
+        path.join(__dirname, 'app'),
+        path.join(__dirname, 'lib'),
+        path.join(__dirname, '../form')
       ]
     }, {
       test: /\.json$/,

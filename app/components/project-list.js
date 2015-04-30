@@ -8,9 +8,6 @@ import NewProject from './new-project'
 
 
 export default class ProjectList extends React.Component {
-  constructor() {
-  }
-
   componentDidMount() {
     if (!this.props.projects) {
       this.props.flux.getActions('projects').getProjects()

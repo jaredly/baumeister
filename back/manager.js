@@ -12,7 +12,6 @@ import {Project, Build} from './schema'
 
 export default class Manager {
   constructor(db, basepath) {
-    super()
     this.basepath = basepath
     this.db = db
     this.running = {}

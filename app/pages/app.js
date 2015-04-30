@@ -4,10 +4,10 @@ import './app.less'
 import React from 'react'
 import {RouteHandler, Link} from 'react-router'
 import FluxComponent from 'flummox/component'
-import Form from '../lib/form'
-import Radio from '../lib/radio'
-import mmSS from '../lib/mmSS'
 import classnames from 'classnames'
+
+import {Form, Radio} from '../../../form'
+import mmSS from '../lib/mmSS'
 
 
 export default class App extends React.Component {

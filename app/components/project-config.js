@@ -3,9 +3,7 @@ import classnames from 'classnames'
 import React from 'react'
 import {Link} from 'react-router'
 
-import Form from '../lib/form'
-import Radio from '../lib/radio'
-import Panes from '../lib/panes'
+import {Radio, Panes, Form} from '../../../form'
 
 import './project-config.less'
 import '../lib/form.less'

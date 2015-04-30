@@ -9,9 +9,6 @@ import Build from './build'
 import './build-view.less'
 
 export default class BuildView extends React.Component {
-  constructor() {
-  }
-
   componentDidMount() {
     if (this.props.builds) {
       this.setOpenBuild(null)

@@ -12,12 +12,12 @@ export default class Radio extends React.Component {
     this.prevs = {}
   }
 
-  onChange(val, current, e) {
+  onChange(val, e) {
+    const current = this.getCurrent()
     if (val === current) return
     if (!e.target.checked) {
       debugger
     }
-    const current = this.getCurrent()
     this.prevs[current] = this.props.value
     const data = this.prevs[val] === undefined ? this.props.defaultData[val] : this.prevs[val]
     this.props.onChange(fromJS(data))

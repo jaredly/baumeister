@@ -3,6 +3,7 @@ import EventEmitter from 'eventemitter3'
 
 export default class Client extends EventEmitter {
   constructor(sock) {
+    super()
     this.sock = sock
     this.sock.on('message', this._onMessage.bind(this))
     this.sock.on('close', this._onClose.bind(this))

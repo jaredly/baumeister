@@ -3,6 +3,7 @@ import EventEmitter from 'eventemitter3'
 
 export default class Replayable extends EventEmitter {
   constructor() {
+    super()
     this.history = []
     this.piping = []
   }
