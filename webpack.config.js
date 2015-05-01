@@ -8,8 +8,11 @@ module.exports = {
   entry: [
     'webpack-dev-server/client?http://localhost:' + (process.env.PORT || 3000),
     'webpack/hot/only-dev-server',
-    './app/index'
+    './app/font/index'
   ],
+  devServer: {
+    contentBase: './app/static',
+  },
   output: {
     path: path.join(__dirname, 'build'),
     filename: 'bundle.js',
@@ -34,7 +37,7 @@ module.exports = {
       test: /\.jsx?$/,
       loaders: [BASE + '/react-hot-loader', BASE + '/babel-loader?optional=bluebirdCoroutines&stage=0'],
       include: [
-        path.join(__dirname, 'app'),
+        path.join(__dirname, 'app/front'),
         path.join(__dirname, 'lib'),
         path.join(__dirname, '../form'),
         path.join(__dirname, '../flammable'),

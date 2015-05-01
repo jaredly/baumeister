@@ -58,6 +58,9 @@ export default {
     }, done)
   }
 
+  local(build, ctx, out, done) {
+  }
+
   script(build, ctx, out, done) {
     build.runCached({
       docker: {

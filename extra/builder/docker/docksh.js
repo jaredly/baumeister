@@ -3,6 +3,7 @@ import path from 'path'
 
 import uuid from './uuid'
 import prom from './prom'
+import {ShellError} from './errors'
 
 /**
  * A Docker shell!
@@ -61,8 +62,27 @@ export default class Docksh {
     return this.stop().then(_ => this.remove())
   }
 
-  runSilent(cmd) {
-    return prom(done => {
+  runSilent(cmd, io) {
+    let resolved = false
+    let promResolver
+    function onInterrupt(done) {
+      if (resolved) return // control has been passed off
+      promResolver(new InterruptError())
+      this.stop()
+        .then(_ => done(), err => done(err))
+      resolved = true
+    }
+    io.on('interrupt', onInterrupt)
+
+    return prom(_done => {
+      const done = function () {
+        if (resolved) return console.warn('runSilent > already resolved')
+        resolved = true
+        io.off('interrupt', onInterrupt)
+        return _done.apply(this, arguments)
+      }
+      promResolver = done
+
       this.container.exec({
         Tty: true,
         Cmd: ['/bin/sh', '-x', '-c', cmd],
@@ -94,21 +114,34 @@ export default class Docksh {
     })
   }
 
-  run(cmd, out) {
+  run(cmd, io) {
     const sid = uuid()
     const start = Date.now()
-    out.emit('stream-start', {
+    io.emit('stream-start', {
       id: sid, 
       time: start,
       cmd: cmd
     })
 
-    let interrupt = done => {
+    let resolved = false
+    let promResolver
+    function onInterrupt(done) {
+      if (resolved) return // control has been passed off
+      promResolver(new InterruptError())
       this.container.stop(done)
+      resolved = true
     }
-    out.on('interrupt', interrupt)
+    io.on('interrupt', onInterrupt)
 
-    return prom(done => {
+    return prom(_done => {
+      const done = function () {
+        if (resolved) return console.warn('runSilent > already resolved')
+        resolved = true
+        io.off('interrupt', onInterrupt)
+        return _done.apply(this, arguments)
+      }
+      promResolver = done
+
       this.container.exec({
         Tty: true,
         Cmd: ['/bin/sh', '-x', '-c', cmd],
@@ -120,7 +153,7 @@ export default class Docksh {
           if (err) return done(err)
           stream
             .on('data', chunk => {
-              out.emit('stream', {
+              io.emit('stream', {
                 id: sid,
                 value: chunk.toString('utf8'),
                 time: Date.now()
@@ -133,22 +166,21 @@ export default class Docksh {
               const end = Date.now()
               const dur = end - start
               exec.inspect((err, data) => {
-                out.off('interrupt', interrupt)
                 if (err) return done(new Error('failed to get info on `exec`'))
                 if (data.Running) {
                   return done(new Error("exec is still running..." + data.ID))
                 }
                 if (data.ExitCode != 0) {
-                  out.emit('stream-end', {
+                  io.emit('stream-end', {
                     id: sid,
                     time: end,
                     duration: dur,
                     error: "non-zero exit code: " + data.ExitCode,
                     exitCode: data.ExitCode
                   })
-                  return done(new Error("Command exited with non-zero exit code"))
+                  return done(new ShellError(cmd, data.ExitCode))
                 }
-                out.emit('stream-end', {
+                io.emit('stream-end', {
                   id: sid,
                   time: end,
                   duration: dur,

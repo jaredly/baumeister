@@ -3,3 +3,5 @@
 /.builds
 /back/.test.db
 /build
+/test/.test.db
+/test/db.db

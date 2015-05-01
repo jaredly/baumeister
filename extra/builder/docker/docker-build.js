@@ -5,29 +5,33 @@ import fs from 'fs'
 
 import assign from 'object-assign'
 import providers from './providers'
-import Replayable from './replayable'
 import buildDocker from './build-docker'
-import ConfigError from './config-error'
 import getContext from './get-context'
 import runDocker from './run-docker'
+import BaseBuild from './base-build'
+
+import {ConfigError, InterruptError, ShellError} from './errors'
+
 
 
 export default DockerBuild extends BaseBuild {
   static type = 'docker'
 
-  constructor(project, id, config) {
-    super(project, id, config)
+  constructor(io, project, id, config) {
+    super(io, project, id, config)
     this.docker = new Docker() // TODO use config to custom docker connection
     this.cacheContainer = `dci-${this.project.id}-cache`
     this.dataContainer = `dci-${this.id}-data`
     this.runnerOptions = {
       volumesFrom: [],
       binds: [],
+      env: [],
     }
   }
 
   init() {
     const promises = []
+    // create data container
     if (this.dataContainer) {
       this.runnerOptions.volumesFrom.push(this.dataContainer)
       promises.push(prom(done => {
@@ -37,20 +41,23 @@ export default DockerBuild extends BaseBuild {
           Volumes: {'/project': {}},
         }, (err, res) => {
           if (err) return done(err)
-          this.emit('info', `Created data container ${this.dataContainer} (${res.id})`)
+          this.io.emit('info', `Created data container ${this.dataContainer} (${res.id})`)
           done()
         })
       }))
     }
+
+    // check for / create cache container
     if (this.cacheContainer) {
       this.runnerOptions.volumesFrom.push(this.cacheContainer)
       promises.push(prom(done => {
         ensureContainer(this.docker, this.cacheContainer, '/cache', (err, id, created) => {
           if (err) return done(err)
-          this.emit('info', `${created ? 'Created' : 'Using'} cache container ${this.cacheContainer} (${id})`)
+          this.io.emit('info', `${created ? 'Created' : 'Using'} cache container ${this.cacheContainer} (${id})`)
         })
       }))
     }
+
     return prom(done => {
       this.docker.version((err, data) => {
         if (err) return done(new ConfigError(`Unable to connect to docker daemon: ${err.message}`))
@@ -59,47 +66,35 @@ export default DockerBuild extends BaseBuild {
     }).then(() => Promise.all(promises))
   }
 
-  runner(config) {
-    const volumesFrom = [this.cacheContainer]
-    const binds = []
-    if (!config.noDataContainer) {
-      volumesFrom.push(this.dataContainer)
-    }
-    /*
-    if (this.project.source.path) {
-      if (this.project.source.inPlace) {
-        binds.push(`${this.project.source.path}:/project:rw`)
-      } else {
-        binds.push(`${this.project.source.path}:/localProject:rw`)
-      }
-    } else {
-      volumesFrom.push(this.dataContainer)
-    }
-    */
+  shell(config) {
+    const io = this.io
     const sh = new Docksh(this.docker, {
+      volumesFrom: this.runnerConfig.volumesFrom,,
+      binds: this.runnerConfig.binds,,
+      env: this.runnerConfig.env.concat(config.env || []),
+
       image: config.docker && config.docker.image || 'ubuntu',
-      env: config.env,
-      volumesFrom,
-      binds,
       cwd: config.cwd || '/project',
-      // TODO binds for local projects
     })
+
     return {
-      init: sh.init.bind(sh),
+      init() {
+        return interprom(io, sh.init())
+      },
       run(cmd, options) {
         if (options.silent) {
-          return sh.runSilent(cmd)
+          return sh.runSilent(cmd, io)
             .then(result => {
-              if (result.code !== 0 && !config.badExitOK) {
-                throw new Error(`Command exited with code ${result.code}`)
+              if (result.code !== 0 && !options.badExitOK) {
+                throw new ShellError(cmd, result.code)
               }
               return result
             })
         }
-        return sh.run(cmd, this)
+        return sh.run(cmd, io)
           .then(code => {
-            if (code !== 0 && !config.badExitOK) {
-              throw new Error(`Command exited with code ${code}`)
+            if (code !== 0 && !options.badExitOK) {
+              throw new ShellError(cmd, code)
             }
             return result
           })
@@ -112,32 +107,17 @@ export default DockerBuild extends BaseBuild {
     }
   }
 
-  clearCache(done) {
-    this.docker.getContainer(this.cacheContainer).remove({v: 1}, (err, data) => {
-      if (err) {
-        if (err.statusCode === 404) return done()
-        return done(err)
-      }
-      done()
-    })
-  }
-
-  ensureDataContainers(done) {
-    const cache = this.cacheContainer
-    ensureContainer(this.docker, cache, '/cache', (err, id, created) => {
-      if (err) return done(err)
-      this.emit('info', `${created ? 'Created' : 'Using'} cache container ${cache} (${id})`)
-
-      if (this.project.source.path && this.project.source.inPlace) {
-        return done(null)
-      }
-h;
-      const data = this.dataContainer
-      this.docker.createContainer({name: '/' + data, Image: 'busybox', Volumes: {'/project': {}}}, (err, res) => {
-        if (err) return done(err)
-        this.emit('info', `Created data container ${data} (${res.id})`)
-        done(null)
-      })
+  clearCache() {
+    if (!this.cacheContainer) return
+    return prom(done => {
+      this.docker.getContainer(this.cacheContainer)
+        .remove({v: 1}, (err, data) => {
+          if (err) {
+            if (err.statusCode === 404) return done()
+            return done(err)
+          }
+          done()
+        })
     })
   }
 
@@ -148,11 +128,11 @@ h;
           return done(new ConfigError(`Local project base ${this.project.source.path} does not exist`))
         }
         if (this.project.source.inPlace) {
-          this.emit('info', `Local project ${this.project.source.path}`)
+          this.io.emit('info', `Local project ${this.project.source.path}`)
           return done()
         }
         console.log('GET FROM', this.project.source.path)
-        this.emit('info', `Copying local project from ${this.project.source.path}`)
+        this.io.emit('info', `Copying local project from ${this.project.source.path}`)
         return runDocker(this.docker, {
           image: 'busybox',
           rmOnSuccess: true,
@@ -166,7 +146,7 @@ h;
     const pro = providers[this.project.source.provider]
     if (!pro) {
       const err = new ConfigError(`Unknown provider ${this.project.source.provider}`)
-      this.emit('error', err.message)
+      this.io.emit('error', err.message)
       return done(err)
     }
 
@@ -181,9 +161,9 @@ h;
   }
 
   prepareImage(done) {
-    this.emit('section', 'prepare-image')
+    this.io.emit('section', 'prepare-image')
     if (this.project.build.prefab) {
-      this.emit('info', 'Using prefab image: ' + this.project.build.prefab)
+      this.io.emit('info', 'Using prefab image: ' + this.project.build.prefab)
       return done(null, null, this.project.build.prefab)
     }
     const imname = 'docker-ci/' + this.project.name + ':test'
@@ -197,7 +177,7 @@ h;
       const needToBuild = !images.some(
         im => im.RepoTags.indexOf(imname) !== -1)
       if (!needToBuild) {
-        this.emit('info', `Image ${imname} already built`)
+        this.io.emit('info', `Image ${imname} already built`)
         return done(err, null, imname)
       }
       this.build(imname, (err, exitCode) => {
@@ -210,11 +190,11 @@ h;
     if (!this.project.source.path) {
       return done(new ConfigError('providers not yet supported'))
     }
-    this.emit('info', contextMessage(imname, this.project.build.context))
+    this.io.emit('info', contextMessage(imname, this.project.build.context))
 
     getContext(this.project, (err, stream, dockerText) => {
       if (err) return done(err)
-      this.emit('dockerfile', dockerText)
+      this.io.emit('dockerfile', dockerText)
 
       console.log("BUILD TONG SFKDSLF")
       buildDocker(this.docker, stream, {
@@ -225,7 +205,7 @@ h;
   }
 
   test(name, done) {
-    this.emit('section', 'test')
+    this.io.emit('section', 'test')
 
     const config = assign({}, this.project.test, {
       volumesFrom: [this.cacheContainer, this.dataContainer],
@@ -237,11 +217,11 @@ h;
     }
     // TODO maybe get more fancy here at some point
     runDocker(this.docker, config, this, (err, exitCode) => {
-      if (err) this.emit('status', 'test:errored')
+      if (err) this.io.emit('status', 'test:errored')
       else if (exitCode !== 0) {
-        this.emit('status', 'test:failed')
+        this.io.emit('status', 'test:failed')
       } else {
-        this.emit('status', 'test:passed')
+        this.io.emit('status', 'test:passed')
       }
       done(err, exitCode)
     })
@@ -291,5 +271,24 @@ function contextMessage(imname, value) {
   }
 
   return `Building ${imname} ${ctx}`
+}
+
+function interprom(io, prom) {
+  let rejector
+  function onInterrupt(done) {
+    rejector(new InterruptError())
+    io.off('interrupt', onInterrupt)
+    done()
+  }
+  return Promise.race([
+    new Promise((resolve, reject) => {
+      io.on('interrupt', onInterrupt)
+      rejector = reject
+    }),
+    prom
+  ]).then(val => {
+    io.off('interrupt', onInterrupt)
+    return val
+  })
 }
 

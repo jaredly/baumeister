@@ -55,6 +55,7 @@ export default class Manager {
         this.addSub(client.openBuild, client)
       })
     })
+
     client.on('build:view', val => {
       if (!this.running[val]) {
         return console.error('NO BUILD', val)
@@ -131,8 +132,12 @@ export default class Manager {
         throw new Error('DB query for project failed')
       })
       .then(projects => {
-        if (!projects.length) throw new Error(`Project "${id}" not found`)
-        if (projects.length > 1) throw new Error(`Multiple projects named "${id}"`)
+        if (!projects.length) {
+          throw new Error(`Project "${id}" not found`)
+        }
+        if (projects.length > 1) {
+          throw new Error(`Multiple projects named "${id}"`)
+        }
         return projects[0]
       })
   }
@@ -145,7 +150,8 @@ export default class Manager {
         projects.forEach(proj => {
           pmap[proj.id] = proj
           if (!proj.latestBuild) return
-          tasks[proj.id] = next => this.db.nget('builds', proj.latestBuild, next)
+          tasks[proj.id] = next => this.db
+            .nget('builds', proj.latestBuild, next)
         })
         return prom(done => {
           async.parallel(tasks, (err, res) => {
@@ -194,38 +200,42 @@ export default class Manager {
         return this.db.find('builds', {project: project.id})
           .then(builds => builds.length + 1)
           .then(num => {
-            const data = {
-              id: uuid(),
-              project: project.id,
-              started: Date.now(),
-              finished: null,
-              status: 'running',
-              num,
-              events: null,
-            }
-            if (onId) onId(data.id)
-            this.doPlugins('onBuild', project, data)
-            project.latestBuild = data.id
-            project.modified = data.started
-            return this.db.put('builds', data.id, data)
-              .then(() => this.db.put('projects', project.id, project))
-              .then(() => {
-
-                const r = new Runner(project, data.id, this.basepath)
-                this.running[data.id] = r
-                runBuild(r, project, data, this, this.db, build => {
-                  this.db.put('builds', build.id, build)
-                    .then(_ => {
-                      console.log('BUILD UPDATE')
-                      console.log(JSON.stringify(build, null, 2))
-                      this.emit('build:update', build)
-                      this.running[build.id] = null
-                      this.doPlugins('offBuild', project, data)
-                    })
-                })
-                return data.id
-              })
+            return this._startBuild(project, num)
           })
+      })
+  }
+
+  _startBuild(project, num) {
+    const data = {
+      id: uuid(),
+      project: project.id,
+      started: Date.now(),
+      finished: null,
+      status: 'running',
+      num,
+      events: null,
+    }
+    if (onId) onId(data.id)
+    this.doPlugins('onBuild', project, data)
+    project.latestBuild = data.id
+    project.modified = data.started
+
+    return this.db.put('builds', data.id, data)
+      .then(() => this.db.put('projects', project.id, project))
+      .then(() => {
+        const r = new Runner(project, data.id, this.basepath)
+        this.running[data.id] = r
+        runBuild(r, project, data, this, this.db, build => {
+          this.db.put('builds', build.id, build)
+            .then(_ => {
+              console.log('BUILD UPDATE')
+              console.log(JSON.stringify(build, null, 2))
+              this.emit('build:update', build)
+              this.running[build.id] = null
+              this.doPlugins('offBuild', project, data)
+            })
+        })
+        return data.id
       })
   }
 
@@ -257,7 +267,6 @@ export default class Manager {
 
   addSub(id, fn) {
     if (!this.running[id]) return
-    // this.running[id].history.forEach(v => client.(id, v.evt, v.val))
     if (!this.subs[id]) this.subs[id] = [fn]
     else this.subs[id].push(fn)
   }
@@ -288,7 +297,7 @@ function runBuild(r, project, data, out, db, done) {
   console.log('running', project, data)
 
   let section = null
-  r.pipe({
+  r.io.pipe({
     emit(evt, val) {
       if (evt === 'section') section = val
       out.emit(data.id, 'build:event', {
@@ -303,14 +312,14 @@ function runBuild(r, project, data, out, db, done) {
 
   let interrupted = false
 
-  r.on('interrupt', () => {
+  r.io.on('interrupt', () => {
     interrupted = true
   })
 
   let saving = false
   let saveAfter = false
   let _saveInt = setInterval(() => {
-    data.events = aggEvents(r.history, null, true)
+    data.events = aggEvents(r.io.history, null, true)
     saving = true
     db.put('builds', data.id, data)
       .then(_ => {
@@ -334,13 +343,26 @@ function runBuild(r, project, data, out, db, done) {
     } else {
       data.status = 'succeeded'
     }
-    data.events = aggEvents(r.history, null, true, err || exitCode)
+    data.events = aggEvents(r.io.history, null, true, err || exitCode)
     data.finished = Date.now()
     data.duration = data.finished - data.started
-    out.emit('build:status', {project: project.id, build: data.id, duration: data.duration, status: data.status})
+    out.emit('build:status', {
+      project: project.id,
+      build: data.id,
+      duration: data.duration,
+      status: data.status
+    })
     out.emit('build:done', {
-      project: {id: project.id, name: project.name},
-      build: {id: data.id, num: data.num, duration: data.duration, status: data.status}
+      project: {
+        id: project.id,
+        name: project.name
+      },
+      build: {
+        id: data.id,
+        num: data.num,
+        duration: data.duration,
+        status: data.status
+      }
     })
     clearInterval(_saveInt)
     saveAfter = () => {
