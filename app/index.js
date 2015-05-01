@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Router from 'react-router'
-import FluxComponent from 'flummox/component'
+import RCSS from 'rcss'
 import aggEvents from '../lib/agg-events'
 
 import routes from './routes';
@@ -31,11 +31,20 @@ const wsActions = {
   'build:update': true,
   'build:event': true,
   'build:history': true,
+  'ws:state': true,
 }
 
 flux.addActions('ws', wsActions)
 Object.keys(wsActions).forEach(name => {
   api.on(name, val => flux.sendAction('ws.' + name, val))
+})
+
+flux.addStore('ws', {state: 'connecting'}, {
+  ws: {
+    ['ws:state'](val, update) {
+      update({state: {$set: val}})
+    }
+  }
 })
 
 
@@ -304,5 +313,7 @@ flux.addActions('builds', {
 
 router.run(Handler => {
   React.render(flux.wrap(<Handler/>), document.getElementById('root'));
+  RCSS.injectAll()
 })
+
 

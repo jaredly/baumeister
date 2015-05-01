@@ -7,9 +7,17 @@ import classnames from 'classnames'
 
 import mmSS from '../lib/mmSS'
 
+import {fluxify} from 'flammable/react'
 import AppConfig from '../components/app-config'
 
 
+@fluxify({
+  data: {
+    ws: {
+      state: 'connState',
+    }
+  }
+})
 export default class App extends React.Component {
   constructor(props) {
     super(props)
@@ -21,7 +29,7 @@ export default class App extends React.Component {
   }
 
   renderConnState() {
-    const st = this.state.connState
+    const st = this.props.connState
     if (st === 'connecting') return <span className='App_conn App_conn-connecting'/>
     if (st === 'connected') return <span className='App_conn App_conn-connected'/>
     if (st === 'disconnected') return <span className='App_conn App_conn-disconnected'/>

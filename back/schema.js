@@ -43,6 +43,8 @@ export default {
       })
     ], 'source'),
 
+    plugins: Obj,
+
     build: union([
       // Str,
       // Bool,

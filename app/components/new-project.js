@@ -32,7 +32,6 @@ export default class NewProject extends React.Component {
   onSubmit(data) {
     this.setState({open: false})
     this.props.onSubmit(data)
-    // this.props.flux.getActions('projects').newProject(data)
   }
 
   render() {

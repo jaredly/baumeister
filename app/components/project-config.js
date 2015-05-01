@@ -2,8 +2,9 @@ import classnames from 'classnames'
 
 import React from 'react'
 import {Link} from 'react-router'
+import {Map, fromJS} from 'immutable'
 
-import {Radio, Panes, Form} from '../../../form'
+import {Radio, Panes, Form, FormSection} from '../../../form'
 
 import './project-config.less'
 import '../lib/form.less'
@@ -46,6 +47,9 @@ export default class ProjectConfig extends React.Component {
           general: 'General',
           plugins: 'Plugins',
         }}
+        extraTop={
+          <button className='Button'>{this.props.actionText}</button>
+        }
       >
         <div paneId='general'>
           <div className='ProjectConfig_top'>
@@ -54,7 +58,6 @@ export default class ProjectConfig extends React.Component {
             </label>
 
             <div className='ProjectConfig_buttons'>
-              <button className='Button'>{this.props.actionText}</button>
               {this.renderClearButton()}
             </div>
           </div>
@@ -63,7 +66,6 @@ export default class ProjectConfig extends React.Component {
           {testConfig()}
         </div>
         <div paneId='plugins'>
-          Plugins!!!
           {pluginConfig()}
         </div>
       </Panes>
@@ -225,20 +227,75 @@ function testConfig() {
 }
 
 class GitPlugin extends React.Component {
-  constructor(props) {
-    super(props)
-  }
-
   render() {
     return <div className='GitPlugin'>
-    <h1>Git Post-Commit hook</h1>
     <pre style={{whiteSpace: 'pre-wrap'}}>echo "curl -X POST http://localhost:3005/api/builds/{this.props.value.get('id')}" >> .git/hooks/post-commit && chmod +x .git/hooks/post-commit</pre>
     </div>
   }
 }
 
+class FileWatchPlugin extends React.Component {
+  render() {
+    return <FormSection
+        value={this.props.value || new Map()}
+        onChange={this.props.onChange}
+        className='FileWatchPlugin'>
+      <label className='checkbox-label'>
+        <input type="checkbox" name='enabled'/>
+        Enabled
+      </label>
+      <label className='text-label'>
+        Patterns to ignore (regex, newline-separated)
+        <textarea name="ignore"/>
+      </label>
+    </FormSection>
+  }
+}
+
+const plugins = {
+  'file-watch': {
+    title: 'File Watcher',
+    comp: FileWatchPlugin,
+    defaultConfig: {
+      ignore: '.*node_modules.*\n\\.sw[op]$\n^\\.',
+      enabled: true,
+    },
+  },
+  'git-post-commit': {
+    title: 'Git Post Commit',
+    comp: GitPlugin,
+    defaultConfig: {}
+  },
+}
+
 function pluginConfig() {
+  const choices = {}
+  for (let name in plugins) {
+    choices[name] = plugins[name].title
+  }
+
   return <div>
-    <GitPlugin name='*'/>
+    {Object.keys(plugins).map(id => {
+      const plugin = plugins[id]
+      const Comp = plugin.comp
+      return <Radio
+        name={plugin.name || id}
+        title={plugin.title}
+        choices={{
+          on: 'Using',
+          off: 'Not using',
+        }}
+        switchOn={plugin.switchOn || (val => {
+          if (val) return 'on'
+          return 'off'
+        })}
+        defaultData={{
+          on: plugin.defaultConfig,
+          off: null,
+        }}>
+        <Comp name='*' switchWhere='on'/>
+      </Radio>
+    })}
   </div>
 }
+
