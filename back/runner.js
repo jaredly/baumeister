@@ -79,8 +79,8 @@ export default class Runner extends Replayable {
     this.emit('section', 'get-project')
     this.ensureDataContainers(err => {
       if (err) return finish(err)
-      this.getProject((err) => {
-        if (err) return finish(err)
+      this.getProject((err, exitCode) => {
+        if (err || exitCode) return finish(err, exitCode)
         this.prepareImage((err, exitCode, name) => {
           if (err || exitCode) return finish(err, exitCode)
           this.test(name, finish)

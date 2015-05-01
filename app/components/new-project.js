@@ -2,9 +2,15 @@
 import React from 'react'
 import ProjectConfig from './project-config'
 import classnames from 'classnames'
+import {fluxify} from 'flammable/react'
 
 import './new-project.less'
 
+@fluxify({
+  actions: {
+    onSubmit: 'projects.create'
+  }
+})
 export default class NewProject extends React.Component {
   constructor(props) {
     super(props)
@@ -25,7 +31,8 @@ export default class NewProject extends React.Component {
 
   onSubmit(data) {
     this.setState({open: false})
-    this.props.flux.getActions('projects').newProject(data)
+    this.props.onSubmit(data)
+    // this.props.flux.getActions('projects').newProject(data)
   }
 
   render() {

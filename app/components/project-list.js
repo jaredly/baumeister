@@ -41,6 +41,11 @@ export default class ProjectList extends React.Component {
     }
     const projects = this.props.projects
     const names = Object.keys(this.props.projects).sort((a, b) => {
+      if (!projects[b].latestBuild) {
+        if (!projects[a].latestBuild) return 0
+        return 1
+      }
+      if (!projects[a].latestBuild) return -1
       return projects[b].latestBuild.started - projects[a].latestBuild.started
     })
     const open = this.context.router.getCurrentParams().project

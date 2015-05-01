@@ -181,6 +181,7 @@ flux.addActions('projects', {
   update: api.updateProject.bind(api),
   startBuild: api.startBuild.bind(api),
   clearCache: api.clearCache.bind(api),
+  create: api.newProject.bind(api),
 })
 
 flux.addStore('builds', {
