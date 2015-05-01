@@ -169,6 +169,10 @@ export default class Manager {
 
   deleteProject(id) {
     return this.db.del('projects', id)
+      .then(_ => {
+        this.emit('project:remove', id)
+        return id
+      })
   }
 
   getBuilds(project) {

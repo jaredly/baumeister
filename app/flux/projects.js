@@ -32,6 +32,9 @@ export const projectStore = {
         }
       })
     },
+    'project:remove': (id, update) => {
+      update({[id]: {$set: undefined}})
+    },
     'project:update': (project, update, state) => {
       if ('string' === typeof project.latestBuild) {
         project.latestBuild = state[project.id].latestBuild

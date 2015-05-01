@@ -29,6 +29,7 @@ function smallT(ms) {
       startBuild: ['projects.startBuild', id],
       updateProject: ['projects.update', id],
       clearCache: ['projects.clearCache', id],
+      removeProject: ['projects.remove', id],
     }
   },
   data(props) {
@@ -79,11 +80,16 @@ export default class Project extends React.Component {
     this.props.clearCache()
   }
 
+  onRemove() {
+    this.props.removeProject()
+  }
+
   renderBody() {
     if (this.state.config) {
       return <ProjectConfig
         actionText='Save'
         onClear={this.onClear.bind(this)}
+        onRemove={this.onRemove.bind(this)}
         clearStatus={this.props.project.cache}
         onSubmit={this.onConfig.bind(this)}
         onClose={this.onCloseConfig.bind(this)}
@@ -100,6 +106,12 @@ export default class Project extends React.Component {
     e.preventDefault()
     e.stopPropagation()
     this.setState({config: true})
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.isOpen && !this.props.isOpen) {
+      this.setState({config: false})
+    }
   }
 
   render () {

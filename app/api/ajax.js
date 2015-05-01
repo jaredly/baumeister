@@ -4,6 +4,7 @@ import Promise from 'bluebird'
 export default {
   get: send.bind(null, 'GET'),
   post: send.bind(null, 'POST'),
+  del: send.bind(null, 'DELETE'),
 }
 
 function send(method, url, headers, body) {

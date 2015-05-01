@@ -10,10 +10,6 @@ import './project-config.less'
 import '../lib/form.less'
 
 export default class ProjectConfig extends React.Component {
-  constructor(props) {
-    super(props)
-  }
-
   onSubmit(data, action) {
     this.props.onClose()
     this.props.onSubmit(data, action)
@@ -64,12 +60,37 @@ export default class ProjectConfig extends React.Component {
           {sourceConfig()}
           {buildConfig()}
           {testConfig()}
+          {this.props.onRemove && <RemoveButton onRemove={this.props.onRemove}/>}
         </div>
         <div paneId='plugins'>
           {pluginConfig()}
         </div>
       </Panes>
     </Form>
+  }
+}
+
+class RemoveButton extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {really: false}
+  }
+
+  render() {
+    if (this.state.really) {
+      return <span>
+        <button type="button" className='Button' onClick={() => this.setState({really: false})}>
+          Maybe not
+        </button>
+        <button type="button" className='Button' onClick={this.props.onRemove}>
+          Really Remove
+        </button>
+      </span>
+    }
+
+    return <button type="button" className='Button' onClick={() => this.setState({really: true})}>
+      Remove project
+    </button>
   }
 }
 

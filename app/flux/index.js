@@ -20,6 +20,7 @@ export default function setupFlux(config) {
     'build:new': true,
     'build:status': true,
     'project:update': true,
+    'project:remove': true,
     'build:update': true,
     'build:event': true,
     'build:history': true,
@@ -74,13 +75,14 @@ export default function setupFlux(config) {
     startBuild: 'startBuild',
     clearCache: 'clearCache',
     create: 'newProject',
+    remove: 'removeProject',
   }))
 
   flux.addStore('builds', buildStore)
 
   flux.addActions('builds', {
     fetch: projectId => api.getBuilds(projectId)
-      .then(builds => ({projectId, builds})),
+            .then(builds => ({projectId, builds})),
     setOpen(id) {
       api.send('build:view', id)
     },

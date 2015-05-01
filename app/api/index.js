@@ -2,7 +2,7 @@
 import EventEmitter from 'eventemitter3'
 import assign from 'object-assign'
 
-import {get, post} from './ajax'
+import {get, post, del} from './ajax'
 
 export default class Api extends EventEmitter {
   constructor(host) {
@@ -70,6 +70,10 @@ export default class Api extends EventEmitter {
     return this.post('/api/projects/', data)
   }
 
+  removeProject(id) {
+    return this.del(`/api/projects/${id}`)
+  }
+
   updateProject(id, data) {
     let payload = assign({}, data)
     if (payload.latestBuild && payload.latestBuild.id) {
@@ -111,6 +115,11 @@ export default class Api extends EventEmitter {
   post() {
     arguments[0] = 'http://' + this.host + arguments[0]
     return post.apply(null, arguments)
+  }
+
+  del() {
+    arguments[0] = 'http://' + this.host + arguments[0]
+    return del.apply(null, arguments)
   }
 
   get() {

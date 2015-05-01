@@ -65,7 +65,7 @@ export default manager => {
       },
 
       delete(req, res, next) {
-        manager.deleteProject(req.url.strip(1))
+        manager.deleteProject(req.purl.pathname.slice(1))
           .then(() => json(res, 'success'))
           .catch(err => json(res, err, 500))
       }

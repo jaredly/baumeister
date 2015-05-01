@@ -40,7 +40,7 @@ export default class ProjectList extends React.Component {
       return <span>Loading</span>
     }
     const projects = this.props.projects
-    const names = Object.keys(this.props.projects).sort((a, b) => {
+    const names = Object.keys(this.props.projects).filter(name => projects[name]).sort((a, b) => {
       if (!projects[b].latestBuild) {
         if (!projects[a].latestBuild) return 0
         return 1

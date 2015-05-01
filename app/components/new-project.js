@@ -45,6 +45,7 @@ export default class NewProject extends React.Component {
       {this.state.open &&
         <ProjectConfig
           actionText='Create Project'
+          creating={true}
           project={{
             name: 'New Project',
             source: {
@@ -56,6 +57,7 @@ export default class NewProject extends React.Component {
             build: {
               prefab: 'ubuntu',
             },
+            plugins: {},
             test: {
               cwd: '',
               cmd: 'make test',
