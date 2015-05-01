@@ -4,6 +4,20 @@ import {parse} from 'shell-quote'
 import path from 'path'
 import uuid from './uuid'
 
+/**
+ * docker: a dockerode instance
+ * config: {
+ *   cwd: the image-local directory to run the command
+ *   env: list of 'name=val' strings
+ *   image: name of the docker image to use
+ *   cmd: string cmd (passed to sh -x -c)
+ *   rmOnSuccess: bool, if true, will remove on success
+ *   volumesFrom: ...
+ *   binds: ...
+ * }
+ * out: eventmitter for status updates
+ * done: fn(err, exitCode)
+ */
 export default function runDocker(docker, config, out, done) {
 
   let stopping = false

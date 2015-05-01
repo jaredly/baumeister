@@ -114,16 +114,24 @@ export default class Runner extends Replayable {
 
   getProject(done) {
     if (this.project.source.path) {
-      if (this.project.source.inPlace) {
-        this.emit('info', `Local project ${this.project.source.path}`)
-        return done()
-      }
-      return runDocker(this.docker, {
-        image: 'busybox',
-        binds: [this.project.source.path + ':/localProject:rw'],
-        volumesFrom: [this.dataContainer],
-        cmd: 'cp -r /localProject/* /project',
-      }, this, done)
+      return fs.exists(this.project.source.path, doesExist => {
+        if (!doesExist) {
+          return done(new ConfigError(`Local project base ${this.project.source.path} does not exist`))
+        }
+        if (this.project.source.inPlace) {
+          this.emit('info', `Local project ${this.project.source.path}`)
+          return done()
+        }
+        console.log('GET FROM', this.project.source.path)
+        this.emit('info', `Copying local project from ${this.project.source.path}`)
+        return runDocker(this.docker, {
+          image: 'busybox',
+          rmOnSuccess: true,
+          binds: [this.project.source.path + ':/localProject:rw'],
+          volumesFrom: [this.dataContainer],
+          cmd: 'cp -r /localProject/* /project',
+        }, this, done)
+      })
     }
 
     if (!this.basePath) {

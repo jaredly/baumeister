@@ -216,6 +216,10 @@ function testConfig() {
       <label className='text-label'>Test Command
         <textarea name='test.cmd'/>
       </label>
+      <label className='checkbox-label'>
+        <input type='checkbox' name='test.rmOnSuccess'/>
+        Remove on success
+      </label>
     </div>
   </section>
 }
