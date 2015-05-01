@@ -99,6 +99,7 @@ export default class BuildView extends React.Component {
       </div>
       <ul className='BuildView_right'>
         {this.props.builds.map(build => <li
+            key={build.id}
             onClick={_ => this.setOpenBuild(build.id)}
             className={classnames('BuildView_icon', 'BuildView_icon-' + build.status, build.id === current.id && 'BuildView_icon-active')}>
           {build.num}

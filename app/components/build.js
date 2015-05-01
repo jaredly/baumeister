@@ -21,6 +21,7 @@ export default class Build extends React.Component {
       <ul className='Build_sections'>
         {build.events ? build.events.sections.map(section =>
           <BuildSection
+            key={section.name}
             section={section}
             streams={build.events.streams}/>) : 'Initializing...'}
       </ul>

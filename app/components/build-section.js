@@ -13,58 +13,63 @@ export default class BuildSection extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
+      manuallyToggled: false,
       open: props.section.name === 'test' || !props.section.end || props.section.errored,
       running: !props.section.end,
     }
   }
 
   componentWillReceiveProps(props) {
+    let open = this.state.open
     if (props.section !== this.props.section) {
+      if (!this.state.manuallyToggled) {
+        open = props.section.name === 'test' || !props.section.end || props.section.errored
+      }
       this.setState({
-        open: props.section.name === 'test' || !props.section.end || props.section.errored,
+        open: open,
         running: !props.section.end,
       })
       return
     }
     if (props.section.name !== 'test' && props.section.end && this.state.running && !props.section.errored) {
-      this.setState({open: false, running: false})
+      this.setState({open: this.state.manuallyToggled ? open : false, running: false})
     }
   }
 
-  renderEvent(evt) {
+  renderEvent(evt, i) {
     if (evt.evt === 'stream-start') {
-      return renderStream(evt.val, this.props.streams[evt.val.id])
+      return renderStream(evt.val, this.props.streams[evt.val.id], i)
     }
     if (evt.evt === 'info') {
-      return <li className='Evt Evt-info'>{evt.val}</li>
+      return <li key={i} className='Evt Evt-info'>{evt.val}</li>
     }
     if (evt.evt === 'interrupt') {
-      return <li className='Evt Evt-interrupt'>Build was interrupted</li>
+      return <li key={i} className='Evt Evt-interrupt'>Build was interrupted</li>
     }
     if (evt.evt === 'dockerfile') {
-      return <li className='Evt Evt-dockerfile Dockerfile'>
+      return <li key={i} className='Evt Evt-dockerfile Dockerfile'>
         <div className='Dockerfile_title'>Dockerfile</div>
         <pre>{evt.val.trim()}</pre>
       </li>
     }
     if (evt.evt === 'config-error') {
-      return <li className='Evt Evt-config-error'>
+      return <li key={i} className='Evt Evt-config-error'>
         <span className='Evt-config-error-title'>Configuration Error</span>
         {evt.val}
       </li>
     }
     if (evt.evt === 'server-error') {
-      return <li className='Evt Evt-server-error'>
+      return <li key={i} className='Evt Evt-server-error'>
         <span className='Evt-server-error-title'>Server Error</span>
         {evt.val}
       </li>
     }
     if (evt.evt === 'status') return
-    return <li className='Evt'>{evt.evt}: {evt.val}</li>
+    return <li key={i} className='Evt'>{evt.evt}: {evt.val}</li>
   }
 
   toggleOpen() {
-    this.setState({open: !this.state.open})
+    this.setState({open: !this.state.open, manuallyToggled: true})
   }
 
   render() {
@@ -78,7 +83,7 @@ export default class BuildSection extends React.Component {
         </span>
       </div>
       {this.state.open && <ul className='Build_events'>
-        {section.items.map(evt => this.renderEvent(evt))}
+        {section.items.map((evt, i) => this.renderEvent(evt, i))}
       </ul>}
     </li>
   }
@@ -111,12 +116,12 @@ function renderStreamEnd(end) {
   </div>*/
 }
 
-function renderStream(evt, stream) {
-  if (!stream) return <span/>
+function renderStream(evt, stream, i) {
+  if (!stream) return <span key={i}/>
   const title = evt.cmd ? evt.cmd : evt.title
   const html = ansiText(stream.items.map(ev => ev.value).join(''))
   const dur = stream.end ? stream.end.duration : (Date.now() - stream.start.time)
-  return <li className='Stream'>
+  return <li className='Stream' key={i}>
     <div className='Stream_title'>
       {title}
       <span className='Stream_duration'>
