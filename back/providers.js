@@ -3,9 +3,7 @@ import runDocker from './run-docker'
 import Docksh from './docksh'
 
 function handleCached(docker, config, out, get, update, done) {
-
   const d = new Docksh(docker, config)
-
   let cached = false
 
   if (!config.cache) {
@@ -41,25 +39,52 @@ function handleCached(docker, config, out, get, update, done) {
     .catch(err => done(err))
 }
 
-export default {
-  git(docker, config, out, done) {
+function handleCached(child, config, out, get, update, done) {
+  child.runSilent('stat /cache/project')
+}
 
+export default {
+  git(build, ctx, out, done) {
+    build.runCached({
+      env: ['GIT_TERMINAL_PROMPT=0'],
+      docker: {
+        image: 'docker-ci/git',
+      },
+    }, {
+      cachePath: 'project',
+      projectPath: '.',
+      get: `git clone ${config.source.repo} .`,
+      update: 'git pull',
+    }, done)
+  }
+
+  script(build, ctx, out, done) {
+    build.runCached({
+      docker: {
+        image: config.source.base || 'ubuntu',
+      },
+    }, {
+      cachePath: 'project',
+      projectPath: '.',
+      get: config.source.get,
+      update: config.source.update,
+    }, done)
+  }
+
+  git(docker, config, out, done) {
     handleCached(docker, {
       image: 'docker-ci/git',
       volumesFrom: config.volumesFrom,
       env: ['GIT_TERMINAL_PROMPT=0'],
     }, out, `git clone ${config.source.repo} .`, 'git pull', done)
-
   },
 
   script(docker, config, out, done) {
-
     handleCached(docker, {
       image: config.source.base || 'ubuntu',
       cache: config.source.cache,
       volumesFrom: config.volumesFrom,
     }, out, config.source.get, config.source.update, done)
-
   }
 }
 

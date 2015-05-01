@@ -4,6 +4,20 @@ import path from 'path'
 import uuid from './uuid'
 import prom from './prom'
 
+/**
+ * A Docker shell!
+ *
+ * Uses `sleep infinity` as the main process, so you can `exec` commands in
+ * succession.
+ *
+ * Config: {
+ *   image: (str) the docker image to use
+ *   volumesFrom: (list<str>) container names to get volumes from
+ *   env: (list<str "KEY=VAL">) env vbls
+ *   binds: (list<str "/host/path:/docker/path">) host mounted volumes
+ *   cwd: (str) the current working directory for all commands
+ * }
+ */
 export default class Docksh {
   constructor(docker, config) {
     this.docker = docker

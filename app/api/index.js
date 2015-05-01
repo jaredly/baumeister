@@ -39,6 +39,7 @@ export default class Api extends EventEmitter {
       }, 1500)
     }
     ws.addEventListener('close', onClose)
+    ws.addEventListener('error', () => null)
   }
 
   send(evt, val) {
