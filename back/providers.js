@@ -11,6 +11,7 @@ function handleCached(docker, config, out, get, update, done) {
   if (!config.cache) {
     return d.init()
       .then(_ => d.run(get, out))
+      .then(_ => d.stopAndRemove())
       .then(_ => done())
       .catch(err => done(err))
   }
@@ -35,9 +36,7 @@ function handleCached(docker, config, out, get, update, done) {
           .then(_ => d.run('cp -r /project /cache', out))
       }
     })
-    .then(_ => {
-      return d.stopAndRemove()
-    })
+    .then(_ => d.stopAndRemove())
     .then(_ => done())
     .catch(err => done(err))
 }

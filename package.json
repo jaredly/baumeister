@@ -44,6 +44,7 @@
     "eventemitter3": "^0.1.6",
     "flat-file-db": "^0.1.4",
     "flummox": "^3.5.1",
+    "gaze": "^0.5.1",
     "immutable": "^3.7.1",
     "json-loader": "^0.5.1",
     "jsonquery-engine": "^1.0.2",

@@ -1,6 +1,7 @@
 
 import makeViews from './views'
 
+import plugins from '../plugins'
 import Runner from './runner'
 import Db from './db'
 import app from './app'

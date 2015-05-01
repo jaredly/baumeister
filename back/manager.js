@@ -17,6 +17,7 @@ export default class Manager {
     this.running = {}
     this.subs = {}
     this.clients = []
+    this.plugins = {}
   }
 
   init() {
@@ -186,81 +187,6 @@ export default class Manager {
       })
   }
 
-  runBuild(project, data) {
-    console.log('running', project, data)
-    const r = new Runner(project, data.id, this.basepath)
-    this.running[data.id] = r
-
-    const this_ = this
-    let section = null
-    r.pipe({
-      emit(evt, val) {
-        if (evt === 'section') section = val
-        this_.emit(data.id, 'build:event', {
-          build: data.id,
-          project: project.id,
-          event: {evt, val, section, time: Date.now()}
-        })
-      }
-    })
-
-    this.emit('build:new', data)
-
-    let interrupted = false
-
-    r.on('interrupt', () => {
-      interrupted = true
-    })
-
-    let saving = false
-    let saveAfter = false
-    let _saveInt = setInterval(() => {
-      data.events = aggEvents(r.history, null, true)
-      saving = true
-      this.db.put('builds', data.id, data)
-        .then(_ => {
-          saving = false
-          if (saveAfter) {
-            saveAfter()
-          }
-        })
-    }, 1000)
-
-    r.run((err, exitCode) => {
-      if (err || interrupted) {
-        console.log('ERR build', err, interrupted)
-        data.status = 'errored'
-        data.interrupted = true
-        data.error = err
-      } else if (exitCode) {
-        console.log('Nonzero exit code', exitCode)
-        data.status = 'failed'
-        data.error = 'Nonzero status code'
-      } else {
-        data.status = 'succeeded'
-      }
-      data.events = aggEvents(r.history, null, true, err || exitCode)
-      data.finished = Date.now()
-      data.duration = data.finished - data.started
-      this.emit('build:status', {project: project.id, build: data.id, duration: data.duration, status: data.status})
-      this.emit('build:done', {
-        project: {id: project.id, name: project.name},
-        build: {id: data.id, num: data.num, duration: data.duration, status: data.status}
-      })
-      clearInterval(_saveInt)
-      saveAfter = () => {
-        this.db.put('builds', data.id, data)
-          .then(_ => {
-            console.log('BUILD UPDATE')
-            console.log(JSON.stringify(data, null, 2))
-            this.emit('build:update', data)
-            this.running[data.id] = null
-          })
-      }
-      if (!saving) saveAfter()
-    })
-  }
-
   startBuild(id, onId) {
     return this.getProject(id)
       .then(project => {
@@ -278,18 +204,38 @@ export default class Manager {
               events: null,
             }
             if (onId) onId(data.id)
+            this.doPlugins('onBuild', project, data)
             project.latestBuild = data.id
             project.modified = data.started
             return this.db.put('builds', data.id, data)
-              .then(_ => this.db.put('projects',
-                                     project.id,
-                                     project))
+              .then(() => this.db.put('projects', project.id, project))
               .then(() => {
-                this.runBuild(project, data)
+
+                const r = new Runner(project, data.id, this.basepath)
+                this.running[data.id] = r
+                runBuild(r, project, data, this, this.db, build => {
+                  this.db.put('builds', build.id, build)
+                    .then(_ => {
+                      console.log('BUILD UPDATE')
+                      console.log(JSON.stringify(build, null, 2))
+                      this.emit('build:update', build)
+                      this.running[build.id] = null
+                      this.doPlugins('offBuild', project, data)
+                    })
+                })
                 return data.id
               })
           })
       })
+  }
+
+  doPlugins(name, project, ...args) {
+    Object.keys(this.plugins).forEach(id => {
+      if (!project.plugins || !project.plugins[id]) return
+      const plugin = this.plugins[id]
+      const params = [project].concat(args).concat([project.plugins[id]])
+      plugin[name].apply(plugin, params)
+    })
   }
 
   clearCache(id) {
@@ -336,5 +282,71 @@ export default class Manager {
   deleteBuild(id) {
     return this.db.del('build', id)
   }
+}
+
+function runBuild(r, project, data, out, db, done) {
+  console.log('running', project, data)
+
+  let section = null
+  r.pipe({
+    emit(evt, val) {
+      if (evt === 'section') section = val
+      out.emit(data.id, 'build:event', {
+        build: data.id,
+        project: project.id,
+        event: {evt, val, section, time: Date.now()}
+      })
+    }
+  })
+
+  out.emit('build:new', data)
+
+  let interrupted = false
+
+  r.on('interrupt', () => {
+    interrupted = true
+  })
+
+  let saving = false
+  let saveAfter = false
+  let _saveInt = setInterval(() => {
+    data.events = aggEvents(r.history, null, true)
+    saving = true
+    db.put('builds', data.id, data)
+      .then(_ => {
+        saving = false
+        if (saveAfter) {
+          saveAfter()
+        }
+      })
+  }, 1000)
+
+  r.run((err, exitCode) => {
+    if (err || interrupted) {
+      console.log('ERR build', err, interrupted)
+      data.status = 'errored'
+      data.interrupted = true
+      data.error = err
+    } else if (exitCode) {
+      console.log('Nonzero exit code', exitCode)
+      data.status = 'failed'
+      data.error = 'Nonzero status code'
+    } else {
+      data.status = 'succeeded'
+    }
+    data.events = aggEvents(r.history, null, true, err || exitCode)
+    data.finished = Date.now()
+    data.duration = data.finished - data.started
+    out.emit('build:status', {project: project.id, build: data.id, duration: data.duration, status: data.status})
+    out.emit('build:done', {
+      project: {id: project.id, name: project.name},
+      build: {id: data.id, num: data.num, duration: data.duration, status: data.status}
+    })
+    clearInterval(_saveInt)
+    saveAfter = () => {
+      done(data)
+    }
+    if (!saving) saveAfter()
+  })
 }
 

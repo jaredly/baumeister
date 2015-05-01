@@ -266,19 +266,19 @@ class FileWatchPlugin extends React.Component {
         Enabled
       </label>
       <label className='text-label'>
-        Patterns to ignore (regex, newline-separated)
-        <textarea name="ignore"/>
+        Patterns to watch (minimatch format, newline delimited)
+        <textarea name="patterns"/>
       </label>
     </FormSection>
   }
 }
 
 const plugins = {
-  'file-watch': {
+  'file-watcher': {
     title: 'File Watcher',
     comp: FileWatchPlugin,
     defaultConfig: {
-      ignore: '.*node_modules.*\n\\.sw[op]$\n^\\.',
+      patterns: 'lib/*.js',
       enabled: true,
     },
   },
@@ -301,7 +301,7 @@ function pluginConfig() {
       const Comp = plugin.comp
       return <Radio
         key={id}
-        name={plugin.name || id}
+        name={plugin.name ? plugin.name : 'plugins.' + id}
         title={plugin.title}
         choices={{
           on: 'Using',
