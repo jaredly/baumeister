@@ -5,7 +5,7 @@ import {Form, Radio} from 'frm'
 
 @fluxify({
   data: {
-    config: 'initialData',
+    config: 'config',
   },
   actions: {
     onSave: 'config.save',

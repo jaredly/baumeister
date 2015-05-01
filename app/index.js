@@ -7,6 +7,7 @@ import aggEvents from '../lib/agg-events'
 import routes from './routes';
 import CiFlux from './stores'
 import Api from './api'
+import mmSS from './lib/mmSS'
 
 import {Flux} from 'flammable/react'
 
@@ -63,6 +64,7 @@ flux.addStore('config', {
     }
   }
 })
+
 flux.addActions('config', {
   save(config) {
     return api.saveConfig(config)
@@ -271,6 +273,7 @@ flux.addStore('builds', {
     }
   },
 })
+
 flux.addActions('builds', {
   fetch: projectId => api.getBuilds(projectId)
     .then(builds => ({projectId, builds})),
@@ -282,35 +285,42 @@ flux.addActions('builds', {
   }
 })
 
+setupNotifications(api, flux)
 
+function setupNotifications(api, flux) {
+  if (!window.Notification) return console.warn('Notifications not supported')
+  let focused = true
+  window.addEventListener('focus', () => focused = true)
+  window.addEventListener('blur', () => focused = false)
 
-/*
-    let focused = true
-    window.addEventListener('focus', () => focused = true)
-    window.addEventListener('blur', () => focused = false)
-    props.api.on('build:done', data => {
-      if (focused) return
-      if (this.props.config.notifications === 'all' ||
-         (this.props.config.Notifications === 'failures' && data.build.status === 'failed')) {
-        const title = `Build ${data.build.num} for ${data.project.name} ${data.build.status}`
-        const body = `Took ${mmSS(data.build.duration)}`
-        const note = new Notification(title, {
-          body,
-          icon: `/static/icon-${data.build.status}.png`
-        })
-        setTimeout(_ => note.close(), 5000)
-      }
+  function checkPermissions(config) {
+    if (config.notifications === 'none') return
+    if (Notification.permission === 'granted') return
+    Notification.requestPermission()
+  }
+
+  // flux.onStore(['config'], checkPermissions)
+  flux.onAction('config', 'save', checkPermissions)
+  flux.onAction('config', 'fetch', checkPermissions)
+  flux.onAction('ws', 'config:update', checkPermissions)
+
+  api.on('build:done', data => {
+    if (focused) return // don't show if you're looking at the page
+    let setting = flux.stores.config.notifications
+    if (setting === 'none') return
+    if (setting === 'failures' && data.build.status !== 'failed') return
+
+    const title = `Build ${data.build.num} for ${data.project.name} ${data.build.status}`
+    const body = `Took ${mmSS(data.build.duration)}`
+    const note = new Notification(title, {
+      body,
+      icon: `/static/icon-${data.build.status}.png`
     })
+    setTimeout(_ => note.close(), 5000)
+  })
+}
 
-    props.api.on('ws:state', state => {
-      this.setState({
-        connState: state,
-      })
-    })
-
-   setState({connState: this.props.api.state}
-*/
-
+flux.sendAction('config.fetch')
 router.run(Handler => {
   React.render(flux.wrap(<Handler/>), document.getElementById('root'));
   RCSS.injectAll()
