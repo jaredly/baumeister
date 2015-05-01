@@ -202,7 +202,7 @@ function buildConfig() {
         Reuse previously built image if available
       </label>
     </div>
-    <div switchWhere='prefab' classname='ProjectConfig_prefab'>
+    <div switchWhere='prefab' className='ProjectConfig_prefab'>
       <label className='text-label'>Docker image name: <input type='text' name="prefab" placeholder="ubuntu:latest"/></label>
     </div>
   </Radio>
@@ -279,6 +279,7 @@ function pluginConfig() {
       const plugin = plugins[id]
       const Comp = plugin.comp
       return <Radio
+        key={id}
         name={plugin.name || id}
         title={plugin.title}
         choices={{

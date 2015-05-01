@@ -1,6 +1,9 @@
 
 export const projectStore = {
   projects: {
+    create(project, update) {
+      update({[project.id]: {$set: project}})
+    },
     fetch(data, update) {
       update({$set: data})
     },

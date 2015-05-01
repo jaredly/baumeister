@@ -13,6 +13,7 @@ export const buildStore = {
         [build.project]: {$unshift: [build]}
       })
     },
+
     'build:update': (build, update, state) => {
       let ix = -1
       let builds = state[build.project]
@@ -30,6 +31,7 @@ export const buildStore = {
         }
       })
     },
+
     'build:event': ({project, build, event}, update, state) => {
       let ix = -1
       let builds = state[project]
@@ -51,6 +53,7 @@ export const buildStore = {
         }
       })
     },
+
     'build:history': ({id, project, events}, update, state) => {
       let ix = -1
       let builds = state[project]
@@ -71,6 +74,7 @@ export const buildStore = {
       })
     }
   },
+
   builds: {
     fetch({projectId, builds}, update) {
       update({
