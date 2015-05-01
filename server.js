@@ -1,15 +1,39 @@
-var webpack = require('webpack');
-var WebpackDevServer = require('webpack-dev-server');
-var config = require('./webpack.config');
 
-new WebpackDevServer(webpack(config), {
-  publicPath: config.output.publicPath,
-  hot: true,
-  historyApiFallback: true
-}).listen(process.env.PORT || 3000, 'localhost', function (err, result) {
-  if (err) {
-    console.log(err);
+import assign from 'object-assign'
+
+import config from './config'
+import setupManager from './lib'
+import makeViews from './app/back/views'
+import setupApp from './app/back/setup'
+import loadPlugins from './lib/load-plugins'
+
+const defaults = {
+  server: {
+    port: process.env.PORT || 3005,
+  },
+  database: {
+    path: process.env.DB || __dirname + '/.test.db',
+  },
+  builders: {},
+  plugins: {},
+}
+
+for (let name in defaults) {
+  if (!config[name]) {
+    config[name] = defaults[name]
+  } else {
+    config[name] = assign(defaults[name], config[name])
   }
+}
 
-  console.log('Listening at localhost:' + (process.env.PORT || 3000));
-});
+setupManager(config, manager => {
+  const views = makeViews(manager)
+  const app = setupApp(config.server.port || 3005, views, manager)
+
+  loadPlugins(manager, app, config, () => {
+    app.run(server => {
+      console.log('ready')
+    })
+  })
+})
+

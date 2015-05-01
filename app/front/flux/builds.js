@@ -1,5 +1,5 @@
 
-import aggEvents from '../../lib/agg-events'
+import aggEvents from '../../../lib/agg-events'
 
 export const buildStore = {
   ws: {

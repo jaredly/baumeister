@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "node + docker + ci",
   "scripts": {
-    "start": "node server.js"
+    "start": "node dev-server.js"
   },
   "repository": {
     "type": "git",

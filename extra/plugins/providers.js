@@ -44,34 +44,11 @@ function handleCached(child, config, out, get, update, done) {
 }
 
 export default {
-  git(build, ctx, out, done) {
-    build.runCached({
-      env: ['GIT_TERMINAL_PROMPT=0'],
-      docker: {
-        image: 'docker-ci/git',
-      },
-    }, {
-      cachePath: 'project',
-      projectPath: '.',
-      get: `git clone ${config.source.repo} .`,
-      update: 'git pull',
-    }, done)
-  }
 
   local(build, ctx, out, done) {
   }
 
   script(build, ctx, out, done) {
-    build.runCached({
-      docker: {
-        image: config.source.base || 'ubuntu',
-      },
-    }, {
-      cachePath: 'project',
-      projectPath: '.',
-      get: config.source.get,
-      update: config.source.update,
-    }, done)
   }
 
   git(docker, config, out, done) {
