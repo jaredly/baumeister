@@ -26,14 +26,27 @@ for (let name in defaults) {
   }
 }
 
-setupManager(config, manager => {
-  const views = makeViews(manager)
-  const app = setupApp(config.server.port || 3005, views, manager)
-
-  loadPlugins(manager, app, config, () => {
-    app.run(server => {
-      console.log('ready')
-    })
+setupManager(config)
+  .then(({builds, clients, dao}) => {
+    const views = makeViews(builds, clients, dao)
+    const app = setupApp(config.server.port || 3005, views, clients)
+    return loadPlugins(builds, app, config)
+      .then(() => {
+        console.log('plugins initialized')
+        return app
+      }, err => {
+        console.error('Failed to load plugins')
+        throw err
+      })
+  }, err => {
+    console.error('failed to setup db + managers')
+    throw err
   })
-})
+  .then(app => app.run(server => {
+    console.log('ready')
+  }), err => {
+    console.log('Failed to initialize!')
+    console.log(err.message)
+    console.log(err.stack)
+  })
 

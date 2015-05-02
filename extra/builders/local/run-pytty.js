@@ -1,7 +1,7 @@
 
 import {spawn} from 'child_process'
 
-import {ShellError} from './errors'
+import {ShellError} from '../../../lib/errors'
 
 function runPyTTY(cmd, spawnOptions, options, io) {
   const sid = uuid()
@@ -66,7 +66,7 @@ function runPyTTY(cmd, spawnOptions, options, io) {
           id: sid,
           time: end,
           duration: dur,
-          error: "non-zero exit code: " + code
+          error: "non-zero exit code: " + code,
           exitCode: code
         })
         return done(new ShellError(cmd, code))

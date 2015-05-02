@@ -69,6 +69,25 @@ export const projectStore = {
 
 export const projectStatus = {
   projects: {
+    fetch: {
+      start(tid, args, update) {
+        update({
+          _status: {$set: 'loading'}
+        })
+      },
+      error(tid, data, update) {
+        update({
+          _status: {$set: 'error'},
+          _error: {$set: data.error},
+        })
+      },
+      done(tid, data, update) {
+        update({
+          _status: {$set: 'done'}
+        })
+      },
+    },
+
     clearCache: {
       start(tid, [id], update, state) {
         if (!state[id]) {

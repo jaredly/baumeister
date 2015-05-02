@@ -15,7 +15,7 @@ function urlify(req, res, next) {
   next()
 }
 
-export default function makeApp(port, views, manager) {
+export default function makeApp(port, views, clients) {
 
   const app = connect()
   app.use(cors())
@@ -33,7 +33,7 @@ export default function makeApp(port, views, manager) {
     const WebSocketServer = require('ws').Server
     const wss = new WebSocketServer({ server });
     wss.on('connection', socket => {
-      manager.newConnection(socket)
+      clients.newConnection(socket)
     })
     server.listen(port, ready.bind(null, server))
   }

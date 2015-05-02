@@ -4,7 +4,7 @@ import React from 'react'
 import {Link} from 'react-router'
 import {Map, fromJS} from 'immutable'
 
-import {Radio, Panes, Form, FormSection} from 'frm'
+import {Radio, Panes, Form, FormSection} from 'formative'
 
 import './project-config.less'
 import '../lib/form.less'

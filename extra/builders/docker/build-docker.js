@@ -1,5 +1,5 @@
 
-import uuid from './uuid'
+import uuid from '../../../lib/uuid'
 import es from 'event-stream'
 
 export default function buildDocker(docker, stream, config, out, done) {

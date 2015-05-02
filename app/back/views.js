@@ -24,7 +24,7 @@ function disp(eps) {
   }
 }
 
-export default manager => {
+export default (builds, clients, dao) => {
   const views = {
     projects: {
       get(req, res, next) {
@@ -32,14 +32,14 @@ export default manager => {
         if (path === '/') {
           let p
           if (req.query.full) {
-            p = manager.getProjectsWithBuilds()
+            p = dao.getProjectsWithBuilds()
           } else {
-            p = manager.getProjects()
+            p = dao.getProjectMap()
           }
           p.then(projects => json(res, projects))
            .catch(err => json(res, err, 500))
         } else {
-          manager.getProject(path.slice(1))
+          dao.getProject(path.slice(1))
             .then(project => json(res, project))
             .catch(err => json(res, err, 500))
         }
@@ -48,24 +48,27 @@ export default manager => {
       post(req, res, next) {
         const path = req.purl.pathname
         if (path === '/') {
-          return manager.addProject(req.body)
+          return dao.addProject(req.body)
             .then(project => json(res, project))
             .catch(err => json(res, err, 500))
         }
         const parts = req.url.replace(/^\//, '').replace(/\/$/, '').split('/')
         if (parts.length === 1) {
-          manager.updateProject(parts[0], req.body)
+          dao.updateProject(parts[0], req.body)
+            .then(project => clients.emit('project:update', project))
             .then(project => json(res, project))
             .catch(err => json(res, err, 500))
         } else if (parts[1] === 'clear-cache') {
-          manager.clearCache(parts[0], req.body)
+          builds.clearCache(parts[0], req.body)
             .then(_ => json(res, 'Cleared'))
             .catch(err => json(res, err, 500))
         }
       },
 
       delete(req, res, next) {
-        manager.deleteProject(req.purl.pathname.slice(1))
+        const id = req.purl.pathname.slice(1)
+        builds.deleteProject(id)
+          .then(() => clients.emit('project:delete', id))
           .then(() => json(res, 'success'))
           .catch(err => json(res, err, 500))
       }
@@ -91,13 +94,14 @@ export default manager => {
 
     config: {
       get(req, res, next) {
-        manager.getConfig()
+        dao.getConfig()
           .then(config => json(res, config))
           .catch(err => json(res, err, 500))
       },
 
       post(req, res, next) {
-        manager.setConfig(req.body)
+        dao.setConfig(req.body)
+          // TODO publish config change to attached clients?
           .then(config => json(res, config))
           .catch(err => json(res, err, 500))
       },
@@ -106,27 +110,33 @@ export default manager => {
     builds: {
       get(req, res, next) {
         if (req.url === '/') {
-          manager.getBuilds()
+          dao.getBuilds()
             .then(builds => json(res, builds))
             .catch(err => json(res, err, 500))
           return
         }
         const parts = req.url.replace(/^\//, '').replace(/\/$/, '').split('/')
         if (parts.length === 1) {
-          manager.getBuilds(parts[0])
+          dao.getBuilds(parts[0])
             .then(builds => json(res, builds))
             .catch(err => json(res, err, 500))
         } else if (parts.length === 2) {
-          manager.getBuild(parts[0], parts[1])
+          dao.getBuild(parts[0], parts[1])
             .then(build => {
               if (!build) return json(res, null, 404)
               json(res, build)
             })
             .catch(err => json(res, err, 500))
-        } else if (parts.length === 3 && parts[2] === 'interrupt') {
-          return manager.stopBuild(parts[1])
-            .then(_ => json(res, 'Ok'))
-            .catch(err => json(res, err, 500))
+        } else if (parts.length === 3) {
+          const action = parts[2]
+
+          if (action === 'interrupt') {
+            return builds.stopBuild(parts[1])
+              .then(_ => json(res, 'Ok'))
+              .catch(err => json(res, err, 500))
+          } else {
+            next()
+          }
         } else {
           next()
         }
@@ -139,21 +149,21 @@ export default manager => {
         }
         const parts = req.url.replace(/^\//, '').replace(/\/$/, '').split('/')
         if (parts.length === 3 && parts[2] === 'interrupt') {
-          return manager.stopBuild(parts[1])
+          return builds.stopBuild(parts[1])
             .then(_ => json(res, 'Ok'))
             .catch(err => json(res, err, 500))
         }
         if (parts.length !== 1) {
           return json(res, new Error('invalid'), 500)
         }
-        manager.startBuild(parts[0])
+        builds.startBuild(parts[0])
           .then(id => json(res, id))
           .catch(err => json(res, err, 500))
       },
 
       delete(req, res, next) {
         if (req.url) return json(res, 'not found', 404)
-        manager.deleteBuild(req.url.slice(1))
+        dao.deleteBuild(req.url.slice(1))
           .then(() => json(res, 'ok'))
           .catch(err => json(res, err, 500))
       }

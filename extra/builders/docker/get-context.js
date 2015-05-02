@@ -4,7 +4,7 @@ import tarfs from 'tar-fs'
 import path from 'path'
 import fs from 'fs'
 
-import ConfigError from './config-error'
+import {ConfigError} from '../../../lib/errors'
 
 export default function getContext(project, done) {
   const name = project.build.dockerfile || 'Dockerfile'

@@ -10,6 +10,10 @@ import NewProject from './new-project'
 @fluxify({
   data: {
     projects: 'projects',
+    projects$status: {
+      _status: 'loadStatus',
+      _error: 'loadError',
+    },
   },
   actions: {
     getProjects: 'projects.fetch'
@@ -35,9 +39,11 @@ export default class ProjectList extends React.Component {
   }
 
   render() {
-    // TODO loading state?
-    if (!this.props.projects || !Object.keys(this.props.projects).length) {
+    if (this.props.loadStatus === 'unloaded' || this.props.loadStatus === 'loading') {
       return <span>Loading</span>
+    }
+    if (this.props.loadStatus === 'error') {
+      return <span>Failed to load projects! Check your server log. {this.props.loadError}</span>
     }
     const projects = this.props.projects
     const names = Object.keys(this.props.projects).filter(name => projects[name]).sort((a, b) => {

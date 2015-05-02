@@ -45,12 +45,6 @@ function handleCached(child, config, out, get, update, done) {
 
 export default {
 
-  local(build, ctx, out, done) {
-  }
-
-  script(build, ctx, out, done) {
-  }
-
   git(docker, config, out, done) {
     handleCached(docker, {
       image: 'docker-ci/git',

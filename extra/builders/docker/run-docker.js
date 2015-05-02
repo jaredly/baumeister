@@ -2,7 +2,7 @@
 import es from 'event-stream'
 import {parse} from 'shell-quote'
 import path from 'path'
-import uuid from './uuid'
+import uuid from '../../../lib/uuid'
 
 /**
  * docker: a dockerode instance

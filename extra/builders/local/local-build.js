@@ -1,10 +1,10 @@
 
 import path from 'path'
 
-import BaseBuild from './base-build'
+import BaseBuild from '../../../lib/base-build'
 import runPyTTY from './run-pytty'
 
-class LocalBuild extends BaseBuild {
+export default class LocalBuild extends BaseBuild {
   static type = 'local'
 
   constructor(io, project, id, config) {

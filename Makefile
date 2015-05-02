@@ -1,6 +1,6 @@
 
 serve:
-	nodemon --watch back --watch lib --exec babel-node ./back/test-app.js
+	nodemon --watch app/back --watch lib --watch extra --exec babel-node --stage 0 server.js
 
 fill-db:
 	babel-node back/test-fill-db.js

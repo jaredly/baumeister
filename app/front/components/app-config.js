@@ -1,7 +1,7 @@
 
 import React from 'react'
 import {fluxify} from 'flammable/react'
-import {Form, Radio} from 'frm'
+import {Form, Radio} from 'formative'
 
 @fluxify({
   data: {

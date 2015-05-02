@@ -4,17 +4,16 @@ import path from 'path'
 import fs from 'fs'
 
 import assign from 'object-assign'
-import providers from './providers'
+// import providers from './providers'
 import buildDocker from './build-docker'
 import getContext from './get-context'
 import runDocker from './run-docker'
-import BaseBuild from './base-build'
+import BaseBuild from '../../../lib/base-build'
 
-import {ConfigError, InterruptError, ShellError} from './errors'
+import {ConfigError, InterruptError, ShellError} from '../../../lib/errors'
 
 
-
-export default DockerBuild extends BaseBuild {
+export default class DockerBuild extends BaseBuild {
   static type = 'docker'
 
   constructor(io, project, id, config) {
@@ -69,8 +68,8 @@ export default DockerBuild extends BaseBuild {
   shell(config) {
     const io = this.io
     const sh = new Docksh(this.docker, {
-      volumesFrom: this.runnerConfig.volumesFrom,,
-      binds: this.runnerConfig.binds,,
+      volumesFrom: this.runnerConfig.volumesFrom,
+      binds: this.runnerConfig.binds,
       env: this.runnerConfig.env.concat(config.env || []),
 
       image: config.docker && config.docker.image || 'ubuntu',
@@ -101,7 +100,7 @@ export default DockerBuild extends BaseBuild {
       },
       stop() {
         return config.dontRemove ? sh.stop() : sh.stopAndRemove()
-      }
+      },
       cacheDir: '/cache',
       projectDir: '/project',
     }
@@ -121,6 +120,7 @@ export default DockerBuild extends BaseBuild {
     })
   }
 
+  /*
   getProject(done) {
     if (this.project.source.path) {
       return fs.exists(this.project.source.path, doesExist => {
@@ -226,6 +226,7 @@ export default DockerBuild extends BaseBuild {
       done(err, exitCode)
     })
   }
+  */
 }
 
 function ensureDir(dir, done) {
