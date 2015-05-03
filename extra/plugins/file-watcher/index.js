@@ -22,7 +22,7 @@ export default class FileWatcher {
     this.watchers[project.id] = new Gaze(patterns, {
       cwd: project.source.path
     })
-    console.log('watching', patterns)
+    console.log('[FileWatcher] watching', patterns)
     this.watchers[project.id].on('all', () => {
       if (this.paused[project.id]) return
       this.manager.startBuild(project.id)

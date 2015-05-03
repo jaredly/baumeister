@@ -6,8 +6,9 @@ fill-db:
 	babel-node back/test-fill-db.js
 
 test:
-	mocha --compilers "js:babel/register" back/test-db.js
+	mocha --compilers "js:babel/register" test/runner.js
 
 test-manager:
 	babel-node back/test-manager.js
 
+.PHONY: test
