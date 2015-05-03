@@ -1,0 +1,97 @@
+
+import expect from 'expect.js'
+import memdown from 'memdown'
+
+import Promise from 'bluebird'
+import Db from '../lib/db'
+import Dao from '../lib/dao'
+import BuildManager from '../lib/build-manager'
+import Replayable from '../lib/replayable'
+import locoFixture from './fixtures/loco.config.js'
+import {ConfigError, InterruptError} from '../lib/errors'
+import setup from '../lib'
+import BaseBuild from '../lib/base-build'
+
+import DockerBuilder from '../extra/builders/docker/docker-build'
+
+const fixture = {
+  id: '1111_2222',
+  name: 'loco',
+  plugins: {
+    'shell-provider': {
+      cache: true,
+      get: 'echo "hello" > world.txt',
+      update: 'echo "more" > world.txt',
+    },
+    'shell-tester': {
+      command: 'grep hello world.txt',
+    },
+  },
+}
+
+const PLUGINS = {
+  'shell-provider': {
+    onBuild(project, data, runner, config) {
+      runner.use('getproject', builder => {
+        return builder.run(config.get)
+      })
+    },
+  },
+  'shell-tester': {
+    onBuild(project, data, runner, config) {
+      runner.use('test', builder => {
+        return builder.run(config.command)
+      })
+    }
+  },
+}
+
+describe('docker-builder', () => {
+  it('should test the thing', function (done) {
+    this.timeout(20000)
+    const hit = []
+    const io = new Replayable()
+
+    io.on('section', sec => hit.push(`<${sec}>`))
+    io.pipe({
+      emit(evt, val) {
+        // console.log(`[${evt}]`, val)
+      }
+    })
+
+    setup({
+      database: {
+        inMemory: true,
+      }
+    }).then(({clients, builds, dao}) => {
+      builds.addBuilders({
+        docker: DockerBuilder,
+      })
+      builds.setDefaultBuilder('docker')
+      builds.addPlugins(PLUGINS)
+
+      dao.putProject(fixture)
+      .then(() => {
+        builds.startBuild(fixture.name, io)
+          .then(({project, build}) => {
+            if (build.error) {
+              console.log(build.error)
+              console.log(build.error.stack)
+            }
+            expect(project.latestBuild).to.equal(build.id)
+            expect(build.status).to.eql('succeeded')
+            expect(hit).to.eql([
+              '<init>',
+              '<getproject>',
+              '<test>',
+            ])
+            expect(build.error).to.not.be.ok()
+            expect(Object.keys(build.events.streams).length).to.equal(2)
+            done()
+          }, done)
+          .catch(done)
+      })
+    }, done)
+  })
+})
+

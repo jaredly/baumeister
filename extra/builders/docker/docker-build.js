@@ -3,12 +3,15 @@ import Docker from 'dockerode'
 import path from 'path'
 import fs from 'fs'
 
+import Promise from 'bluebird'
 import assign from 'object-assign'
 // import providers from './providers'
 import buildDocker from './build-docker'
 import getContext from './get-context'
 import runDocker from './run-docker'
 import BaseBuild from '../../../lib/base-build'
+import prom from '../../../lib/prom'
+import Docksh from './docksh'
 
 import {ConfigError, InterruptError, ShellError} from '../../../lib/errors'
 
@@ -21,7 +24,7 @@ export default class DockerBuild extends BaseBuild {
     this.docker = new Docker() // TODO use config to custom docker connection
     this.cacheContainer = `dci-${this.project.id}-cache`
     this.dataContainer = `dci-${this.id}-data`
-    this.runnerOptions = {
+    this.runnerConfig = {
       volumesFrom: [],
       binds: [],
       env: [],
@@ -32,7 +35,7 @@ export default class DockerBuild extends BaseBuild {
     const promises = []
     // create data container
     if (this.dataContainer) {
-      this.runnerOptions.volumesFrom.push(this.dataContainer)
+      this.runnerConfig.volumesFrom.push(this.dataContainer)
       promises.push(prom(done => {
         this.docker.createContainer({
           name: '/' + this.dataContainer,
@@ -48,11 +51,12 @@ export default class DockerBuild extends BaseBuild {
 
     // check for / create cache container
     if (this.cacheContainer) {
-      this.runnerOptions.volumesFrom.push(this.cacheContainer)
+      this.runnerConfig.volumesFrom.push(this.cacheContainer)
       promises.push(prom(done => {
         ensureContainer(this.docker, this.cacheContainer, '/cache', (err, id, created) => {
           if (err) return done(err)
           this.io.emit('info', `${created ? 'Created' : 'Using'} cache container ${this.cacheContainer} (${id})`)
+          done()
         })
       }))
     }
@@ -66,6 +70,7 @@ export default class DockerBuild extends BaseBuild {
   }
 
   shell(config) {
+    config = config || {}
     const io = this.io
     const sh = new Docksh(this.docker, {
       volumesFrom: this.runnerConfig.volumesFrom,
@@ -73,7 +78,7 @@ export default class DockerBuild extends BaseBuild {
       env: this.runnerConfig.env.concat(config.env || []),
 
       image: config.docker && config.docker.image || 'ubuntu',
-      cwd: config.cwd || '/project',
+      // cwd: config.cwd || '/project',
     })
 
     return {
@@ -81,6 +86,7 @@ export default class DockerBuild extends BaseBuild {
         return interprom(io, sh.init())
       },
       run(cmd, options) {
+        options = options || {}
         if (options.silent) {
           return sh.runSilent(cmd, io)
             .then(result => {
@@ -95,7 +101,7 @@ export default class DockerBuild extends BaseBuild {
             if (code !== 0 && !options.badExitOK) {
               throw new ShellError(cmd, code)
             }
-            return result
+            return code
           })
       },
       stop() {
@@ -255,7 +261,6 @@ function ensureContainer(docker, id, volume, done) {
       },
     }, (err, res) => {
       if (err) return done(err)
-      console.log(res)
       done(null, res.id, true)
     })
   })

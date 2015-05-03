@@ -1,9 +1,9 @@
 
 import path from 'path'
 
-import uuid from './uuid'
-import prom from './prom'
-import {ShellError} from './errors'
+import uuid from '../../../lib/uuid'
+import prom from '../../../lib/prom'
+import {ShellError} from '../../../lib/errors'
 
 /**
  * A Docker shell!
@@ -23,7 +23,6 @@ export default class Docksh {
   constructor(docker, config) {
     this.docker = docker
     this.config = config
-    console.log('Docksh', config)
   }
 
   init() {
