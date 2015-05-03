@@ -2,6 +2,16 @@
 export default {
   name: 'loco',
   modified: new Date(),
+  plugins: {
+    'shell-provider': {
+      cache: true,
+      get: 'echo "hello" > world.txt',
+      update: 'echo "more" > world.txt',
+    },
+    'shell-tester': {
+      command: 'grep hello world.txt',
+    },
+  },
   source: {
     provider: 'script',
     config: {
