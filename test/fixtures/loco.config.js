@@ -3,32 +3,19 @@ export default {
   name: 'loco',
   modified: new Date(),
   plugins: {
-    'shell-provider': {
+    'git-provider': {
       cache: true,
-      get: 'echo "hello" > world.txt',
-      update: 'echo "more" > world.txt',
+      repo: 'https://github.com/notablemind/loco',
     },
     'shell-tester': {
-      command: 'grep hello world.txt',
+      command: 'pwd; ls; npm test',
     },
   },
-  source: {
-    provider: 'script',
+  builder: {
+    id: 'docker',
     config: {
-      cache: true,
-      base: 'docker-ci/git',
-      get: 'git clone https://github.com/notablemind/loco .',
-      update: 'ls -a; git pull',
+      prefab: 'docker-ci/component',
     },
-  },
-  build: {
-    prefab: 'docker-ci/component',
-  },
-  test: {
-    cmd: 'pwd;ls;npm test',
-  },
-  cleanup: {
-    rmdir: true,
   },
 }
 

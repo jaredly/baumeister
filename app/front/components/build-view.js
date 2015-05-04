@@ -30,18 +30,14 @@ export default class BuildView extends React.Component {
       this.setOpenBuild(null)
     }
     this.props.getBuilds()
-    /*
-    setTimeout(() => {
-      this.props.flux.getActions('builds')
-        .getBuilds(this.props.project.id)
-    }, 0)
-    */
   }
 
   componentWillReceiveProps(nextProps) {
+    /*
     if (nextProps.builds === this.props.builds) return
     if (!nextProps.builds) return
     this.setOpenBuild(null, nextProps.builds)
+    */
   }
 
   setOpenBuild(id, builds) {

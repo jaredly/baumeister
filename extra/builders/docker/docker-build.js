@@ -5,7 +5,6 @@ import fs from 'fs'
 
 import Promise from 'bluebird'
 import assign from 'object-assign'
-// import providers from './providers'
 import buildDocker from './build-docker'
 import getContext from './get-context'
 import runDocker from './run-docker'

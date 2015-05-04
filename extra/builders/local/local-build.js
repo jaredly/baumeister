@@ -1,24 +1,32 @@
 
+import Promise from 'bluebird'
+import mkdirp from 'mkdirp'
 import path from 'path'
+import fs from 'fs'
 
+import {ConfigError, InterruptError} from '../../../lib/errors'
 import BaseBuild from '../../../lib/base-build'
+import prom from '../../../lib/prom'
 import runPyTTY from './run-pytty'
 
-export default class LocalBuild extends BaseBuild {
+export default class LocalBuilder extends BaseBuild {
   static type = 'local'
 
   constructor(io, project, id, config) {
     super(io, project, id, config)
 
-    if (!config.basePath) {
-      throw new ConfigError('No basepath specified')
-    }
-    if (!fs.existsSync(config.basePath)) {
-      throw new ConfigError('Basepath does not exist')
+    this.runnerConfig = {
+      env: [],
     }
   }
 
   init() {
+    if (!this.config || !this.config.basePath) {
+      throw new ConfigError('No basepath specified')
+    }
+    if (!fs.existsSync(this.config.basePath)) {
+      throw new ConfigError(`Basepath ${config.basePath} does not exist`)
+    }
     const projectDir = path.join(this.config.basePath, 'projects',
                                 this.project.id.replace(/:/, '_'))
     return prom(done => fs.exists(this.config.basePath, exists => {
@@ -38,20 +46,22 @@ export default class LocalBuild extends BaseBuild {
 
   shell(options) {
     const io = this.io
+    const builder = this
     return {
       init() {
         // nothing ventured, nothing gained
         return Promise.resolve()
       },
       run(cmd, options) {
-        let cwd = options.cwd || this.projectDir
+        options = options || {}
+        let cwd = options.cwd || builder.projectDir
         if (cwd[0] !== '/') {
-          cwd = this.projectDir + cwd
+          cwd = builder.projectDir + cwd
         }
 
         return runPyTTY(cmd, {
           cwd,
-          env: this.runnerConfig.env.concat(options.env || []),
+          env: builder.runnerConfig.env.concat(options.env || []),
         }, {
           silent: options.silent,
         }, io)

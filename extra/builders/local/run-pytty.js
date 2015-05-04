@@ -2,8 +2,10 @@
 import {spawn} from 'child_process'
 
 import {ShellError} from '../../../lib/errors'
+import uuid from '../../../lib/uuid'
+import prom from '../../../lib/prom'
 
-function runPyTTY(cmd, spawnOptions, options, io) {
+export default function runPyTTY(cmd, spawnOptions, options, io) {
   const sid = uuid()
   const start = Date.now()
   if (!options.silent) {
@@ -37,8 +39,8 @@ function runPyTTY(cmd, spawnOptions, options, io) {
     promResolver = done
 
     var child = spawn('python3', [__dirname + '/runtty.py', cmd], {
-      cwd: options.cwd,
-      env: options.env,
+      cwd: spawnOptions.cwd,
+      env: spawnOptions.env,
     })
     childProcess = child
 
@@ -76,7 +78,7 @@ function runPyTTY(cmd, spawnOptions, options, io) {
         time: end,
         duration: dur,
       })
-      done(null, data.ExitCode)
+      done(null, code)
     })
   })
 }

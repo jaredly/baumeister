@@ -8,9 +8,10 @@ module.exports = {
     docker: {
     },
     local: {
+      basePath: '/tmo/localBuilder',
     },
   },
-  defaultBuilder: 'docker',
+  defaultBuilder: 'local',
   plugins: {
     'file-watcher': require('./extra/plugins/file-watcher'),
     'local': require('./extra/plugins/local'),

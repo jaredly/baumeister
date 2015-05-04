@@ -9,6 +9,22 @@ import './build.less'
 
 export default class Build extends React.Component {
 
+  renderError() {
+    const build = this.props.build
+    if (build.status !== 'errored' && build.status !== 'failed') return
+    if (!build.errorCause) {
+      build.errorCause = 'unknown'
+    }
+    if (!build.error) {
+      build.error = {message: 'No error information'}
+    }
+    return <div className={'BuildError BuildError-' + build.status}>
+      <div className='BuildError_title'>Build {build.status} ({build.errorCause} error)</div>
+      <div className='BuildError_message'>{build.error.message}</div>
+      {build.error.stack && <pre className='BuildError_traceback'>{build.error.stack}</pre>}
+    </div>
+  }
+
   render () {
     const build = this.props.build
     return <div className='Build'>
@@ -25,6 +41,8 @@ export default class Build extends React.Component {
             section={section}
             streams={build.events.streams}/>) : 'Initializing...'}
       </ul>
+
+      {this.renderError()}
 
     </div>
   }

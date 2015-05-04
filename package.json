@@ -64,6 +64,7 @@
     "tcomb": "^1.0.1",
     "tcomb-validation": "git://github.com/jaredly/tcomb-validation.git#union-of-structs",
     "webpack": "git://github.com/webpack/webpack.git#webpack-2",
-    "ws": "^0.7.1"
+    "ws": "^0.7.1",
+    "yargs": "^3.8.0"
   }
 }

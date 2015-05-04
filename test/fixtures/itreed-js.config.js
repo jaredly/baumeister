@@ -2,16 +2,18 @@
 export default {
   name: 'itreed',
   modified: new Date(),
-  source: {
-    path: '/home/jared/clone/nm/',
-    inPlace: true,
-  }, 
-  build: {
-    dockerfile: 'itreed/Docker.ci',
-    context: false,
+  plugins: {
+    'local-provider': {
+      path: '/home/jared/clone/nm/',
+      inPlace: true,
+    },
+    'docker-builder': {
+      dockerfile: 'itreed/Docker.ci',
+      context: false,
+    },
+    'shell-tester': {
+      cwd: 'itreed/plugins/itreed-js',
+      cmd: 'make',
+    },
   },
-  test: {
-    cwd: 'itreed/plugins/itreed-js',
-    cmd: 'make', // 'babel-node test/mvp.js',
-  }
 }
