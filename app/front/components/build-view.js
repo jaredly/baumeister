@@ -8,6 +8,16 @@ import Build from './build'
 
 import './build-view.less'
 
+function newBuilds(prev, next) {
+  if (!next) return false
+  if (!prev) return true
+  if (next.length !== prev.length) return true
+  for (let i=0; i<prev.length; i++) {
+    if (prev[i].id !== next[i].id) return true
+  }
+  return false
+}
+
 @fluxify({
   data(props) {
     return {
@@ -33,6 +43,8 @@ export default class BuildView extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    let news = false
+    if (newBuilds(this.props.builds, nextProps.builds)) return this.setOpenBuild(null, nextProps.builds)
     /*
     if (nextProps.builds === this.props.builds) return
     if (!nextProps.builds) return

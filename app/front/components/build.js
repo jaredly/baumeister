@@ -7,6 +7,36 @@ import Ticker from '../lib/ticker'
 
 import './build.less'
 
+const errorRender = {
+  server(error) {
+    return <div className='BuildError_details'>
+      <div className='BuildError_message'>{error.message}</div>
+      {error.stack && <pre className='BuildError_traceback'>{error.stack}</pre>}
+    </div>
+  },
+  configuration(error) {
+    return <div className='BuildError_details'>
+      <div className='BuildError_message'>{error.source}: {error.message}</div>
+    </div>
+  },
+  zombie(error) {
+    return <div className='BuildError_details'>
+      <div className='BuildError_message'>{error.message}</div>
+    </div>
+  },
+  'shell-exit': function (error) {
+    return <div className='BuildError_details'>
+      <div className='BuildError_cmd'>{error.cmd}</div>
+      <div className='BuildError_exitCode'>{error.exitCode}</div>
+    </div>
+  },
+  interrupted(error) {
+    return <div className='BuildError_details'>
+      Interrupted manually
+    </div>
+  },
+}
+
 export default class Build extends React.Component {
 
   renderError() {
@@ -20,8 +50,7 @@ export default class Build extends React.Component {
     }
     return <div className={'BuildError BuildError-' + build.status}>
       <div className='BuildError_title'>Build {build.status} ({build.errorCause} error)</div>
-      <div className='BuildError_message'>{build.error.message}</div>
-      {build.error.stack && <pre className='BuildError_traceback'>{build.error.stack}</pre>}
+      {errorRender[build.errorCause](build.error)}
     </div>
   }
 

@@ -1,7 +1,7 @@
 
 import {spawn} from 'child_process'
 
-import {ShellError} from '../../../lib/errors'
+import {ShellError, InterruptError} from '../../../lib/errors'
 import uuid from '../../../lib/uuid'
 import prom from '../../../lib/prom'
 
@@ -44,40 +44,46 @@ export default function runPyTTY(cmd, spawnOptions, options, io) {
     })
     childProcess = child
 
-    child.stdout.on('data', function (data) {
-      io.emit('stream', {
-        id: sid,
-        value: data.toString('utf8'),
-        time: Date.now(),
+    if (!options.silent) {
+      child.stdout.on('data', function (data) {
+        io.emit('stream', {
+          id: sid,
+          value: data.toString('utf8'),
+          time: Date.now(),
+        })
       })
-    })
 
-    child.stderr.on('data', function (data) {
-      io.emit('stream', {
-        id: sid,
-        value: data.toString('utf8'),
-        time: Date.now(),
+      child.stderr.on('data', function (data) {
+        io.emit('stream', {
+          id: sid,
+          value: data.toString('utf8'),
+          time: Date.now(),
+        })
       })
-    })
+    }
 
     child.on('exit', function (code, signal) {
       const end = Date.now()
       const dur = end - start
-      if (code != 0) {
+      if (code != 0 && !options.badExitOK) {
+        if (!options.silent) {
+          io.emit('stream-end', {
+            id: sid,
+            time: end,
+            duration: dur,
+            error: "non-zero exit code: " + code,
+            exitCode: code
+          })
+        }
+        return done(new ShellError(cmd, code))
+      }
+      if (!options.silent) {
         io.emit('stream-end', {
           id: sid,
           time: end,
           duration: dur,
-          error: "non-zero exit code: " + code,
-          exitCode: code
         })
-        return done(new ShellError(cmd, code))
       }
-      io.emit('stream-end', {
-        id: sid,
-        time: end,
-        duration: dur,
-      })
       done(null, code)
     })
   })

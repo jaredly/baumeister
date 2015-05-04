@@ -3,10 +3,10 @@ export default {
   name: 'test',
   modified: new Date(),
   plugins: {
-    'script-provider': {
+    'shell-provider': {
       cache: true,
-      get: 'echo "hello" > world.txt',
-      update: 'echo "more" > world.txt',
+      get: 'echo "hello" > world.txt; sleep 5',
+      update: 'echo "more" > world.txt; sleep 10',
       dockerImage: 'ubuntu',
     },
     'shell-tester': {

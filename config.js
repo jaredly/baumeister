@@ -8,7 +8,7 @@ module.exports = {
     docker: {
     },
     local: {
-      basePath: '/tmo/localBuilder',
+      basePath: '/tmp/localBuilder',
     },
   },
   defaultBuilder: 'local',
@@ -16,7 +16,8 @@ module.exports = {
     'file-watcher': require('./extra/plugins/file-watcher'),
     'local': require('./extra/plugins/local'),
     // 'git-provider': require('./extra/plugins/git-provider'),
-    // 'shell-provider': require('./extra/plugins/shell-provider'),
+    'shell-provider': require('./extra/plugins/shell-provider'),
+    'shell-tester': require('./extra/plugins/shell-tester'),
   },
   database: {
     path: __dirname + '/test/.test.db',

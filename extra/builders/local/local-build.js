@@ -22,10 +22,10 @@ export default class LocalBuilder extends BaseBuild {
 
   init() {
     if (!this.config || !this.config.basePath) {
-      throw new ConfigError('No basepath specified')
+      throw new ConfigError('No basepath specified', 'LocalBuilder')
     }
     if (!fs.existsSync(this.config.basePath)) {
-      throw new ConfigError(`Basepath ${config.basePath} does not exist`)
+      throw new ConfigError(`Basepath ${this.config.basePath} does not exist`, 'LocalBuilder')
     }
     const projectDir = path.join(this.config.basePath, 'projects',
                                 this.project.id.replace(/:/, '_'))
@@ -64,6 +64,7 @@ export default class LocalBuilder extends BaseBuild {
           env: builder.runnerConfig.env.concat(options.env || []),
         }, {
           silent: options.silent,
+          badExitOK: options.badExitOK,
         }, io)
       },
       stop() {
