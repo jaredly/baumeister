@@ -66,7 +66,7 @@ export default function setupFlux(config) {
     }
   })
 
-  flux.addStore('projects$status', projectStatus)
+  flux.addStore('projects$status', {_status: 'unloaded'}, projectStatus)
   flux.addStore('projects', projectStore)
 
   flux.addActions('projects', apiActions(api, {

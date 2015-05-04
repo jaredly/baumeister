@@ -4,6 +4,13 @@ module.exports = {
     docker: require('./extra/builders/docker'),
     local: require('./extra/builders/local'),
   },
+  builderConfig: {
+    docker: {
+    },
+    local: {
+    },
+  },
+  defaultBuilder: 'docker',
   plugins: {
     'file-watcher': require('./extra/plugins/file-watcher'),
     'local': require('./extra/plugins/local'),
