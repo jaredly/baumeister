@@ -111,14 +111,12 @@ function renderStreamEnd(end) {
       Failed! {end.error}
     </div>
   }
-  return null /*<div className='Stream_end Stream_end-success'>
-    Success!!
-  </div>*/
+  return null
 }
 
 function renderStream(evt, stream, i) {
   if (!stream) return <span key={i}/>
-  const title = evt.cmd ? evt.cmd : evt.title
+  const title = evt.cleanCmd ? evt.cleanCmd : (evt.cmd ? evt.cmd : evt.title)
   const html = ansiText(stream.items.map(ev => ev.value).join(''))
   const dur = stream.end ? stream.end.duration : (Date.now() - stream.start.time)
   return <li className='Stream' key={i}>
@@ -126,6 +124,9 @@ function renderStream(evt, stream, i) {
       {title}
       <span className='Stream_duration'>
         {stream.end ? mmSS(stream.end.duration) : <Ticker start={stream.start.time}/>}
+      </span>
+      <span className='Stream_plugin'>
+        {evt.plugin}
       </span>
     </div>
     <div className='Stream_output' dangerouslySetInnerHTML={{__html: html}}/>

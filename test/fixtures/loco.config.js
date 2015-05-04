@@ -7,9 +7,8 @@ export default {
       cache: true,
       repo: 'https://github.com/notablemind/loco',
     },
-    'shell-tester': {
-      command: 'pwd; ls; npm test',
-    },
+    'npm-test': {},
+    'npm-install': {},
   },
   builder: {
     id: 'docker',

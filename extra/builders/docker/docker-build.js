@@ -95,7 +95,7 @@ export default class DockerBuild extends BaseBuild {
               return result
             })
         }
-        return sh.run(cmd, io)
+        return sh.run(cmd, io, config.plugin)
           .then(code => {
             if (code !== 0 && !options.badExitOK) {
               throw new ShellError(cmd, code)

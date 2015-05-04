@@ -1,19 +1,19 @@
 
-export default class ShellProvider {
+export default class NPMInstall {
   constructor(manager, app) {
     this.manager = manager
     this.app = app
   }
 
   onBuild(project, build, onStep, config) {
-    onStep('getproject', (builder, ctx, io) => {
+    onStep('pretest', (builder, ctx, io) => {
       return builder.runCached({
         image: config.dockerImage
       }, {
-        get: config.get,
-        update: config.update,
-        cachePath: 'project',
-        projectPath: '.',
+        get: 'npm install',
+        update: 'npm install',
+        cachePath: 'node_modules',
+        projectPath: 'node_modules',
       })
     })
   }

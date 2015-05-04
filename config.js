@@ -15,7 +15,9 @@ module.exports = {
   plugins: {
     'file-watcher': require('./extra/plugins/file-watcher'),
     'local': require('./extra/plugins/local'),
-    // 'git-provider': require('./extra/plugins/git-provider'),
+    'git-provider': require('./extra/plugins/git-provider'),
+    'npm-install': require('./extra/plugins/npm-install'),
+    'npm-test': require('./extra/plugins/npm-test'),
     'shell-provider': require('./extra/plugins/shell-provider'),
     'shell-tester': require('./extra/plugins/shell-tester'),
   },

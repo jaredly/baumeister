@@ -8,6 +8,7 @@ import {ConfigError, InterruptError} from '../../../lib/errors'
 import BaseBuild from '../../../lib/base-build'
 import prom from '../../../lib/prom'
 import runPyTTY from './run-pytty'
+import assign from 'object-assign'
 
 export default class LocalBuilder extends BaseBuild {
   static type = 'local'
@@ -16,7 +17,12 @@ export default class LocalBuilder extends BaseBuild {
     super(io, project, id, config)
 
     this.runnerConfig = {
-      env: [],
+      env: {
+        PATH: process.env.PATH,
+        HOME: process.env.HOME,
+        LANG: process.env.LANG,
+        LANGUAGE: process.env.LANGUAGE,
+      },
     }
   }
 
@@ -44,7 +50,7 @@ export default class LocalBuilder extends BaseBuild {
     }))
   }
 
-  shell(options) {
+  shell(runConfig) {
     const io = this.io
     const builder = this
     return {
@@ -61,10 +67,12 @@ export default class LocalBuilder extends BaseBuild {
 
         return runPyTTY(cmd, {
           cwd,
-          env: builder.runnerConfig.env.concat(options.env || []),
+          env: assign(builder.runnerConfig.env, options.env),
         }, {
           silent: options.silent,
           badExitOK: options.badExitOK,
+          cleanCmd: options.cleanCmd,
+          plugin: runConfig.plugin,
         }, io)
       },
       stop() {

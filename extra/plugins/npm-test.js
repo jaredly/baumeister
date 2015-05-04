@@ -1,20 +1,13 @@
 
-export default class ShellProvider {
+export default class NPMTest {
   constructor(manager, app) {
     this.manager = manager
     this.app = app
   }
 
   onBuild(project, build, onStep, config) {
-    onStep('getproject', (builder, ctx, io) => {
-      return builder.runCached({
-        image: config.dockerImage
-      }, {
-        get: config.get,
-        update: config.update,
-        cachePath: 'project',
-        projectPath: '.',
-      })
+    onStep('test', (builder, ctx, io) => {
+      return builder.run('npm test')
     })
   }
 }

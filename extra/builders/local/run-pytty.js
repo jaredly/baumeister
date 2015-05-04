@@ -12,7 +12,9 @@ export default function runPyTTY(cmd, spawnOptions, options, io) {
     io.emit('stream-start', {
       id: sid, 
       time: start,
-      cmd: cmd
+      cmd: cmd,
+      plugin: options.plugin,
+      cleanCmd: options.cleanCmd,
     })
   }
 
@@ -84,7 +86,7 @@ export default function runPyTTY(cmd, spawnOptions, options, io) {
           duration: dur,
         })
       }
-      done(null, code)
+      done(null, options.badExitOK ? {code} : code)
     })
   })
 }
