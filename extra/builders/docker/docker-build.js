@@ -21,40 +21,44 @@ export default class DockerBuild extends BaseBuild {
   constructor(io, project, id, config) {
     super(io, project, id, config)
     this.docker = new Docker() // TODO use config to custom docker connection
-    this.cacheContainer = `dci-${this.project.id}-cache`
-    this.dataContainer = `dci-${this.id}-data`
-    this.runnerConfig = {
-      volumesFrom: [],
-      binds: [],
-      env: [],
+    this.ctx = {
+      cacheContainer: `dci-${this.project.id}-cache`,
+      dataContainer: `dci-${this.id}-data`,
+      runnerConfig: {
+        volumesFrom: [],
+        binds: [],
+        env: [],
+      },
+      cacheDir: '/cache',
+      projectDir: '/project',
     }
   }
 
   init() {
     const promises = []
     // create data container
-    if (this.dataContainer) {
-      this.runnerConfig.volumesFrom.push(this.dataContainer)
+    if (this.ctx.dataContainer) {
+      this.ctx.runnerConfig.volumesFrom.push(this.ctx.dataContainer)
       promises.push(prom(done => {
         this.docker.createContainer({
-          name: '/' + this.dataContainer,
+          name: '/' + this.ctx.dataContainer,
           Image: 'busybox',
           Volumes: {'/project': {}},
         }, (err, res) => {
           if (err) return done(err)
-          this.io.emit('info', `Created data container ${this.dataContainer} (${res.id})`)
+          this.io.emit('info', `Created data container ${this.ctx.dataContainer} (${res.id})`)
           done()
         })
       }))
     }
 
     // check for / create cache container
-    if (this.cacheContainer) {
-      this.runnerConfig.volumesFrom.push(this.cacheContainer)
+    if (this.ctx.cacheContainer) {
+      this.ctx.runnerConfig.volumesFrom.push(this.ctx.cacheContainer)
       promises.push(prom(done => {
-        ensureContainer(this.docker, this.cacheContainer, '/cache', (err, id, created) => {
+        ensureContainer(this.docker, this.ctx.cacheContainer, '/cache', (err, id, created) => {
           if (err) return done(err)
-          this.io.emit('info', `${created ? 'Created' : 'Using'} cache container ${this.cacheContainer} (${id})`)
+          this.io.emit('info', `${created ? 'Created' : 'Using'} cache container ${this.ctx.cacheContainer} (${id})`)
           done()
         })
       }))
@@ -72,9 +76,9 @@ export default class DockerBuild extends BaseBuild {
     config = config || {}
     const io = this.io
     const sh = new Docksh(this.docker, {
-      volumesFrom: this.runnerConfig.volumesFrom,
-      binds: this.runnerConfig.binds,
-      env: this.runnerConfig.env.concat(config.env || []),
+      volumesFrom: this.ctx.runnerConfig.volumesFrom,
+      binds: this.ctx.runnerConfig.binds,
+      env: assign(this.ctx.runnerConfig.env, config.env),
 
       image: config.docker && config.docker.image || 'ubuntu',
       // cwd: config.cwd || '/project',
@@ -106,8 +110,8 @@ export default class DockerBuild extends BaseBuild {
       stop() {
         return config.dontRemove ? sh.stop() : sh.stopAndRemove()
       },
-      cacheDir: '/cache',
-      projectDir: '/project',
+      cacheDir: this.ctx.cacheDir,
+      projectDir: this.ctx.projectDir,
     }
   }
 

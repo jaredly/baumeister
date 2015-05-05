@@ -6,27 +6,30 @@ export default class Local {
     //
   }
 
-  onBuild(project, runner, build, config) {
-    runner.use('init', () => {
+  onBuild(project, build, onStep, config) {
+    onStep('init', (builder, ctx, io) => {
       if (config.inPlace) {
-        if (build.type === 'docker') {
-          build.runnerOptions.binds.push([`${config.path}:/project:rw`])
-          build.dataContainer = null
-        } else if (build.type === 'local') {
-          build.dataDir = config.path
+        if (builder.type === 'docker') {
+          ctx.runnerOptions.binds.push([`${config.path}:/project:rw`])
+          ctx.dataContainer = null
+        } else if (builder.type === 'local') {
+          ctx.projectDir = config.path
         }
       } else {
-        if (build.type === 'docker') {
-          build.runnerOptions.binds.push([`${config.path}:/localProject:rw`])
+        if (builder.type === 'docker') {
+          ctx.runnerOptions.binds.push([`${config.path}:/localProject:rw`])
         }
       }
     })
 
-    runner.use('getproject', () => {
+    runner.use('getproject', (builder, ctx, io) => {
       if (config.inPlace) {
-        return build.io.emit('info', `Using ${config.path} in place`)
+        return io.emit('info', `Using ${config.path} in place`)
       }
-      return build.run(`cp -RT /localProject /project`)
+      if (build.type === 'docker') {
+        return builder.run(`cp -RT /localProject /project`)
+      }
+      return builder.run(`cp -RT ${config.path} ${ctx.projectDir}`)
     })
   }
 }

@@ -1,14 +1,14 @@
 
 import assign from 'object-assign'
+import {EventEmitter} from 'events'
+import {argv} from 'yargs'
+import repl from 'repl'
 
 import config from './config'
 import setupManager from './lib'
 import makeViews from './app/back/views'
 import setupApp from './app/back/setup'
 import loadPlugins from './lib/load-plugins'
-
-import {argv} from 'yargs'
-import repl from 'repl'
 
 const defaults = {
   server: {
@@ -60,6 +60,8 @@ setupManager(config)
       repl.start({useGlobal: true})
     } else if (cmd === 'initdb') {
       loadDefaultProjects(dao)
+    } else if (cmd === 'build') {
+      consoleBuild(builds, clients, argv._[1])
     } else {
       return console.error('Unknown command', cmd)
     }
@@ -100,5 +102,46 @@ function loadDefaultProjects(dao) {
     console.log(error.message)
     console.log(error.stack)
   })
+}
+
+const showEvent = {
+  'build:new': val => console.log(`# Build created ${val.id}`),
+  'build:update': val => {
+    if (val.status === 'running') return
+    if (val.status === 'succeeded') {
+      return console.log(`#### Build Passed! ####`)
+    }
+    if (val.status === 'errored') {
+      console.log(`!!!! Build Errored (${val.errorCause}) !!!!`)
+      console.log(JSON.stringify(val.error, null, 2))
+    }
+    if (val.status === 'failed') {
+      console.log(`:( :( :( Build Failed (${val.errorCause}) ): ): ):`)
+      console.log(JSON.stringify(val.error, null, 2))
+    }
+  },
+  'build:status': () => null,
+  'build:done': () => console.log('Finished build'),
+}
+
+function consoleBuild(builds, clients, projectId) {
+  const sockio = new EventEmitter()
+  sockio.send = function (data) {
+    data = JSON.parse(data)
+    if (showEvent[data.evt]) {
+      showEvent[data.evt](data.val)
+    } else {
+      console.log(`[${data.evt}]`, JSON.stringify(data.val, null, 2))
+    }
+    if (data.evt === 'build:done') {
+      console.log('Done!')
+      process.exit()
+    }
+  }
+  clients.newConnection(sockio)
+  sockio.emit('message', JSON.stringify({
+    evt: 'build:start',
+    val: projectId
+  }))
 }
 

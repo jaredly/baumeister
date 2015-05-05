@@ -5,6 +5,11 @@ import uuid from '../../../lib/uuid'
 import prom from '../../../lib/prom'
 import {ShellError} from '../../../lib/errors'
 
+function envList(env) {
+  if (!env) return []
+  return Object.keys(env).forEach(name => `${name}=${env[name]}`)
+}
+
 /**
  * A Docker shell!
  *
@@ -14,7 +19,7 @@ import {ShellError} from '../../../lib/errors'
  * Config: {
  *   image: (str) the docker image to use
  *   volumesFrom: (list<str>) container names to get volumes from
- *   env: (list<str "KEY=VAL">) env vbls
+ *   env: (map<str, str>{key: val}) env vbls
  *   binds: (list<str "/host/path:/docker/path">) host mounted volumes
  *   cwd: (str) the current working directory for all commands
  * }
@@ -34,7 +39,7 @@ export default class Docksh {
         // VolumesFrom: this.config.volumesFrom,
         Tty: true,
         PublishAllPorts: true,
-        Env: this.config.env || [],
+        Env: envList(this.config.env),
         WorkingDir: path.join('/project', this.config.cwd || ''),
       }, (err, container) => {
         if (err) return done(err)

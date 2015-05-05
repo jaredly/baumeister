@@ -31,15 +31,15 @@ const fixture = {
 
 const PLUGINS = {
   'shell-provider': {
-    onBuild(project, data, runner, config) {
-      runner.use('getproject', builder => {
+    onBuild(project, data, onStep, config) {
+      onStep('getproject', builder => {
         return builder.run(config.get)
       })
     },
   },
   'shell-tester': {
-    onBuild(project, data, runner, config) {
-      runner.use('test', builder => {
+    onBuild(project, data, onStep, config) {
+      onStep('test', builder => {
         return builder.run(config.command)
       })
     }

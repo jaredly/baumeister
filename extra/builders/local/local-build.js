@@ -16,13 +16,15 @@ export default class LocalBuilder extends BaseBuild {
   constructor(io, project, id, config) {
     super(io, project, id, config)
 
-    this.runnerConfig = {
-      env: {
-        PATH: process.env.PATH,
-        HOME: process.env.HOME,
-        LANG: process.env.LANG,
-        LANGUAGE: process.env.LANGUAGE,
-      },
+    this.ctx = {
+      runnerConfig: {
+        env: {
+          PATH: process.env.PATH,
+          HOME: process.env.HOME,
+          LANG: process.env.LANG,
+          LANGUAGE: process.env.LANGUAGE,
+        },
+      }
     }
   }
 
@@ -40,13 +42,13 @@ export default class LocalBuilder extends BaseBuild {
       mkdirp(this.config.basePath, done)
     }))
     .then(() => prom(done => {
-      this.cacheDir = path.join(projectDir, 'cache')
-      mkdirp(this.cacheDir, done)
+      this.ctx.cacheDir = path.join(projectDir, 'cache')
+      mkdirp(this.ctx.cacheDir, done)
     }))
     .then(() => prom(done => {
-      this.projectDir = path.join(projectDir, 'builds',
+      this.ctx.projectDir = path.join(projectDir, 'builds',
                                   this.id.replace(/:/, '_'))
-      mkdirp(this.projectDir, done)
+      mkdirp(this.ctx.projectDir, done)
     }))
   }
 
@@ -67,7 +69,7 @@ export default class LocalBuilder extends BaseBuild {
 
         return runPyTTY(cmd, {
           cwd,
-          env: assign(builder.runnerConfig.env, options.env),
+          env: assign(builder.ctx.runnerConfig.env, options.env),
         }, {
           silent: options.silent,
           badExitOK: options.badExitOK,
@@ -78,8 +80,8 @@ export default class LocalBuilder extends BaseBuild {
       stop() {
         return Promise.resolve()
       },
-      cacheDir: this.cacheDir,
-      projectDir: this.projectDir,
+      cacheDir: this.ctx.cacheDir,
+      projectDir: this.ctx.projectDir,
     }
   }
 }
