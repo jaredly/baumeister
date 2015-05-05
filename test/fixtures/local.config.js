@@ -16,7 +16,11 @@ export default {
     */
     'shell-tester': {
       // cwd: 'itreed/plugins/itreed-js',
-      command: 'make test',
+      command: 'pwd;ls;make test',
+      docker: {
+        image: 'jaredly/node',
+      }
     },
   },
 }
+

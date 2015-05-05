@@ -7,7 +7,9 @@ export default class ShellTester {
       throw new ConfigError('`command` not provided', 'shell-tester.command')
     }
     onStep('test', (builder, ctx, io) => {
-      return builder.run(config.command)
+      return builder.run(config.command, {
+        docker: config.docker
+      })
     })
   }
 }

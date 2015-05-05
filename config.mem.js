@@ -11,7 +11,7 @@ module.exports = {
       basePath: '/tmp/localBuilder',
     },
   },
-  defaultBuilder: 'local',
+  defaultBuilder: 'docker',
   plugins: {
     'file-watcher': require('./extra/plugins/file-watcher'),
     'local-provider': require('./extra/plugins/local'),

@@ -73,6 +73,7 @@ export default class DockerBuild extends BaseBuild {
   }
 
   shell(config) {
+    console.log(config, this.ctx)
     config = config || {}
     const io = this.io
     const sh = new Docksh(this.docker, {
