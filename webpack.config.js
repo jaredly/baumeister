@@ -32,6 +32,12 @@ module.exports = {
       'flammable': path.join(__dirname, '../flammable'),
     },
   },
+
+  node: {
+    fs: 'empty',
+    net: 'empty',
+  },
+
   module: {
     loaders: [{
       test: /\.jsx?$/,
@@ -39,6 +45,7 @@ module.exports = {
       include: [
         path.join(__dirname, 'app/front'),
         path.join(__dirname, 'lib'),
+        path.join(__dirname, 'extra'),
         path.join(__dirname, '../form'),
         path.join(__dirname, '../flammable'),
       ]

@@ -1,11 +1,10 @@
 
 import prom from '../../lib/prom'
 import {ConfigError} from '../../lib/errors'
+
 import fs from 'fs'
 
-export default class Local {
-  static buildTypes = ['docker', 'local']
-
+class Local {
   constructor(manager, app) {
     //
   }
@@ -44,5 +43,26 @@ export default class Local {
   }
 }
 
-
+export default {
+  sort: 0,
+  title: 'Local Provider',
+  id: 'awesome',
+  plugin: Local,
+  buildTypes: ['docker', 'local'],
+  globalConfig: null,
+  projectConfig: {
+    schema: {
+      path: {
+        type: 'text',
+        title: 'Path to the project on your machine',
+        default: '/some/path',
+      },
+      inPlace: {
+        type: 'checkbox',
+        title: "Use in place (don't copy to an isolated environment)",
+        default: false,
+      },
+    },
+  },
+}
 

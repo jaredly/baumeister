@@ -6,8 +6,15 @@ import {Map, fromJS} from 'immutable'
 
 import {Radio, Panes, Form, FormSection} from 'formative'
 
+import merge from 'recursive-merge'
+
 import './project-config.less'
 import '../lib/form.less'
+
+import RemoveButton from './remove-button'
+import globalConfig from '../../../config'
+
+const PT = React.PropTypes
 
 export default class ProjectConfig extends React.Component {
   onSubmit(data, action) {
@@ -36,257 +43,166 @@ export default class ProjectConfig extends React.Component {
 
   render() {
     return <Form className='ProjectConfig' initialData={this.props.project} onSubmit={this.onSubmit.bind(this)}>
-      <Panes
-        formPass={true}
-        defaultPane='general'
-        panes={{
-          general: 'General',
-          plugins: 'Plugins',
-        }}
-        extraTop={
-          <button className='Button'>{this.props.actionText}</button>
-        }
-      >
-        <div paneId='general'>
-          <div className='ProjectConfig_top'>
-            <label className='text-label ProjectConfig_name'>Project Name
-              <input type='text' className='ProjectConfig_name' name="name" title="Name" placeholder="Project name"/>
-            </label>
+      <div className='ProjectConfig_top'>
+        <label className='text-label ProjectConfig_name'>Project Name
+          <input type='text' className='ProjectConfig_name' name="name" title="Name" placeholder="Project name"/>
+        </label>
 
-            <div className='ProjectConfig_buttons'>
-              {this.renderClearButton()}
-            </div>
-          </div>
-          {sourceConfig()}
-          {buildConfig()}
-          {testConfig()}
-          {this.props.onRemove && <RemoveButton onRemove={this.props.onRemove}/>}
+        <div className='ProjectConfig_buttons'>
+          {this.renderClearButton()}
+          <button className='Button'>{this.props.actionText}</button>
         </div>
-        <div paneId='plugins'>
-          {pluginConfig()}
-        </div>
-      </Panes>
+      </div>
+
+      {renderBuilders()}
+
+      <PluginConfig name='plugins'/>
+
+      {this.props.onRemove && <RemoveButton className='RemoveButton' onRemove={this.props.onRemove}/>}
     </Form>
   }
 }
 
-class RemoveButton extends React.Component {
+function specToDefaults(spec) {
+  const res = {}
+  Object.keys(spec).forEach(name => {
+    if (spec[name].type === 'section') {
+      res[name] = specToDefaults(spec[name].spec)
+    } else {
+      res[name] = spec[name].default
+    }
+  })
+  return res
+}
+
+function renderBuilders() {
+  const choices = {}
+  const defaultData = {}
+  const children = []
+  const names = Object.keys(globalConfig.builders)
+  names.forEach(name => {
+    const builder = globalConfig.builders[name]
+    choices[name] = builder.title || name
+    defaultData[name] = {
+      id: name,
+      config: merge({}, specToDefaults(builder.projectConfig.schema),
+                    globalConfig.builderConfig && globalConfig.builderConfig[name] || {})
+    }
+    children.push(<div key={name} switchWhere={name}>
+      <div>{builder.description}</div>
+      {builder.projectConfig && FormSection.fromSpec({
+        name: 'config',
+        spec: builder.projectConfig.schema
+      })}
+    </div>)
+  })
+
+  return <Radio
+    name='builder'
+    title='Builder'
+    choices={choices}
+    switchOn={val => val ? val.get('id') : names[0]}
+    children={children}
+    defaultData={defaultData}/>
+}
+
+function builderTitle(name) {
+  return globalConfig.builders[name].title || name
+}
+
+function builderTitles(names) {
+  const ret = []
+  for (let i=0; i<names.length - 2; i++) {
+    ret.push(<span className='PluginConfig_builder'>
+      {builderTitle(names[i])}</span>)
+    ret.push(', ')
+  }
+  if (names.length > 1) {
+    ret.push(<span className='PluginConfig_builder'>
+      {builderTitle(names[names.length - 2])}</span>)
+    ret.push(' or ')
+  }
+  ret.push(<span className='PluginConfig_builder'>
+    {builderTitle(names[names.length - 1])}</span>)
+  return ret
+}
+
+class PluginConfig extends React.Component {
   constructor(props) {
     super(props)
-    this.state = {really: false}
+  }
+
+  addPlugin(event) {
+    const name = event.target.value
+    if (!name) return
+    const pConfig = globalConfig.plugins[name].projectConfig || {}
+    let config = merge({}, pConfig.schema ? specToDefaults(pConfig.schema) : {})
+    this.props.onChange(this.props.value.set(name, fromJS(config)))
+  }
+
+  removePlugin(name) {
+    this.props.onChange(this.props.value.delete(name))
+  }
+
+  static contextTypes = {
+    formData: PT.object,
   }
 
   render() {
-    if (this.state.really) {
-      return <span>
-        <button type="button" className='Button' onClick={() => this.setState({really: false})}>
-          Maybe not
-        </button>
-        <button type="button" className='Button' onClick={this.props.onRemove}>
-          Really Remove
-        </button>
-      </span>
-    }
+    const plugins = this.props.value
+    const installed = globalConfig.plugins
+    const using = plugins.keySeq().sort((a, b) => {
+      const sa = installed[a].sort
+      const sb = installed[b].sort
+      if (sa === undefined && sb === undefined) {
+        return a > b ? 1 : -1
+      }
+      if (sa === undefined) return 1
+      if (sb === undefined) return -1
+      return sa - sb
+    })
 
-    return <button type="button" className='Button' onClick={() => this.setState({really: true})}>
-      Remove project
-    </button>
-  }
-}
+    const builderNames = Object.keys(globalConfig.builders)
+    const currentBuildType = this.context.formData.getIn(['builder', 'id']) || builderNames[0]
 
-const defaultProviderData = {
-  git: {
-    provider: 'git',
-    config: {
-      repo: 'https://github.com/you/yours',
-    }
-  },
-  script: {
-    provider: 'script',
-    config: {
-      base: 'ubuntu',
-      get: '# get some data',
-      update: '# update the project',
-    }
-  }
-}
-
-function makeProviderConfig(provider) {
-  if (provider === 'git') {
     return <div>
-      <label className='text-label'>
-        Git Repo
-        <input type='text' className='mono-text' name='config.repo' placeholder="Git repo"/>
-      </label>
+      <div className='ProjectConfig_addplugin'>
+        <span className='ProjectConfig_plugins-title'>Plugins</span>
+        <select value='' onChange={this.addPlugin.bind(this)}>
+          <option value=''>Add a plugin</option>
+          {Object.keys(installed).map(name => !plugins.has(name) && <option value={name}>{installed[name].title || name}</option>)}
+        </select>
+      </div>
+
+      {using.map(name => {
+        const disabled = installed[name].buildTypes && installed[name].buildTypes.indexOf(currentBuildType) === -1
+        return <div className='ProjectConfig_section'>
+          <div className='PluginConfig_top section-title'>
+            <span className='PluginConfig_title'>
+              {installed[name].title || name}
+            </span>
+            <span className='PluginConfig_description'>
+              {installed[name].description}
+            </span>
+            <div className='PluginConfig_spacer'/>
+            <button type='button' className='Button' onClick={this.removePlugin.bind(this, name)}>Remove</button>
+          </div>
+          {disabled ?
+            <div className='ProjectConfig_section_body PluginConfig_disabled'>
+              This plugin is incompatible with the <span className='PluginConfig_builder'>
+                {globalConfig.builders[currentBuildType].title || currentBuildType}
+              </span> builder. It only works with {builderTitles(installed[name].buildTypes)}.
+            </div>
+            : FormSection.fromSpec({
+            className: 'ProjectConfig_section_body',
+            value: plugins.get(name),
+            spec: installed[name].projectConfig.schema,
+            onChange: val => this.props.onChange(plugins.set(name, val))
+          })}
+        </div>
+      })}
     </div>
   }
-  if (provider !== 'script') {
-    return <span>Unconfigurable</span>
-  }
-  return <div>
-    <label className='text-label'>
-      Docker image
-      <input type='text' className='mono-text' name='config.base' placeholder="Docker image"/>
-    </label>
-    <label className='text-label'>
-      Shell command to get the project
-      <input type='text' className='mono-text' name='config.get' placeholder='Shell command to get data'/>
-    </label>
-    <label className='text-label'>
-      Shell command to update the project
-      <input type='text' className='mono-text' name='config.update' placeholder='Shell command to update data'/>
-    </label>
-  </div>
-}
-
-function sourceConfig() {
-  return <Radio
-    name='source'
-    title='Source'
-    choices={{local: 'Local path', provider: 'Provider'}}
-    switchOn={val => val.get('path') ? 'local' : 'provider'}
-    defaultData={{
-      local: {path: '/', inPlace: false},
-      provider: {provider: 'git', config: {repo: 'https://github.com/you/yours'}}
-    }}
-  >
-    <div switchWhere='local' >
-      <label className='ProjectConfig_source-local text-label'>
-        Local path:
-        <input type='text' name='path' placeholder="local path to project"/>
-      </label>
-      <label className='checkbox-label'>
-        <input type='checkbox' name='inPlace'/>
-        Mount on filesystem (don't copy into a container)
-      </label>
-    </div>
-    <Radio
-      name=''
-      switchWhere='provider'
-      className='ProjectConfig_source-provider'
-      title='Provider'
-      choices={{
-        git: 'Git Repo',
-        script: 'Bash script',
-      }}
-      defaultData={defaultProviderData}
-      switchOn='provider'
-      body={current => makeProviderConfig(current)}/>
-  </Radio>
-}
-
-function buildConfig() {
-  return <Radio
-    name='build'
-    title='Build Step'
-    choices={{
-      file: 'From Dockerfile',
-      prefab: 'From prefab image',
-    }}
-    defaultData={{
-      file: {dockerfile: 'Dockerfile', context: true, noRebuild: false},
-      prefab: {prefab: 'docker-ci/node'}
-    }}
-    switchOn={val => {
-      if (val === true) return 'file'
-      if (typeof val === 'string') return 'file'
-      return val.get('dockerfile') ? 'file' : 'prefab'
-    }}>
-    <div switchWhere='file' className='ProjectConfig_dockerfile'>
-      <label className='text-label'>
-        Dockerfile location (within project):
-        <input className='mono-text' type='text' name="dockerfile" placeholder="Dockerfile"/>
-      </label>
-      <Radio
-        name='context'
-        title='Context'
-        choices={{
-          none: 'No context',
-          full: 'Full project',
-          path: 'Subdirectory',
-        }}
-        switchOn={val => {
-          if (val === true) return 'full'
-          if (val === false) return 'none'
-          return 'path'
-        }}
-        defaultData={{
-          full: true,
-          none: false,
-          path: 'some/subdir',
-        }}
-        >
-        <input switchWhere='path' className='mono-text' name='' type='text' placeholder='some/directory'/>
-      </Radio>
-      <label className='checkbox-label'>
-        <input type="checkbox" name="noRebuild"/>
-        Reuse previously built image if available
-      </label>
-    </div>
-    <div switchWhere='prefab' className='ProjectConfig_prefab'>
-      <label className='text-label'>Docker image name: <input type='text' name="prefab" placeholder="ubuntu:latest"/></label>
-    </div>
-  </Radio>
-}
-
-function testConfig() {
-  return <section className='ProjectConfig_section'>
-    <div className='section-title'>Test Step</div>
-    <div className='ProjectConfig_section_body'>
-      <label className='text-label'>Working Directory
-        <input type='text' name='test.cwd'/>
-      </label>
-      <label className='text-label'>Test Command
-        <textarea name='test.cmd'/>
-      </label>
-      <label className='checkbox-label'>
-        <input type='checkbox' name='test.rmOnSuccess'/>
-        Remove on success
-      </label>
-    </div>
-  </section>
-}
-
-class GitPlugin extends React.Component {
-  render() {
-    return <div className='GitPlugin'>
-    <pre style={{whiteSpace: 'pre-wrap'}}>echo "curl -X POST http://localhost:3005/api/builds/{this.props.value.get('id')}" >> .git/hooks/post-commit && chmod +x .git/hooks/post-commit</pre>
-    </div>
-  }
-}
-
-class FileWatchPlugin extends React.Component {
-  render() {
-    return <FormSection
-        value={this.props.value || new Map()}
-        onChange={this.props.onChange}
-        className='FileWatchPlugin'>
-      <label className='checkbox-label'>
-        <input type="checkbox" name='enabled'/>
-        Enabled
-      </label>
-      <label className='text-label'>
-        Patterns to watch (minimatch format, newline delimited)
-        <textarea name="patterns"/>
-      </label>
-    </FormSection>
-  }
-}
-
-const plugins = {
-  'file-watcher': {
-    title: 'File Watcher',
-    comp: FileWatchPlugin,
-    defaultConfig: {
-      patterns: 'lib/*.js',
-      enabled: true,
-    },
-  },
-  'git-post-commit': {
-    title: 'Git Post Commit',
-    comp: GitPlugin,
-    defaultConfig: {}
-  },
 }
 
 function pluginConfig() {

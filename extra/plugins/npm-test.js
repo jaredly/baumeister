@@ -1,5 +1,5 @@
 
-export default class NPMTest {
+class NPMTest {
   constructor(manager, app) {
     this.manager = manager
     this.app = app
@@ -13,6 +13,15 @@ export default class NPMTest {
         }
       })
     })
+  }
+}
+
+export default {
+  title: 'NPM Test',
+  description: 'Does what it says on the label',
+  plugin: NPMTest,
+  projectConfig: {
+    schema: {}
   }
 }
 
@@ -32,3 +41,4 @@ module.exports = {
   }
 }
 */
+

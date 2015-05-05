@@ -1,7 +1,7 @@
 
 import {ConfigError} from '../../lib/errors'
 
-export default class ShellTester {
+class ShellTester {
   onBuild(project, build, onStep, config) {
     if (!config.command) {
       throw new ConfigError('`command` not provided', 'shell-tester.command')
@@ -14,4 +14,30 @@ export default class ShellTester {
   }
 }
 
+export default {
+  title: 'Shell Tester',
+  plugin: ShellTester,
+  description: 'Test using a custom command',
+  buildTypes: ['local'],
+  projectConfig: {
+    schema: {
+      docker: {
+        type: 'section',
+        builder: 'docker',
+        spec: {
+          image: {
+            type: 'text',
+            default: 'jaeger/basic',
+            title: 'Docker image (if using docker)',
+          }
+        }
+      },
+      command: {
+        type: 'text',
+        default: 'make test',
+        title: 'Shell command to run the tests (in the project directory)',
+      },
+    }
+  }
+}
 

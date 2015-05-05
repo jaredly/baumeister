@@ -1,5 +1,5 @@
 
-export default class NPMInstall {
+class NPMInstall {
   constructor(manager, app) {
     this.manager = manager
     this.app = app
@@ -7,6 +7,13 @@ export default class NPMInstall {
 
   onBuild(project, build, onStep, config) {
     onStep('pretest', (builder, ctx, io) => {
+      if (!config.cache) {
+        return builder.run('npm install', {
+          docker: {
+            image: 'jaeger/node',
+          },
+        })
+      }
       return builder.runCached({
         docker: {
           image: 'jaredly/node',
@@ -18,6 +25,20 @@ export default class NPMInstall {
         projectPath: 'node_modules',
       })
     })
+  }
+}
+
+export default {
+  title: 'NPM Install',
+  plugin: NPMInstall,
+  projectConfig: {
+    schema: {
+      cache: {
+        type: 'checkbox',
+        default: true,
+        title: 'Cache modules',
+      },
+    }
   }
 }
 

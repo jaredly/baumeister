@@ -1,5 +1,5 @@
 
-export default class ShellProvider {
+class GitProvider {
   constructor(manager, app) {
     this.manager = manager
     this.app = app
@@ -20,6 +20,22 @@ export default class ShellProvider {
       })
     })
   }
+}
+
+export default {
+  sort: 0,
+  plugin: GitProvider,
+  title: 'Git Provider',
+  description: 'Get your project from a git repository',
+  projectConfig: {
+    schema: {
+      repo: {
+        type: 'text',
+        default: 'https://some.git/repo',
+        title: 'The git repository',
+      },
+    }
+  },
 }
 
 /*
