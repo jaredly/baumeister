@@ -5,8 +5,6 @@ import fs from 'fs'
 
 import Promise from 'bluebird'
 import assign from 'object-assign'
-// import getContext from './get-context'
-// import runDocker from './run-docker'
 import BaseBuild from '../../../lib/base-build'
 import prom from '../../../lib/prom'
 import Docksh from './docksh'
@@ -14,7 +12,7 @@ import Docksh from './docksh'
 import {ConfigError, InterruptError, ShellError} from '../../../lib/errors'
 
 
-export default class DockerBuild extends BaseBuild {
+export default class DockerBuilder extends BaseBuild {
   static type = 'docker'
 
   constructor(io, project, id, config) {
