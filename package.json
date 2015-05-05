@@ -24,6 +24,9 @@
     "less": "^2.5.0",
     "less-loader": "^2.2.0",
     "memdown": "^1.0.0",
+    "mocha": "^2.2.4",
+    "mocha-multi": "^0.7.1",
+    "patched-blanket": "^1.0.1",
     "react-hot-loader": "^1.2.2",
     "rimraf": "^2.3.3",
     "style-loader": "^0.10.1",
@@ -67,5 +70,17 @@
     "webpack": "git://github.com/webpack/webpack.git#webpack-2",
     "ws": "^0.7.1",
     "yargs": "^3.8.0"
+  },
+  "config": {
+    "blanket": {
+      "pattern": [
+        "lib",
+        "extra"
+      ],
+      "data-cover-never": [
+        "node_modules",
+        "fork"
+      ]
+    }
   }
 }

@@ -5,9 +5,9 @@ import fs from 'fs'
 
 import Promise from 'bluebird'
 import assign from 'object-assign'
-import buildDocker from './build-docker'
-import getContext from './get-context'
-import runDocker from './run-docker'
+// import buildDocker from './build-docker'
+// import getContext from './get-context'
+// import runDocker from './run-docker'
 import BaseBuild from '../../../lib/base-build'
 import prom from '../../../lib/prom'
 import Docksh from './docksh'
@@ -115,6 +115,7 @@ export default class DockerBuild extends BaseBuild {
     }
   }
 
+  /*
   clearCache() {
     if (!this.ctx.cacheContainer) return
     return prom(done => {
@@ -143,7 +144,6 @@ export default class DockerBuild extends BaseBuild {
     })
   }
 
-  /*
   getProject(done) {
     if (this.project.source.path) {
       return fs.exists(this.project.source.path, doesExist => {
@@ -283,6 +283,7 @@ function ensureContainer(docker, id, volume, done) {
   })
 }
 
+/*
 function contextMessage(imname, value) {
   let ctx
   if (value === true) {
@@ -295,6 +296,7 @@ function contextMessage(imname, value) {
 
   return `Building ${imname} ${ctx}`
 }
+*/
 
 function interprom(io, prom) {
   let rejector

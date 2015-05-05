@@ -28,6 +28,7 @@ export default class Docksh {
   constructor(docker, config) {
     this.docker = docker
     this.config = config
+    console.log('DOCKSH config', config)
   }
 
   init() {

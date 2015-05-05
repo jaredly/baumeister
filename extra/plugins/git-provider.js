@@ -8,7 +8,9 @@ export default class ShellProvider {
   onBuild(project, build, onStep, config) {
     onStep('getproject', (builder, ctx, io) => {
       return builder.runCached({
-        image: 'docker-ci/git',
+        docker: {
+          image: 'docker-ci/git',
+        },
         env: ['GIT_TERMINAL_PROMPT=0'],
       }, {
         get: `git clone ${config.repo} .`,

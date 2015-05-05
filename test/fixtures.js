@@ -88,6 +88,23 @@ const fixtures = {
     },
     output: 'working local\n{{projectDir}}',
   },
+  gitDocker: {
+    builder: {
+      id: 'docker',
+    },
+    plugins: {
+      'git-provider': {
+        repo: 'https://github.com/notablemind/loco',
+      },
+      'shell-tester': {
+        command: 'echo "working git"; pwd',
+        docker: {
+          image: 'jaredly/node',
+        },
+      },
+    },
+    output: 'working git\n{{projectDir}}',
+  },
 }
 
 const config = {
@@ -158,7 +175,7 @@ describe('fixture running', function () {
               try {
                 expect(build.status).to.eql('succeeded')
                 const clean = output.trim()
-                  .replace(/[\u000f\u0000-\u0002\b\r]/g, '')
+                  .replace(/[\u000f\u000b\f\u0000-\u0002\b\r]/g, '')
                   .replace('\n\n', '\n')
                 expect(clean)
                   .to.eql(proj.output.replace('{{projectDir}}', runner.builder.ctx.projectDir))
