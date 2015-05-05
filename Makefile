@@ -3,7 +3,7 @@ MULTI='spec=- html-cov=cov.html json-cov=cov.json'
 MOCHA=multi=${MULTI} ./node_modules/.bin/mocha --require babel-core/browser-polyfill --require patched-blanket -R mocha-multi
 
 serve:
-	nodemon --watch app/back --watch lib --watch extra --exec babel-node --stage 0 server.js
+	nodemon --watch app/back --watch lib --watch extra --exec babel-node --stage 0 cli/cli.js
 
 fill-db:
 	babel-node back/test-fill-db.js

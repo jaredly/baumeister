@@ -1,5 +1,6 @@
 
 import React from 'react'
+import classnames from 'classnames'
 
 import BuildSection from './build-section'
 import mmSS from '../lib/mmSS'
@@ -64,6 +65,7 @@ export default class Build extends React.Component {
       </div>
 
       <ul className='Build_sections'>
+        <ConfigSection config={build.config}/>
         {build.events ? build.events.sections.map(section =>
           <BuildSection
             key={section.name}
@@ -74,6 +76,30 @@ export default class Build extends React.Component {
       {this.renderError()}
 
     </div>
+  }
+}
+
+class ConfigSection extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {open: false}
+  }
+
+  toggleOpen() {
+    this.setState({open: !this.state.open, manuallyToggled: true})
+  }
+
+  render() {
+    return <li className={classnames('Build_section', !this.state.open && 'Build_section-closed')}>
+      <div onClick={this.toggleOpen.bind(this)} className='Build_section_title'>
+        Config
+      </div>
+      {this.state.open && <ul className='Build_events'>
+        <li>
+          <pre className='Config_section'>{JSON.stringify(this.props.config, null, 2)}</pre>
+        </li>
+      </ul>}
+    </li>
   }
 }
 
