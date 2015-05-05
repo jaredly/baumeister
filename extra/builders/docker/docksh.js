@@ -35,7 +35,7 @@ export default class Docksh {
       this.docker.createContainer({
         Image: this.config.image,
         Cmd: ['sleep infinity'],
-        Entrypoint: ['/bin/sh', '-x', '-c'],
+        Entrypoint: ['/bin/bash', '-e', '-c'],
         // VolumesFrom: this.config.volumesFrom,
         Tty: true,
         PublishAllPorts: true,
@@ -89,7 +89,7 @@ export default class Docksh {
 
       this.container.exec({
         Tty: true,
-        Cmd: ['/bin/sh', '-x', '-c', cmd],
+        Cmd: ['/bin/bash', '-e', '-c', cmd],
         AttachStdout: true,
         AttachStderr: true,
       }, (err, exec) => {
@@ -149,7 +149,7 @@ export default class Docksh {
 
       this.container.exec({
         Tty: true,
-        Cmd: ['/bin/sh', '-x', '-c', cmd],
+        Cmd: ['/bin/bash', '-e', '-c', cmd],
         AttachStdout: true,
         AttachStderr: true
       }, (err, exec) => {

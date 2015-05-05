@@ -10,11 +10,5 @@ export default {
     'npm-test': {},
     'npm-install': {},
   },
-  builder: {
-    id: 'docker',
-    config: {
-      prefab: 'docker-ci/component',
-    },
-  },
 }
 

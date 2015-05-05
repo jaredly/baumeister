@@ -38,7 +38,8 @@ export default class LocalBuilder extends BaseBuild {
       throw new ConfigError('No basepath specified', 'LocalBuilder')
     }
     if (!fs.existsSync(this.config.basePath)) {
-      throw new ConfigError(`Basepath ${this.config.basePath} does not exist`, 'LocalBuilder')
+      mkdirp.sync(this.config.basePath)
+      // throw new ConfigError(`Basepath ${this.config.basePath} does not exist`, 'LocalBuilder')
     }
 
     return prom(done => fs.exists(this.config.basePath, exists => {

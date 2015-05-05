@@ -73,7 +73,6 @@ export default class DockerBuild extends BaseBuild {
   }
 
   shell(config) {
-    console.log(config, this.ctx)
     config = config || {}
     const io = this.io
     const sh = new Docksh(this.docker, {
@@ -117,9 +116,23 @@ export default class DockerBuild extends BaseBuild {
   }
 
   clearCache() {
-    if (!this.cacheContainer) return
+    if (!this.ctx.cacheContainer) return
     return prom(done => {
-      this.docker.getContainer(this.cacheContainer)
+      this.docker.getContainer(this.ctx.cacheContainer)
+        .remove({v: 1}, (err, data) => {
+          if (err) {
+            if (err.statusCode === 404) return done()
+            return done(err)
+          }
+          done()
+        })
+    })
+  }
+
+  clearData() {
+    if (!this.ctx.dataContainer) return
+    return prom(done => {
+      this.docker.getContainer(this.ctx.dataContainer)
         .remove({v: 1}, (err, data) => {
           if (err) {
             if (err.statusCode === 404) return done()

@@ -35,15 +35,15 @@ const fixture = {
 
 const PLUGINS = {
   'shell-provider': {
-    onBuild(project, data, runner, config) {
-      runner.use('getproject', builder => {
+    onBuild(project, data, onStep, config) {
+      onStep('getproject', builder => {
         return builder.run(config.get)
       })
     },
   },
   'shell-tester': {
-    onBuild(project, data, runner, config) {
-      runner.use('test', builder => {
+    onBuild(project, data, onStep, config) {
+      onStep('test', builder => {
         return builder.run(config.command)
       })
     }
@@ -91,7 +91,7 @@ describe('docker-builder', () => {
             ])
             expect(build.error).to.not.be.ok()
             expect(Object.keys(build.events.streams).length).to.equal(2)
-            console.log(JSON.stringify(build, null, 2))
+            // console.log(JSON.stringify(build, null, 2))
             done()
           }, done)
           .catch(done)

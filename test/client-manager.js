@@ -66,8 +66,8 @@ describe('things', () => {
 
       builds.addPlugins({
         getprojecter: {
-          onBuild(project, data, runner) {
-            runner.use('getproject', () => {
+          onBuild(project, data, onStep) {
+            onStep('getproject', () => {
               hit.push('getproject')
             })
           }
