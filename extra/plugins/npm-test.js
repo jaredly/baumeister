@@ -7,7 +7,11 @@ export default class NPMTest {
 
   onBuild(project, build, onStep, config) {
     onStep('test', (builder, ctx, io) => {
-      return builder.run('npm test')
+      return builder.run('npm test', {
+        docker: {
+          image: 'jaredly/node',
+        }
+      })
     })
   }
 }

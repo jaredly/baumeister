@@ -8,7 +8,9 @@ export default class NPMInstall {
   onBuild(project, build, onStep, config) {
     onStep('pretest', (builder, ctx, io) => {
       return builder.runCached({
-        image: config.dockerImage
+        docker: {
+          image: 'jaredly/node',
+        }
       }, {
         get: 'npm install',
         update: 'npm install',

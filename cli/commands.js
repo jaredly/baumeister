@@ -84,11 +84,11 @@ import uuid from '../lib/uuid'
 
 function loadDefaultProjects(pos, argv, dao) {
   const projects = [
-    require('./test/fixtures/loco.config.js'),
-    require('./test/fixtures/itreed-js.config.js'),
-    require('./test/fixtures/passes.config.js'),
-    // require('./test/fixtures/notablemind.config.js'),
-    require('./test/fixtures/test.config.js'),
+    require('../test/fixtures/loco.config.js'),
+    require('../test/fixtures/itreed-js.config.js'),
+    require('../test/fixtures/passes.config.js'),
+    // require('../test/fixtures/notablemind.config.js'),
+    require('../test/fixtures/test.config.js'),
   ]
   projects.forEach(proj => {
     proj.id = uuid()

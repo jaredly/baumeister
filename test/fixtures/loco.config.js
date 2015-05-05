@@ -2,6 +2,9 @@
 export default {
   name: 'loco',
   modified: new Date(),
+  builder: {
+    id: 'local',
+  },
   plugins: {
     'git-provider': {
       cache: true,
