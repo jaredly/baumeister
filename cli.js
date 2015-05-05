@@ -51,16 +51,26 @@ const showEvent = {
   'build:status': () => null,
   'build:done': () => console.log('Finished build'),
   'build:event': val => {
-    if (val.event.evt === 'stream-start') {
+    const type = val.event.evt
+    val = val.event.val
+    if (type === 'stream-start') {
       console.log()
-      console.log(`>> $ ${val.event.val.cmd || val.event.val.title}`)
+      console.log(`>> $ ${val.cmd || val.title}`)
       console.log()
-    } else if (val.event.evt === 'stream') {
-      process.stdout.write(val.event.val.value)
-    } else if (val.event.evt === 'stream-end') {
+    } else if (type === 'stream') {
+      process.stdout.write(val.value)
+    } else if (type === 'stream-end') {
       console.log()
       console.log('<<')
       console.log()
+    } else if (type === 'section') {
+      console.log()
+      console.log(`[[[[    ${val}    ]]]]`)
+      console.log()
+    } else if (type === 'info') {
+      console.log('{info}', val)
+    } else {
+      console.log(`[${type}]`, val)
     }
   }
 }
@@ -153,9 +163,9 @@ const commands = {
           } catch (err) {
             throw new UsageError(`Failed to require file: ${project}`)
           }
-          data.id = uuid()
+          if (!data.id) data.id = uuid()
           return dao.putProject(data)
-            .then(_ => data.id)
+            .then(_ => data.name)
         }).then(projectId => {
           const sockio = new EventEmitter()
           sockio.send = function (data) {

@@ -1,11 +1,12 @@
 
 export default {
+  id: '1111_localtester',
   name: 'local',
   modified: new Date(),
   plugins: {
     'local-provider': {
       path: '/home/jared/clone/nm/flammable/',
-      inPlace: true,
+      // inPlace: true,
     },
     /*
     'docker-builder': {
