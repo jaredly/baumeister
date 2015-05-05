@@ -16,7 +16,7 @@ class NPMInstall {
       }
       return builder.runCached({
         docker: {
-          image: 'jaredly/node',
+          image: 'jaeger/node',
         }
       }, {
         get: 'npm install',

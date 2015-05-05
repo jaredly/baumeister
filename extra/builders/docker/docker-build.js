@@ -5,7 +5,6 @@ import fs from 'fs'
 
 import Promise from 'bluebird'
 import assign from 'object-assign'
-// import buildDocker from './build-docker'
 // import getContext from './get-context'
 // import runDocker from './run-docker'
 import BaseBuild from '../../../lib/base-build'
@@ -25,6 +24,7 @@ export default class DockerBuild extends BaseBuild {
       cacheContainer: `dci-${this.project.id}-cache`,
       dataContainer: `dci-${this.id}-data`,
       runnerConfig: {
+        defaultImage: 'jaeger/node',
         volumesFrom: [],
         binds: [],
         env: [],
@@ -80,8 +80,8 @@ export default class DockerBuild extends BaseBuild {
       binds: this.ctx.runnerConfig.binds,
       env: assign(this.ctx.runnerConfig.env, config.env),
 
-      image: config.docker && config.docker.image || 'ubuntu',
-      // cwd: config.cwd || '/project',
+      image: config.docker && config.docker.image || this.ctx.runnerConfig.defaultImage,
+      cwd: config.cwd || '',
     })
 
     return {
@@ -115,7 +115,14 @@ export default class DockerBuild extends BaseBuild {
     }
   }
 
+  pluginProxy(id) {
+    const proxy = super.pluginProxy(id)
+    proxy.docker = this.docker
+    return proxy
+  }
+
   /*
+  // TODO make this work again
   clearCache() {
     if (!this.ctx.cacheContainer) return
     return prom(done => {

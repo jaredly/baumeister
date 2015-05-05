@@ -4,6 +4,7 @@ import ProjectConfig from './project-config'
 import classnames from 'classnames'
 import {fluxify} from 'flammable/react'
 
+import globalConfig from '../../../config'
 import './new-project.less'
 
 @fluxify({
@@ -48,20 +49,10 @@ export default class NewProject extends React.Component {
           creating={true}
           project={{
             name: 'New Project',
-            source: {
-              provider: 'git',
-              config: {
-                repo: 'https://github.com/you/yours',
-              },
-            },
-            build: {
-              prefab: 'ubuntu',
-            },
             plugins: {},
-            test: {
-              cwd: '',
-              cmd: 'make test',
-            }
+            builder: {
+              id: globalConfig.defaultBuilder,
+            },
           }}
           onOpen={_ => this.onOpen()}
           onClose={_ => this.onClose()}

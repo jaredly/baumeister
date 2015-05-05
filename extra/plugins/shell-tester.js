@@ -8,6 +8,7 @@ class ShellTester {
     }
     onStep('test', (builder, ctx, io) => {
       return builder.run(config.command, {
+        cwd: config.cwd,
         docker: config.docker
       })
     })
@@ -30,6 +31,11 @@ export default {
             title: 'Docker image (if using docker)',
           }
         }
+      },
+      cwd: {
+        type: 'text',
+        default: '',
+        title: 'Working directory for the test (relative to the project directory)',
       },
       command: {
         type: 'text',

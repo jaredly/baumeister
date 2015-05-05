@@ -168,7 +168,7 @@ class PluginConfig extends React.Component {
     })
 
     const builderNames = Object.keys(globalConfig.builders)
-    const currentBuildType = this.context.formData && this.context.formData.getIn(['builder', 'id']) || builderNames[0]
+    const currentBuildType = this.context.formData && this.context.formData.getIn(['builder', 'id']) || globalConfig.defaultBuilder || builderNames[0]
 
     return <div>
       <div className='ProjectConfig_addplugin'>
