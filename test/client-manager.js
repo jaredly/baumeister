@@ -45,13 +45,17 @@ function getDummyBuilder(hit) {
   }
 }
 
-describe('things', () => {
+describe('ClientBuilder', () => {
   it('with just a dummy builder + dummy getproject plugin', done => {
     const hit = []
     const DummyBuilder = getDummyBuilder(hit)
 
-    locoFixture.plugins = {
-      getprojecter: {}
+    const locoFixture = {
+      name: 'heiii',
+      plugins: {
+        getprojecter: {}
+      },
+      modified: new Date(),
     }
 
     setup({

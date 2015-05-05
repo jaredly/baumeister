@@ -121,7 +121,7 @@ const config = {
   },
   defaultBuilder: 'local',
   plugins: {
-    'file-watcher': require('../extra/plugins/file-watcher'),
+    // 'file-watcher': require('../extra/plugins/file-watcher'),
     'local-provider': require('../extra/plugins/local'),
     'git-provider': require('../extra/plugins/git-provider'),
     'npm-install': require('../extra/plugins/npm-install'),
@@ -135,7 +135,7 @@ const config = {
 }
 
 describe('fixture running', function () {
-  this.timeout(10000)
+  this.timeout(30000)
   Object.keys(fixtures).forEach(name => {
     beforeEach(done => {
       const dr = config.builderConfig.local.basePath

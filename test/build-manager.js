@@ -44,7 +44,7 @@ function getDummyBuilder(hit) {
   }
 }
 
-describe('things', () => {
+describe('BuildManager', () => {
   it('should setup ok', done => {
     setup({
       database: {
@@ -55,14 +55,49 @@ describe('things', () => {
     }, done)
   })
 
+  it('should fail with unknown plugin', done => {
+    const hit = []
+    const io = new Replayable()
+    const DummyBuilder = getDummyBuilder(hit)
+
+    const locoFixture = {
+      name: 'heiii',
+      plugins: {
+        unknownplugin: {}
+      },
+      modified: new Date(),
+    }
+
+    setup({database: {inMemory: true}}).then(({clients, builds, dao}) => {
+      builds.addBuilders({
+        dummy: DummyBuilder,
+      })
+      builds.setDefaultBuilder('dummy')
+
+      locoFixture.id = '1111_proj'
+      dao.putProject(locoFixture)
+      .then(() => dao.getProjects())
+      .then(() => builds.startBuild(locoFixture.name, io))
+      .then(({project, build}) => {
+        expect(build.status).to.equal('errored')
+        expect(build.errorCause).to.equal('configuration')
+        done()
+      }).catch(done)
+    }, done)
+  })
+
   it('with just a dummy builder + dummy getproject plugin', done => {
     const hit = []
     const io = new Replayable()
 
     const DummyBuilder = getDummyBuilder(hit)
 
-    locoFixture.plugins = {
-      getprojecter: {}
+    const locoFixture = {
+      name: 'heiii',
+      plugins: {
+        getprojecter: {}
+      },
+      modified: new Date(),
     }
 
     setup({
@@ -91,10 +126,16 @@ describe('things', () => {
       .then(() => {
         builds.startBuild(locoFixture.name, io)
           .then(({project, build}) => {
-            expect(project.latestBuild).to.equal(build.id)
-            expect(hit).to.eql(['init', 'getproject', 'postdeploy'])
-            expect(build.status).to.eql('succeeded')
-            done()
+            try {
+              expect(project.latestBuild).to.equal(build.id)
+              expect(hit).to.eql(['init', 'getproject', 'postdeploy'])
+              expect(build.status).to.eql('succeeded')
+              done()
+            } catch (err) {
+              console.dir(project)
+              console.log(build)
+              done(err)
+            }
           }, done)
           .catch(done)
       })
@@ -109,16 +150,20 @@ describe('things', () => {
 
     const DummyBuilder = getDummyBuilder(hit)
 
-    locoFixture.plugins = {
-      'shell-provider': {
-        cache: true,
-        get: 'echo "hello" > world.txt',
-        update: 'echo "more" > world.txt',
+    const locoFixture = {
+      name: 'heiii',
+      modified: new Date(),
+      plugins: {
+        'shell-provider': {
+          cache: true,
+          get: 'echo "hello" > world.txt',
+          update: 'echo "more" > world.txt',
+        },
+        'shell-tester': {
+          command: 'grep hello world.txt',
+        },
       },
-      'shell-tester': {
-        command: 'grep hello world.txt',
-      },
-    },
+    }
 
     setup({
       database: {

@@ -1,0 +1,6 @@
+FROM google/nodejs
+
+RUN apt-get install -y rsync
+
+RUN npm install -g babel less browserify watchify webpack babel-eslint mocha
+

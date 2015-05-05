@@ -5,3 +5,5 @@
 /build
 /test/.test.db
 /test/db.db
+/cov.html
+/cov.json

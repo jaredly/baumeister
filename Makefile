@@ -9,13 +9,16 @@ fill-db:
 	babel-node back/test-fill-db.js
 
 test:
-	mocha --compilers "js:babel/register" test/*.js
+	mocha -b --compilers "js:babel/register" test/*.js
+
+test-fixtures:
+	mocha -b --compilers "js:babel/register" test/fixtures.js
 
 test-build:
 	mocha --require babel-core/browser-polyfill build/test/fixtures.js
 
 test-cov:
-	${MOCHA} build/test/*.js
+	${MOCHA} -b build/test/*.js
 
 babel: b-test
 	# babel app/back -d build/app/back
