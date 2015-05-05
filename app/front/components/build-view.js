@@ -31,6 +31,7 @@ function newBuilds(prev, next) {
       getBuilds: ['builds.fetch', props.projectId],
       setOpenBuild: 'builds.setOpen',
       stopBuild: ['builds.stop', props.projectId],
+      startBuild: ['projects.startBuild', props.projectId],
     }
   }
 })
@@ -94,8 +95,11 @@ export default class BuildView extends React.Component {
       return <span className='BuildView BuildView-loading'>Loading</span>
     }
     if (!this.props.builds.length) {
-      return <div className='BuildView'>
+      return <div className='BuildView BuildView-empty'>
         No builds for this project!
+        <button onClick={this.props.startBuild} type='button' className='Button'>
+          Start a build
+        </button>
       </div>
     }
     const current = this.getCurrentBuild()

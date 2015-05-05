@@ -70,7 +70,7 @@ export default class Build extends React.Component {
           <BuildSection
             key={section.name}
             section={section}
-            streams={build.events.streams}/>) : 'Initializing...'}
+            streams={build.events.streams}/>) : (build.status === 'running' ? 'Initializing...' : '')}
       </ul>
 
       {this.renderError()}

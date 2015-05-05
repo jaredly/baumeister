@@ -1,6 +1,6 @@
 
 module.exports = {
-  id: 'local',
+  id: 'local-provider',
   title: 'Local',
   builder: __dirname + '/local-build.js',
   description: 'Builds are stored in a local directory and built using the current system environment. This is easiest to setup, but doesn\'t offer you isolation -- your current envionment could pollute the system, especially if you implicitly rely on globally installed packages.',

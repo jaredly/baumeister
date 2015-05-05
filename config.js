@@ -14,7 +14,7 @@ module.exports = {
   defaultBuilder: 'local',
   plugins: {
     // 'file-watcher': require('./extra/plugins/file-watcher'),
-    'local': require('./extra/plugins/local'),
+    'local-provider': require('./extra/plugins/local'),
     'git-provider': require('./extra/plugins/git-provider'),
     'npm-install': require('./extra/plugins/npm-install'),
     'npm-test': require('./extra/plugins/npm-test'),

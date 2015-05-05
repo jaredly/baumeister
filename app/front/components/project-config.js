@@ -89,7 +89,7 @@ function renderBuilders() {
                     globalConfig.builderConfig && globalConfig.builderConfig[name] || {})
     }
     children.push(<div key={name} switchWhere={name}>
-      <div>{builder.description}</div>
+      <div className='ProjectConfig_builder_description'>{builder.description}</div>
       {builder.projectConfig && FormSection.fromSpec({
         name: 'config',
         spec: builder.projectConfig.schema
@@ -152,6 +152,11 @@ class PluginConfig extends React.Component {
     const plugins = this.props.value
     const installed = globalConfig.plugins
     const using = plugins.keySeq().sort((a, b) => {
+      if (!installed[a] && !installed[b]) {
+        return a > b ? 1 : -1
+      }
+      if (!installed[a]) return 1
+      if (!installed[b]) return -1
       const sa = installed[a].sort
       const sb = installed[b].sort
       if (sa === undefined && sb === undefined) {
@@ -163,7 +168,7 @@ class PluginConfig extends React.Component {
     })
 
     const builderNames = Object.keys(globalConfig.builders)
-    const currentBuildType = this.context.formData.getIn(['builder', 'id']) || builderNames[0]
+    const currentBuildType = this.context.formData && this.context.formData.getIn(['builder', 'id']) || builderNames[0]
 
     return <div>
       <div className='ProjectConfig_addplugin'>
@@ -175,19 +180,24 @@ class PluginConfig extends React.Component {
       </div>
 
       {using.map(name => {
-        const disabled = installed[name].buildTypes && installed[name].buildTypes.indexOf(currentBuildType) === -1
+        const unavailable = !installed[name]
+        const disabled = !unavailable && installed[name].buildTypes && installed[name].buildTypes.indexOf(currentBuildType) === -1
         return <div className='ProjectConfig_section'>
           <div className='PluginConfig_top section-title'>
             <span className='PluginConfig_title'>
-              {installed[name].title || name}
+              {unavailable ? name : installed[name].title || name}
             </span>
             <span className='PluginConfig_description'>
-              {installed[name].description}
+              {unavailable ? '' : installed[name].description}
             </span>
             <div className='PluginConfig_spacer'/>
             <button type='button' className='Button' onClick={this.removePlugin.bind(this, name)}>Remove</button>
           </div>
-          {disabled ?
+          {unavailable ? 
+            <div className='ProjectConfig_section_body PluginConfig_disabled'>
+              This plugin is not available in this installation of Jaeger. Check your config file.
+            </div>
+            : (disabled ?
             <div className='ProjectConfig_section_body PluginConfig_disabled'>
               This plugin is incompatible with the <span className='PluginConfig_builder'>
                 {globalConfig.builders[currentBuildType].title || currentBuildType}
@@ -198,7 +208,7 @@ class PluginConfig extends React.Component {
             value: plugins.get(name),
             spec: installed[name].projectConfig.schema,
             onChange: val => this.props.onChange(plugins.set(name, val))
-          })}
+          }))}
         </div>
       })}
     </div>

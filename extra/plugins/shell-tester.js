@@ -18,7 +18,6 @@ export default {
   title: 'Shell Tester',
   plugin: ShellTester,
   description: 'Test using a custom command',
-  buildTypes: ['local'],
   projectConfig: {
     schema: {
       docker: {

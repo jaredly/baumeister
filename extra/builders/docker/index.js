@@ -3,6 +3,7 @@ module.exports = {
   id: 'docker',
   title: 'Docker',
   builder: __dirname + '/docker-build.js',
+  description: 'Run each build in an isolated docker container for ease and reproducability.',
   globalConfig: {
     form() {
       const {Radio, FormSection} = require('formative')

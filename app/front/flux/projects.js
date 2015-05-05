@@ -22,6 +22,11 @@ export const projectStore = {
   },
 
   ws: {
+    'ws:state': (newState, update, state, sendAction) => {
+      if (newState === 'connected') {
+        sendAction('projects.fetch')
+      }
+    },
     'build:history': ({project, id}, update, state) => {
       if (!state[project] || state[project].latestBuild.id !== id) return
       update({
@@ -32,6 +37,19 @@ export const projectStore = {
         }
       })
     },
+    /*
+    'build:update': (build, update, state) => {
+      const proj = state[build.project]
+      if (!proj || proj.latestBuild.id !== build.id) return
+      update({
+        [build.project]: {
+          latestBuild: {
+            $set: build
+          }
+        }
+      })
+    },
+    */
     'project:remove': (id, update) => {
       update({[id]: {$set: undefined}})
     },
