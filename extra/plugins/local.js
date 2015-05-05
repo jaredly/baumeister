@@ -1,4 +1,8 @@
 
+import prom from '../../lib/prom'
+import {ConfigError} from '../../lib/errors'
+import fs from 'fs'
+
 export default class Local {
   static buildTypes = ['docker', 'local']
 
@@ -20,9 +24,15 @@ export default class Local {
           ctx.runnerOptions.binds.push([`${config.path}:/localProject:rw`])
         }
       }
+      return prom(done => {
+        fs.exists(config.path, exists => {
+          if (exists) done()
+          return done(new ConfigError(`No such path ${config.path}`, 'local-builder.path'))
+        })
+      })
     })
 
-    runner.use('getproject', (builder, ctx, io) => {
+    onStep('getproject', (builder, ctx, io) => {
       if (config.inPlace) {
         return io.emit('info', `Using ${config.path} in place`)
       }

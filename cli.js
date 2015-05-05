@@ -24,16 +24,45 @@ const showEvent = {
       return console.log(`#### Build Passed! ####`)
     }
     if (val.status === 'errored') {
+      console.log()
       console.log(`!!!! Build Errored (${val.errorCause}) !!!!`)
-      console.log(JSON.stringify(val.error, null, 2))
+      console.log()
+      if (val.errorCause === 'server') {
+        console.log(val.error.message)
+        console.log(val.error.stack)
+      } else if (val.errorCause === 'shell-exit') {
+        console.log(`$ ${val.error.cmd} (exit code ${val.error.exitCode})`)
+      } else {
+        console.log(JSON.stringify(val.error, null, 2))
+      }
     }
     if (val.status === 'failed') {
+      console.log()
       console.log(`:( :( :( Build Failed (${val.errorCause}) ): ): ):`)
-      console.log(JSON.stringify(val.error, null, 2))
+      console.log()
+      if (val.errorCause === 'shell-exit') {
+        console.log(`$ ${val.error.cmd} (exit code ${val.error.exitCode})`)
+      } else {
+        console.log(JSON.stringify(val.error, null, 2))
+      }
+      console.log()
     }
   },
   'build:status': () => null,
   'build:done': () => console.log('Finished build'),
+  'build:event': val => {
+    if (val.event.evt === 'stream-start') {
+      console.log()
+      console.log(`>> $ ${val.event.val.cmd || val.event.val.title}`)
+      console.log()
+    } else if (val.event.evt === 'stream') {
+      process.stdout.write(val.event.val.value)
+    } else if (val.event.evt === 'stream-end') {
+      console.log()
+      console.log('<<')
+      console.log()
+    }
+  }
 }
 
 function loadDefaultProjects(pos, argv, dao) {
@@ -63,30 +92,34 @@ function loadDefaultProjects(pos, argv, dao) {
   })
 }
 
+function setup(config) {
+  return setupManager(config)
+    .then(({builds, clients, dao}) => {
+      const views = makeViews(builds, clients, dao)
+      const app = setupApp(config.server.port || 3005, views, clients)
+      return loadPlugins(builds, app, config)
+        .then(() => {
+          console.log('plugins initialized')
+          return {builds, clients, dao, app}
+        }, err => {
+          console.error('Failed to load plugins')
+          throw err
+        })
+    }, err => {
+      console.error('failed to setup db + managers')
+      throw err
+    })
+}
+
 const commands = {
   serve(pos, argv) {
-    return setupManager(config)
-      .then(({builds, clients, dao}) => {
-        const views = makeViews(builds, clients, dao)
-        const app = setupApp(config.server.port || 3005, views, clients)
-        return loadPlugins(builds, app, config)
-          .then(() => {
-            console.log('plugins initialized')
-            return {builds, clients, dao, app}
-          }, err => {
-            console.error('Failed to load plugins')
-            throw err
-          })
-      }, err => {
-        console.error('failed to setup db + managers')
-        throw err
-      })
+    return setup(config)
       .then(({app, builds, clients, dao}) => app.run(server => {
         console.log('ready')
       }))
   },
   repl(pos, argv) {
-    return setupManager(config)
+    return setup(config)
       .then(({builds, clients, dao}) => {
         global.builds = builds
         global.clients = clients
@@ -100,13 +133,13 @@ const commands = {
       })
   },
   initdb(pos, argv) {
-    return setupManager(config)
+    return setup(config)
       .then(({builds, clients, dao}) => {
         return loadDefaultProjects(pos, argv, dao)
       })
   },
   build(pos, argv) {
-    return setupManager(config)
+    return setup(config)
       .then(({builds, clients, dao}) => {
         const project = pos.shift()
         if (!project) throw new UsageError('Project id / file required')
@@ -131,6 +164,12 @@ const commands = {
               showEvent[data.evt](data.val)
             } else {
               console.log(`[${data.evt}]`, JSON.stringify(data.val, null, 2))
+            }
+            if (data.evt === 'build:new') {
+              sockio.emit('message', JSON.stringify({
+                evt: 'build:view',
+                val: data.val.id,
+              }))
             }
             if (data.evt === 'build:done') {
               console.log('Done!')

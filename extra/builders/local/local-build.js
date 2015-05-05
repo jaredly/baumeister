@@ -16,6 +16,8 @@ export default class LocalBuilder extends BaseBuild {
   constructor(io, project, id, config) {
     super(io, project, id, config)
 
+    const projectDir = path.join(this.config.basePath, 'projects',
+                                this.project.id.replace(/:/, '_'))
     this.ctx = {
       runnerConfig: {
         env: {
@@ -24,7 +26,10 @@ export default class LocalBuilder extends BaseBuild {
           LANG: process.env.LANG,
           LANGUAGE: process.env.LANGUAGE,
         },
-      }
+      },
+      cacheDir: path.join(projectDir, 'cache'),
+      projectDir: path.join(projectDir, 'builds',
+                            this.id.replace(/:/, '_')),
     }
   }
 
@@ -35,19 +40,15 @@ export default class LocalBuilder extends BaseBuild {
     if (!fs.existsSync(this.config.basePath)) {
       throw new ConfigError(`Basepath ${this.config.basePath} does not exist`, 'LocalBuilder')
     }
-    const projectDir = path.join(this.config.basePath, 'projects',
-                                this.project.id.replace(/:/, '_'))
+
     return prom(done => fs.exists(this.config.basePath, exists => {
       if (exists) return done()
       mkdirp(this.config.basePath, done)
     }))
     .then(() => prom(done => {
-      this.ctx.cacheDir = path.join(projectDir, 'cache')
       mkdirp(this.ctx.cacheDir, done)
     }))
     .then(() => prom(done => {
-      this.ctx.projectDir = path.join(projectDir, 'builds',
-                                  this.id.replace(/:/, '_'))
       mkdirp(this.ctx.projectDir, done)
     }))
   }
@@ -61,10 +62,13 @@ export default class LocalBuilder extends BaseBuild {
         return Promise.resolve()
       },
       run(cmd, options) {
+        if (!cmd) {
+          throw new Error(`No command given`)
+        }
         options = options || {}
-        let cwd = options.cwd || builder.projectDir
+        let cwd = options.cwd || builder.ctx.projectDir
         if (cwd[0] !== '/') {
-          cwd = builder.projectDir + cwd
+          cwd = builder.ctx.projectDir + cwd
         }
 
         return runPyTTY(cmd, {
