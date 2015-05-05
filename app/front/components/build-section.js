@@ -38,7 +38,7 @@ export default class BuildSection extends React.Component {
 
   renderEvent(evt, i) {
     if (evt.evt === 'stream-start') {
-      return renderStream(evt.val, this.props.streams[evt.val.id], i)
+      return renderStream(evt.val, this.props.streams[evt.val.id], i, this.props.finished)
     }
     if (evt.evt === 'info') {
       return <li key={i} className='Evt Evt-info'>{evt.val}</li>
@@ -114,7 +114,7 @@ function renderStreamEnd(end) {
   return null
 }
 
-function renderStream(evt, stream, i) {
+function renderStream(evt, stream, i, finished) {
   if (!stream) return <span key={i}/>
   const title = evt.cleanCmd ? evt.cleanCmd : (evt.cmd ? evt.cmd : evt.title)
   const html = ansiText(stream.items.map(ev => ev.value).join(''))
@@ -123,7 +123,7 @@ function renderStream(evt, stream, i) {
     <div className='Stream_title'>
       {title}
       <span className='Stream_duration'>
-        {stream.end ? mmSS(stream.end.duration) : <Ticker start={stream.start.time}/>}
+        {stream.end ? mmSS(stream.end.duration) : (finished ? mmSS(finished - stream.start.time) : <Ticker start={stream.start.time}/>)}
       </span>
       <span className='Stream_plugin'>
         {evt.plugin}

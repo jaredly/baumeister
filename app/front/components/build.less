@@ -28,6 +28,42 @@
   }
 }
 
+.BuildError {
+  padding: 10px;
+  box-shadow: 0 1px 5px #ccc;
+  border-radius: 3px;
+  color: white;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.BuildError_source {
+  background-color: white;
+  color: @st-errored;
+  padding: 3px 5px;
+  border-radius: 5px;
+  display: inline-block;
+  margin: 5px;
+  margin-left: 0;
+}
+
+.BuildError_cmd {
+  font-family: monospace;
+  white-space: pre-wrap;
+  background-color: #322;
+  padding: 3px 5px;
+  border-radius: 3px;
+  margin: 5px 0;
+}
+
+.BuildError-errored {
+  background-color: @st-errored;
+}
+
+.BuildError-failed {
+  background-color: @st-failed;
+}
+
 .Config_section {
   background-color: #DDDDDD;
   border-radius: 5px;

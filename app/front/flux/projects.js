@@ -37,19 +37,6 @@ export const projectStore = {
         }
       })
     },
-    /*
-    'build:update': (build, update, state) => {
-      const proj = state[build.project]
-      if (!proj || proj.latestBuild.id !== build.id) return
-      update({
-        [build.project]: {
-          latestBuild: {
-            $set: build
-          }
-        }
-      })
-    },
-    */
     'project:remove': (id, update) => {
       update({[id]: {$set: undefined}})
     },

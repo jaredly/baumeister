@@ -17,7 +17,10 @@ const errorRender = {
   },
   configuration(error) {
     return <div className='BuildError_details'>
-      <div className='BuildError_message'>{error.source}: {error.message}</div>
+      <div className='BuildError_message'>
+        <span className='BuildError_source'>{error.source}</span> {error.message}
+      </div>
+      {error.help && <div className='BuildError_help'>{error.help}</div>}
     </div>
   },
   zombie(error) {
@@ -28,7 +31,7 @@ const errorRender = {
   'shell-exit': function (error) {
     return <div className='BuildError_details'>
       <div className='BuildError_cmd'>{error.cmd}</div>
-      <div className='BuildError_exitCode'>{error.exitCode}</div>
+      <div className='BuildError_exitCode'>exited with code {error.exitCode}</div>
     </div>
   },
   interrupted(error) {
@@ -70,6 +73,7 @@ export default class Build extends React.Component {
           <BuildSection
             key={section.name}
             section={section}
+            finished={build.finished}
             streams={build.events.streams}/>) : (build.status === 'running' ? 'Initializing...' : '')}
       </ul>
 
