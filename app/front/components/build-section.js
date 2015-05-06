@@ -1,10 +1,11 @@
 
 import React from 'react'
+import Convert from 'ansi-to-html'
+import classnames from 'classnames'
 
 import Ticker from '../lib/ticker'
 import mmSS from '../lib/mmSS'
-import Convert from 'ansi-to-html'
-import classnames from 'classnames'
+import Apparate from '../lib/apparate'
 
 import "./stream.less";
 import "./events.less";
@@ -82,9 +83,11 @@ export default class BuildSection extends React.Component {
           {!section.end ? <Ticker start={section.start}/> : mmSS(section.duration)}
         </span>
       </div>
+      <Apparate>
       {this.state.open && <ul className='Build_events'>
         {section.items.map((evt, i) => this.renderEvent(evt, i))}
       </ul>}
+      </Apparate>
     </li>
   }
 }

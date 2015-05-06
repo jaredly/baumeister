@@ -4,6 +4,7 @@ import {Link} from 'react-router'
 import classnames from 'classnames'
 import {fluxify} from 'flammable/react'
 
+import Morpher from '../lib/morpher'
 import Build from './build'
 
 import './build-view.less'
@@ -45,7 +46,9 @@ export default class BuildView extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     let news = false
-    if (newBuilds(this.props.builds, nextProps.builds)) return this.setOpenBuild(null, nextProps.builds)
+    if (newBuilds(this.props.builds, nextProps.builds)) {
+      return this.setOpenBuild(null, nextProps.builds)
+    }
     /*
     if (nextProps.builds === this.props.builds) return
     if (!nextProps.builds) return

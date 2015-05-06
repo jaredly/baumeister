@@ -4,6 +4,7 @@ import {Link} from 'react-router'
 import classnames from 'classnames'
 
 import Ticker from '../lib/ticker'
+import Apparate from '../lib/apparate'
 
 import BuildView from './build-view'
 import ProjectConfig from './project-config'
@@ -132,6 +133,7 @@ export default class Project extends React.Component {
           <i className='fa fa-play'/>
         </button> : null}
       </div>
+      <Apparate>
       {this.props.isOpen &&
         <div className='Project_body'>
           <div className='Project_buttons'>
@@ -140,6 +142,7 @@ export default class Project extends React.Component {
           </div>
           {this.renderBody()}
         </div>}
+      </Apparate>
     </div>
   }
 }

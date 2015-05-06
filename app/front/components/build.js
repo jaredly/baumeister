@@ -5,6 +5,7 @@ import classnames from 'classnames'
 import BuildSection from './build-section'
 import mmSS from '../lib/mmSS'
 import Ticker from '../lib/ticker'
+import Morpher from '../lib/morpher'
 
 import './build.less'
 
