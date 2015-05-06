@@ -7,7 +7,7 @@ export default {
       path: '/home/jared/clone/nm/',
       inPlace: true,
     }, 
-    'shell-test': {
+    'shell-tester': {
       docker: {
         image: 'jaredly/node',
       },

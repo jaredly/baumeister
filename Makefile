@@ -5,8 +5,8 @@ MOCHA=multi=${MULTI} ./node_modules/.bin/mocha --require babel-core/browser-poly
 serve:
 	nodemon --watch app/back --watch lib --watch extra --exec babel-node --stage 0 cli/cli.js
 
-fill-db:
-	babel-node back/test-fill-db.js
+reset-db:
+	./cli/cli.js initdb -f
 
 test:
 	mocha -b --compilers "js:babel/register" test/*.js

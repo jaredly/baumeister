@@ -55,6 +55,7 @@ export default class LocalBuilder extends BaseBuild {
   }
 
   shell(runConfig) {
+    runConfig = runConfig || {}
     const io = this.io
     const builder = this
     return {
@@ -67,7 +68,7 @@ export default class LocalBuilder extends BaseBuild {
           throw new Error(`No command given`)
         }
         options = options || {}
-        let cwd = options.cwd || builder.ctx.projectDir
+        let cwd = runConfig.cwd || builder.ctx.projectDir
         if (cwd[0] !== '/') {
           cwd = builder.ctx.projectDir + cwd
         }
