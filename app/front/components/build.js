@@ -5,7 +5,7 @@ import classnames from 'classnames'
 import BuildSection from './build-section'
 import mmSS from '../lib/mmSS'
 import Ticker from '../lib/ticker'
-import Morpher from '../lib/morpher'
+import Apparate from '../lib/apparate'
 
 import './build.less'
 
@@ -99,11 +99,13 @@ class ConfigSection extends React.Component {
       <div onClick={this.toggleOpen.bind(this)} className='Build_section_title'>
         Config
       </div>
+      <Apparate>
       {this.state.open && <ul className='Build_events'>
         <li>
           <pre className='Config_section'>{JSON.stringify(this.props.config, null, 2)}</pre>
         </li>
       </ul>}
+      </Apparate>
     </li>
   }
 }

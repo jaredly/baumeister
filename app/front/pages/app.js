@@ -9,6 +9,7 @@ import mmSS from '../lib/mmSS'
 
 import {fluxify} from 'flammable/react'
 import AppConfig from '../components/app-config'
+import Apparate from '../lib/apparate'
 
 
 @fluxify({
@@ -53,7 +54,9 @@ export default class App extends React.Component {
        {this.renderConnState()}
       </header>
       <section className='App_main'>
+        <Apparate>
         {this.state.config && <AppConfig onClose={() => this.setState({config: false})}/>}
+        </Apparate>
         <RouteHandler/>
       </section>
     </div>

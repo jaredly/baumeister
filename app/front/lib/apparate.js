@@ -4,7 +4,7 @@ import React from 'react'
 export default class Apparate extends React.Component {
   constructor(props) {
     super(props)
-    this.state = {moving: false}
+    this.state = {moving: false, state: 'idle'}
     this._curChildren = props.children
   }
 
@@ -24,8 +24,6 @@ export default class Apparate extends React.Component {
     this._resize = true
 
     var node = React.findDOMNode(this)
-    this._width = 'initial'
-    this._height = 'initial'
 
     var st = node.getBoundingClientRect()
     node.style.transition = 'initial'
@@ -46,8 +44,8 @@ export default class Apparate extends React.Component {
     var bef = window.getComputedStyle(node)
       , height = bef.height
       , width = bef.width
-      , oheight = this._height
-      , owidth = this._width
+      , oheight = 'initial'
+      , owidth = 'initial'
       , otransition = this._transition
     node.style.transition = 'initial'
     node.style.height = oheight
@@ -58,6 +56,12 @@ export default class Apparate extends React.Component {
     if (awidth === width && aheight === height) {
       node.style.removeProperty('height')
       node.style.removeProperty('width')
+      node.style.removeProperty('overflow')
+      node.style.removeProperty('transition')
+      this._movingChildren = this.props.children
+      if (this.state.state !== 'idle') {
+        this.setState({state: 'idle'})
+      }
       return
     }
 
@@ -66,20 +70,34 @@ export default class Apparate extends React.Component {
     node.style.overflow = 'hidden'
     node.offsetWidth
     node.offsetHeight
-    let time = Math.abs((parseInt(height) - parseInt(aheight)) / 1000)
+    let time = Math.abs((parseInt(height) - parseInt(aheight)) / 1500)
     if (time > .5) time = .5
+    if (time < .3) time = .3
     node.style.transition = `width ${time}s ease, height ${time}s ease`
     node.style.height = aheight
     node.style.width = awidth
 
+    /** failed attempt and preemting jank.
+    clearTimeout(this._tout2)
+    if (this.state.motion === 'expanding') {
+      this._tout2 = setTimeout(() => {
+        node.style.height = node.scrollHeight + 'px'
+      }, time * 500)
+    }
+    **/
+
     var done = () => {
       node.style.removeProperty('transition')
-      node.style.removeProperty('overflow')
-      node.style.removeProperty('height')
-      node.style.removeProperty('width')
       delete this._tout
-      this._movingChildren = this.props.children
-      this.setState({state: 'idle'})
+
+      var st = node.getBoundingClientRect()
+      node.style.transition = 'initial'
+      node.style.height = st.height + 'px'
+      node.style.width = st.width + 'px'
+
+      // double checking (in case contents changed size while sliding)
+      this._resize = true
+      this.setState({state: 'checking'})
     }
     if (this._tout) {
       clearTimeout(this._tout)
@@ -92,7 +110,6 @@ export default class Apparate extends React.Component {
     } else {
       this._nextLarge = false
     }
-    // this._curChildren = 'moving'//this.props.children
     this.setState({state: 'moving'})
   }
 
@@ -109,20 +126,6 @@ export default class Apparate extends React.Component {
         display: this.state.state === 'checking' ? 'none' : 'block'
       }}>{this._movingChildren}</div>
     </div>
-
-    /*
-    if (this.state.state === 'checking') {
-    }
-    if (this.state.state == 'idle'
-    return <div>
-      <div key="real" style={{
-        display: this.state.moving ? 'none' : 'block'
-      }}>{this.state.moving ? null : this.props.children}</div>
-      <div key="tmp" style={{
-        display: this.state.moving ? 'block' : 'none'
-      }}>{!this._nextLarge && !this.state.moving ? null : this._curChildren}</div>
-    </div>
-    */
   }
 
   static wrap(obj, key, descriptor) {
