@@ -8,6 +8,7 @@ import assign from 'object-assign'
 import BaseBuild from '../../../lib/base-build'
 import prom from '../../../lib/prom'
 import Docksh from './docksh'
+import mkdirp from 'mkdirp'
 
 import {ConfigError, InterruptError, ShellError} from '../../../lib/errors'
 
@@ -20,7 +21,9 @@ export default class DockerBuilder extends BaseBuild {
     this.docker = new Docker() // TODO use config to custom docker connection
     this.ctx = {
       cacheContainer: `dci-${this.project.id}-cache`,
-      dataContainer: `dci-${this.id}-data`,
+      projectContainer: `dci-${this.id}-project`,
+      projectBind: null,
+      cacheBind: null,
       runnerConfig: {
         defaultImage: 'jaeger/node',
         volumesFrom: [],
@@ -34,25 +37,25 @@ export default class DockerBuilder extends BaseBuild {
 
   init() {
     const promises = []
-    // create data container
-    if (this.ctx.dataContainer) {
-      this.ctx.runnerConfig.volumesFrom.push(this.ctx.dataContainer)
+    // create project container
+    if (this.ctx.projectContainer) {
       promises.push(prom(done => {
         this.docker.createContainer({
-          name: '/' + this.ctx.dataContainer,
+          name: '/' + this.ctx.projectContainer,
           Image: 'busybox',
           Volumes: {'/project': {}},
         }, (err, res) => {
           if (err) return done(err)
-          this.io.emit('info', `Created data container ${this.ctx.dataContainer} (${res.id})`)
+          this.io.emit('info', `Created project container ${this.ctx.projectContainer} (${res.id})`)
           done()
         })
       }))
+    } else if (this.ctx.projectBind) {
+      promises.push(prom(done => mkdirp(this.ctx.projectBind, done)))
     }
 
-    // check for / create cache container
+    // check for & create cache container
     if (this.ctx.cacheContainer) {
-      this.ctx.runnerConfig.volumesFrom.push(this.ctx.cacheContainer)
       promises.push(prom(done => {
         ensureContainer(this.docker, this.ctx.cacheContainer, '/cache', (err, id, created) => {
           if (err) return done(err)
@@ -60,6 +63,8 @@ export default class DockerBuilder extends BaseBuild {
           done()
         })
       }))
+    } else if (this.ctx.cacheBind) {
+      promises.push(prom(done => mkdirp(this.ctx.cacheBind, done)))
     }
 
     return prom(done => {
@@ -73,12 +78,30 @@ export default class DockerBuilder extends BaseBuild {
   shell(config) {
     config = config || {}
     const io = this.io
-    const sh = new Docksh(this.docker, {
-      volumesFrom: this.ctx.runnerConfig.volumesFrom,
-      binds: this.ctx.runnerConfig.binds,
-      env: assign(this.ctx.runnerConfig.env, config.env),
+    const rConfig = this.ctx.runnerConfig
 
-      image: config.docker && config.docker.image || this.ctx.runnerConfig.defaultImage,
+    const volumes = rConfig.volumesFrom.slice()
+    if (this.ctx.projectContainer) {
+      volumes.push(this.ctx.projectContainer)
+    }
+    if (this.ctx.cacheContainer) {
+      volumes.push(this.ctx.cacheContainer)
+    }
+
+    const binds = rConfig.binds.slice()
+    if (this.ctx.projectBind) {
+      binds.push(this.ctx.projectBind + ':' + this.ctx.projectDir + ':rw')
+    }
+    if (this.ctx.cacheBind) {
+      binds.push(this.ctx.cacheBind + ':' + this.ctx.cacheDir + ':rw')
+    }
+
+    const sh = new Docksh(this.docker, {
+      volumesFrom: volumes,
+      binds: binds,
+      env: assign(rConfig.env, config.env),
+
+      image: config.docker && config.docker.image || rConfig.defaultImage,
       cwd: config.cwd || '',
     })
 

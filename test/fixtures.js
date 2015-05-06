@@ -10,6 +10,102 @@ import uuid from '../lib/uuid'
 import setup from '../cli/setup'
 
 const fixtures = {
+  // docker things
+  docker_ctx: {
+    plugins: {
+      'local-provider': {
+        path: __dirname + '/fixtures/docker-ctx',
+        inPlace: false,
+      },
+      'docker-builder': {
+        dockerfile: 'Docker.build',
+        context: true,
+      },
+      'shell-tester': {
+        command: 'grep "hello root" /app/world.txt; cat /app/world.txt; grep base /app/world.txt',
+      },
+    },
+    builder: {
+      id: 'docker',
+    },
+  },
+
+  docker_ctx_outside: {
+    plugins: {
+      'local-provider': {
+        path: __dirname + '/fixtures/docker-ctx',
+        inPlace: false,
+      },
+      'docker-builder': {
+        dockerfile: 'Docker.outside',
+        context: 'other',
+      },
+      'shell-tester': {
+        command: 'grep "hello other" /app/world.txt; cat /app/world.txt; grep outside /app/world.txt',
+      },
+    },
+    builder: {
+      id: 'docker',
+    },
+  },
+
+  docker_ctx_inside: {
+    plugins: {
+      'local-provider': {
+        path: __dirname + '/fixtures/docker-ctx',
+        inPlace: false,
+      },
+      'docker-builder': {
+        dockerfile: 'other/Docker.inside',
+        context: 'other',
+      },
+      'shell-tester': {
+        command: 'grep "hello other" /app/world.txt; cat /app/world.txt; grep inside /app/world.txt',
+      },
+    },
+    builder: {
+      id: 'docker',
+    },
+  },
+
+  docker_noctx: {
+    plugins: {
+      'local-provider': {
+        path: __dirname + '/fixtures/docker-ctx',
+        inPlace: false,
+      },
+      'docker-builder': {
+        dockerfile: 'Docker.noctx',
+        context: false,
+      },
+      'shell-tester': {
+        command: 'grep hello /world.txt',
+      },
+    },
+    builder: {
+      id: 'docker',
+    },
+  },
+
+  docker_noctx_ip: {
+    plugins: {
+      'local-provider': {
+        path: __dirname + '/fixtures/docker-ctx',
+        inPlace: true,
+      },
+      'docker-builder': {
+        dockerfile: 'Docker.noctx',
+        context: false,
+      },
+      'shell-tester': {
+        command: 'grep hello /world.txt',
+      },
+    },
+    builder: {
+      id: 'docker',
+    },
+  },
+
   local: {
     plugins: {
       'local-provider': {
@@ -128,6 +224,7 @@ const config = {
     'npm-test': require('../extra/plugins/npm-test'),
     'shell-provider': require('../extra/plugins/shell-provider'),
     'shell-tester': require('../extra/plugins/shell-tester'),
+    'docker-builder': require('../extra/plugins/docker-builder'),
   },
   database: {
     inMemory: true,
@@ -155,13 +252,14 @@ describe('fixture running', function () {
           let section = null
           let output = ''
           let runner
+          let evts = []
           const sockio = fakeSock({
             default: data => {
-              // console.log('ev', data)
+              evts.push(data)
             },
             'build:new': ({id}) => {
               runner = clients.builds.running[id]
-              // console.log('new', runner)
+              evts.push(['new', runner])
             },
             'build:event': ({event}) => {
               if (event.evt === 'section') {
@@ -174,13 +272,16 @@ describe('fixture running', function () {
             'build:done': ({project, build}) => {
               try {
                 expect(build.status).to.eql('succeeded')
-                const clean = output.trim()
-                  .replace(/[\u000f\u000b\f\u0000-\u0002\b\r]/g, '')
-                  .replace('\n\n', '\n')
-                expect(clean)
-                  .to.eql(proj.output.replace('{{projectDir}}', runner.builder.ctx.projectDir))
+                if (proj.output) {
+                  const clean = output.trim()
+                    .replace(/[\u000f\u000b\f\u0000-\u0002\b\r]/g, '')
+                    .replace('\n\n', '\n')
+                  expect(clean)
+                    .to.eql(proj.output.replace('{{projectDir}}', runner.builder.ctx.projectDir))
+                }
               } catch (error) {
                 console.log(project, JSON.stringify(build, null, 2))
+                console.log(JSON.stringify(evts.slice(1), null, 2))
                 return done(error)
               }
               done()

@@ -42,4 +42,9 @@ b-test: ${B_TEST}
 test-manager:
 	babel-node back/test-manager.js
 
+fixtures:
+	rsync -azrh test/fixtures/docker-ctx/ build/test/fixtures/docker-ctx/
+	rsync -azrh test/fixtures/local-git/ build/test/fixtures/local-git/
+	rsync -azrh test/fixtures/local-project/ build/test/fixtures/local-project/
+
 .PHONY: test b-test

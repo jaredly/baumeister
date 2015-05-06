@@ -2,6 +2,9 @@
 export default {
   name: 'itreed',
   modified: new Date(),
+  builder: {
+    id: 'docker',
+  },
   plugins: {
     'local-provider': {
       path: '/home/jared/clone/nm/',
@@ -13,7 +16,8 @@ export default {
     },
     'shell-tester': {
       cwd: 'itreed/plugins/itreed-js',
-      cmd: 'make',
+      command: 'make',
     },
   },
 }
+

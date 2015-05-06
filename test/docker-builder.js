@@ -12,7 +12,7 @@ import {ConfigError, InterruptError} from '../lib/errors'
 import setup from '../lib'
 import BaseBuild from '../lib/base-build'
 
-import DockerBuilder from '../extra/builders/docker/docker-build'
+import DockerBuilder from '../extra/builders/docker/builder'
 
 const fixture = {
   id: '1111_2222',

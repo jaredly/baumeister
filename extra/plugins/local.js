@@ -13,8 +13,8 @@ class Local {
     onStep('init', (builder, ctx, io) => {
       if (config.inPlace) {
         if (builder.type === 'docker') {
-          ctx.runnerConfig.binds.push(`${config.path}:/project:rw`)
-          ctx.dataContainer = null
+          ctx.projectContainer = null
+          ctx.projectBind = config.path
         } else if (builder.type === 'local') {
           ctx.projectDir = config.path
         }

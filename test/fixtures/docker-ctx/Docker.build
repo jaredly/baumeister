@@ -1,0 +1,8 @@
+FROM ubuntu
+
+ADD world.txt /app/world.txt
+RUN echo "hello base" >> /app/world.txt
+RUN cat /app/world.txt
+
+WORKDIR app
+
