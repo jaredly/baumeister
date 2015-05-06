@@ -6,7 +6,7 @@ const commands = config => ({
   serve(pos, argv) {
     return setup(config)
       .then(({app, builds, clients, dao}) => app.run(server => {
-        console.log('ready')
+        builds.logger.info('ready')
       }))
   },
   repl(pos, argv) {
@@ -88,6 +88,7 @@ function loadDefaultProjects(pos, argv, dao) {
     require('../test/fixtures/itreed-js.config.js'),
     require('../test/fixtures/passes.config.js'),
     require('../test/fixtures/notablemind.config.js'),
+    require('../test/fixtures/jaeger.config.js'),
     require('../test/fixtures/test.config.js'),
   ]
   projects.forEach(proj => {

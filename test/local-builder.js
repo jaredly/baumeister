@@ -50,7 +50,7 @@ const PLUGINS = {
   },
 }
 
-describe('docker-builder', () => {
+describe('local-builder', () => {
   it('should test the thing', function (done) {
     this.timeout(20000)
     const hit = []
@@ -64,6 +64,8 @@ describe('docker-builder', () => {
     })
 
     setup({
+      silentConsole: true,
+      logDest: __dirname + '/test.log',
       database: {
         inMemory: true,
       }
@@ -91,7 +93,6 @@ describe('docker-builder', () => {
             ])
             expect(build.error).to.not.be.ok()
             expect(Object.keys(build.events.streams).length).to.equal(2)
-            // console.log(JSON.stringify(build, null, 2))
             done()
           }, done)
           .catch(done)

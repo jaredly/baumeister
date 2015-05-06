@@ -9,6 +9,8 @@ import fs from 'fs'
 import uuid from '../lib/uuid'
 import setup from '../cli/setup'
 
+process.setMaxListeners(100)
+
 const fixtures = {
   // docker things
   docker_ctx: {
@@ -204,6 +206,8 @@ const fixtures = {
 }
 
 const config = {
+  silentConsole: true,
+  logDest: __dirname + '/test.log',
   builders: {
     docker: require('../extra/builders/docker'),
     local: require('../extra/builders/local'),
@@ -231,7 +235,7 @@ const config = {
   },
 }
 
-describe('fixture running', function () {
+;(process.env.NODOCKER ? describe.skip : describe)('fixture running', function () {
   this.timeout(30000)
   Object.keys(fixtures).forEach(name => {
     beforeEach(done => {

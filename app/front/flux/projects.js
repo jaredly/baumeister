@@ -57,7 +57,7 @@ export const projectStore = {
       })
     },
     'build:status': (data, update, state) => {
-      const {project, build, status, duration} = data
+      const {project, build, status, duration, finished} = data
       const proj = state[project]
       if (!proj || proj.latestBuild.id !== build) return
       update({
@@ -65,6 +65,7 @@ export const projectStore = {
           latestBuild: {
             status: {$set: status},
             duration: {$set: duration},
+            finished: {$set: finished}
           }
         }
       })

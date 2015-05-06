@@ -1,5 +1,4 @@
 
-
 function projectPatterns(config) {
   if (!config.patterns) return []
   return config.patterns
@@ -25,9 +24,9 @@ class FileWatcher {
     this.watchers[project.id] = new Gaze(patterns, {
       cwd: project.plugins['local-provider'].path
     })
-    console.log('[FileWatcher] watching', patterns)
+    this.manager.logger.info('filewatcher', 'watching', patterns)
     this.watchers[project.id].on('all', () => {
-      console.log('WWW', project.id)
+      this.manager.logger.info('filewatcher', 'triggering', project.id)
       if (this.paused[project.id]) return
       this.clients.startBuild(project.id)
     })

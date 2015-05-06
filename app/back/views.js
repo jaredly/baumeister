@@ -55,8 +55,11 @@ export default (builds, clients, dao) => {
         const parts = req.url.replace(/^\//, '').replace(/\/$/, '').split('/')
         if (parts.length === 1) {
           dao.updateProject(parts[0], req.body)
-            .then(project => clients.emit('project:update', project))
-            .then(project => json(res, project))
+            .then(project => {
+              clients.emit('project:update', project)
+              builds.handleProjectUpdate(parts[0], project)
+              json(res, project)
+            })
             .catch(err => json(res, err, 500))
         } else if (parts[1] === 'clear-cache') {
           builds.clearCache(parts[0], req.body)
@@ -102,7 +105,10 @@ export default (builds, clients, dao) => {
       post(req, res, next) {
         dao.setConfig(req.body)
           // TODO publish config change to attached clients?
-          .then(config => json(res, config))
+          .then(config => {
+            clients.handleConfigChange(req.body)
+            json(res, config)
+          })
           .catch(err => json(res, err, 500))
       },
     },

@@ -49,10 +49,15 @@ export default class ProjectList extends React.Component {
     const names = Object.keys(this.props.projects).filter(name => projects[name]).sort((a, b) => {
       if (!projects[b].latestBuild) {
         if (!projects[a].latestBuild) return 0
-        return 1
+        return -1
       }
-      if (!projects[a].latestBuild) return -1
-      return projects[b].latestBuild.started - projects[a].latestBuild.started
+      if (!projects[a].latestBuild) return 1
+      if (projects[a].latestBuild.status === 'running') {
+        if (projects[b].latestBuild.status === 'running') return 0
+        return -1
+      }
+      if (projects[b].latestBuild.status === 'running') return 1
+      return projects[b].latestBuild.finished - projects[a].latestBuild.finished
     })
     const open = this.context.router.getCurrentParams().project
     return <ul className='ProjectList'>

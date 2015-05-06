@@ -4,6 +4,9 @@ import memdown from 'memdown'
 import uuid from '../lib/uuid'
 import Db from '../lib/db'
 import Dao from '../lib/dao'
+import makeLogger from '../lib/logger'
+
+const logger = makeLogger(__dirname + '/test.log', true)
 
 describe('Dao', () => {
   let db, dao
@@ -14,7 +17,7 @@ describe('Dao', () => {
       config: [],
     }
     db = new Db('', spec, memdown)
-    dao = new Dao(db)
+    dao = new Dao(db, logger)
   })
 
   it('should clean up zombies', done => {

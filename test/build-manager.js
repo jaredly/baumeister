@@ -47,6 +47,8 @@ function getDummyBuilder(hit) {
 describe('BuildManager', () => {
   it('should setup ok', done => {
     setup({
+      silentConsole: true,
+      logDest: __dirname + '/test.log',
       database: {
         inMemory: true,
       }
@@ -68,7 +70,10 @@ describe('BuildManager', () => {
       modified: new Date(),
     }
 
-    setup({database: {inMemory: true}}).then(({clients, builds, dao}) => {
+    setup({
+      silentConsole: true,
+      logDest: __dirname + '/test.log',
+      database: {inMemory: true}}).then(({clients, builds, dao}) => {
       builds.addBuilders({
         dummy: DummyBuilder,
       })
@@ -101,6 +106,8 @@ describe('BuildManager', () => {
     }
 
     setup({
+      silentConsole: true,
+      logDest: __dirname + '/test.log',
       database: {
         inMemory: true,
       }
@@ -166,6 +173,8 @@ describe('BuildManager', () => {
     }
 
     setup({
+      silentConsole: true,
+      logDest: __dirname + '/test.log',
       database: {
         inMemory: true,
       }
@@ -198,7 +207,6 @@ describe('BuildManager', () => {
       .then(() => {
         builds.startBuild(locoFixture.name, io)
           .then(({project, build}) => {
-            console.log(build)
             expect(project.latestBuild).to.equal(build.id)
             expect(build.status).to.eql('succeeded')
             expect(hit).to.eql([

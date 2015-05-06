@@ -7,10 +7,17 @@ class ShellTester {
       throw new ConfigError('`command` not provided', 'shell-tester.command')
     }
     onStep('test', (builder, ctx, io) => {
-      return builder.run(config.command, {
-        cwd: config.cwd,
-        docker: config.docker
-      })
+      const lines = config.command.split(/\n/g)
+      function next() {
+        return builder.run(lines.shift(), {
+          cwd: config.cwd,
+          docker: config.docker
+        }).then(val => {
+          if (lines.length) return next()
+          return val
+        })
+      }
+      return next()
     })
   }
 }
@@ -41,6 +48,7 @@ export default {
         type: 'text',
         default: 'make test',
         title: 'Shell command to run the tests (in the project directory)',
+        multiline: true,
       },
     }
   }

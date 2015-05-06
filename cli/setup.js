@@ -11,10 +11,10 @@ export default function setup(config) {
       const app = setupApp(config.server && config.server.port || 3005, views, clients)
       return loadPlugins(builds, clients, app, config)
         .then(() => {
-          console.log('plugins initialized')
+          builds.logger.info('plugins initialized')
           return {builds, clients, dao, app}
         }, err => {
-          console.error('Failed to load plugins')
+          builds.logger.error('Failed to load plugins', err)
           throw err
         })
     }, err => {

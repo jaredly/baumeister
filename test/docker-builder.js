@@ -46,7 +46,7 @@ const PLUGINS = {
   },
 }
 
-describe('docker-builder', () => {
+;(process.env.NODOCKER ? describe.skip : describe)('docker-builder', () => {
   it('should test the thing', function (done) {
     this.timeout(20000)
     const hit = []
@@ -60,6 +60,8 @@ describe('docker-builder', () => {
     })
 
     setup({
+      silentConsole: true,
+      logDest: __dirname + '/test.log',
       database: {
         inMemory: true,
       }

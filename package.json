@@ -31,7 +31,8 @@
     "rimraf": "^2.3.3",
     "style-loader": "^0.10.1",
     "webpack": "^1.7.2",
-    "webpack-dev-server": "^1.7.0"
+    "webpack-dev-server": "^1.7.0",
+    "winston": "^1.0.0"
   },
   "dependencies": {
     "ansi-to-html": "^0.3.0",
@@ -83,5 +84,9 @@
         "fork"
       ]
     }
+  },
+  "browser": {
+    "gaze": false,
+    "tar-stream": false
   }
 }

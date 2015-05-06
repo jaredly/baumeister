@@ -12,6 +12,9 @@ import locoFixture from './fixtures/loco.config.js'
 import {ConfigError, InterruptError} from '../lib/errors'
 import setup from '../lib'
 import BaseBuild from '../lib/base-build'
+import makeLogger from '../lib/logger'
+
+const logger = makeLogger(__dirname + '/test.log', true)
 
 function getDummyBuilder(hit) {
   return class DummyBuilder extends BaseBuild {
@@ -59,6 +62,8 @@ describe('ClientBuilder', () => {
     }
 
     setup({
+      silentConsole: true,
+      logDest: __dirname + '/test.log',
       database: {
         inMemory: true,
       }

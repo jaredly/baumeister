@@ -10,7 +10,7 @@ export default {
       dockerImage: 'ubuntu',
     },
     'shell-tester': {
-      command: 'grep hello world.txt; echo "one";sleep 10;echo "two";sleep 10;echo "three";sleep 10;echo "four";sleep 20;cat world.txt;fail',
+      command: 'grep hello world.txt\necho "one"\nsleep .1\necho "two"\nsleep .1\necho "three"\nsleep .1\necho "four"\nsleep 2\ncat world.txt\nfail',
     },
   },
 }
