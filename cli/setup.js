@@ -9,7 +9,7 @@ export default function setup(config) {
     .then(({builds, clients, dao}) => {
       const views = makeViews(builds, clients, dao)
       const app = setupApp(config.server && config.server.port || 3005, views, clients)
-      return loadPlugins(builds, app, config)
+      return loadPlugins(builds, clients, app, config)
         .then(() => {
           console.log('plugins initialized')
           return {builds, clients, dao, app}

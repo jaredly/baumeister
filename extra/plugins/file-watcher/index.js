@@ -1,31 +1,35 @@
 
-const Gaze = require('gaze').Gaze
 
 function projectPatterns(config) {
+  if (!config.patterns) return []
   return config.patterns
     .split('\n').map(n => n.trim()).filter(n => n.length)
 }
 
-export default class FileWatcher {
-  constructor(manager, app) {
+class FileWatcher {
+  constructor(manager, app, clients) {
     this.manager = manager
+    this.clients = clients
     this.app = app
     this.watchers = {}
     this.paused = {}
   }
 
   onProject(project, config) {
-    if (!project.source.path) {
-      return console.error('File-watcher can only work for local projects')
+    // TODO handle a plugin being added by config
+    if (!project.plugins['local-provider']) {
+      throw new ConfigError('FileWatcher only works for local projects (via plugin local-provider)', 'file-watcher', 'Switch to using the `local-provider` plugin')
     }
     const patterns = projectPatterns(config)
+    const Gaze = require('gaze').Gaze
     this.watchers[project.id] = new Gaze(patterns, {
-      cwd: project.source.path
+      cwd: project.plugins['local-provider'].path
     })
     console.log('[FileWatcher] watching', patterns)
     this.watchers[project.id].on('all', () => {
+      console.log('WWW', project.id)
       if (this.paused[project.id]) return
-      this.manager.startBuild(project.id)
+      this.clients.startBuild(project.id)
     })
     this.paused[project.id] = false
   }
@@ -65,7 +69,28 @@ export default class FileWatcher {
   }
 }
 
-
+export default {
+  id: 'file-watcher',
+  title: 'File Watcher',
+  plugin: FileWatcher,
+  buildTypes: ['docker', 'local'],
+  globalConfig: null,
+  projectConfig: {
+    schema: {
+      interval: {
+        type: 'number',
+        default: 1,
+        title: 'Watch interval (seconds)',
+      },
+      patterns: {
+        type: 'text',
+        default: 'lib/*',
+        multiline: true,
+        title: 'Patterns to watch',
+      },
+    }
+  },
+}
 
 /*
 export default {

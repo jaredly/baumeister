@@ -133,7 +133,7 @@ function setupNotifications(api, flux) {
     const body = `Took ${mmSS(data.build.duration)}`
     const note = new Notification(title, {
       body,
-      icon: `/static/icon-${data.build.status}.png`
+      icon: `/icon-${data.build.status}.png`
     })
     setTimeout(_ => note.close(), 5000)
   })
