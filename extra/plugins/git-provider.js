@@ -7,6 +7,14 @@ class GitProvider {
 
   onBuild(project, build, onStep, config) {
     onStep('getproject', (builder, ctx, io) => {
+      if (!config.cache) {
+        return builder.run(`git clone ${config.repo} .`, {
+          docker: {
+            image: 'docker-ci/git',
+          },
+          env: ['GIT_TERMINAL_PROMPT=0'],
+        })
+      }
       return builder.runCached({
         docker: {
           image: 'docker-ci/git',
@@ -34,6 +42,11 @@ export default {
         default: 'https://some.git/repo',
         title: 'The git repository',
       },
+      cache: {
+        type: 'checkbox',
+        default: true,
+        title: 'Cache the repo locally',
+      }
     }
   },
 }
