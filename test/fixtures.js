@@ -120,7 +120,10 @@ const fixtures = {
         },
       },
     },
-    output: 'working local\n{{projectDir}}',
+    output(out, projectDir) {
+      expect(out).to.contain('working local')
+      expect(out).to.contain(projectDir)
+    }
   },
 
   localCache: {
@@ -136,7 +139,9 @@ const fixtures = {
         command: 'grep hi hi.txt',
       },
     },
-    output: 'hi',
+    output(out) {
+      expect(out).to.contain('hi')
+    }
   },
 
   dockerCache: {
@@ -152,7 +157,9 @@ const fixtures = {
         command: 'grep hi hi.txt',
       },
     },
-    output: 'hi',
+    output(out) {
+      expect(out).to.contain('hi')
+    }
   },
 
   localInPlace: {
@@ -168,7 +175,10 @@ const fixtures = {
         },
       },
     },
-    output: `working local\n${__dirname}/fixtures/local-project`,
+    output(out) {
+      expect(out).to.contain(`working local`)
+      expect(out).to.contain(`${__dirname}/fixtures/local-project`)
+    }
   },
   git: {
     plugins: {
@@ -182,7 +192,10 @@ const fixtures = {
         },
       },
     },
-    output: 'working git\n{{projectDir}}',
+    output(out, projectDir) {
+      expect(out).to.contain('working git')
+      expect(out).to.contain(projectDir)
+    }
   },
   localDocker: {
     builder: {
@@ -199,7 +212,10 @@ const fixtures = {
         },
       },
     },
-    output: 'working local\n{{projectDir}}',
+    output(out, projectDir) {
+      expect(out).to.contain('working local')
+      expect(out).to.contain(projectDir)
+    }
   },
   localDockerInPlace: {
     builder: {
@@ -217,7 +233,10 @@ const fixtures = {
         },
       },
     },
-    output: 'working local\n{{projectDir}}',
+    output(out, projectDir) {
+      expect(out).to.contain('working local')
+      expect(out).to.contain(projectDir)
+    }
   },
   gitDocker: {
     builder: {
@@ -234,7 +253,10 @@ const fixtures = {
         },
       },
     },
-    output: 'working git\n{{projectDir}}',
+    output(out, projectDir) {
+      expect(out).to.contain('working git')
+      expect(out).to.contain(projectDir)
+    }
   },
 }
 
@@ -310,11 +332,7 @@ const config = {
               try {
                 expect(build.status).to.eql('succeeded')
                 if (proj.output) {
-                  const clean = output.trim()
-                    .replace(/[\u000f\u000b\f\u0000-\u0002\b\r]/g, '')
-                    .replace('\n\n', '\n')
-                  expect(clean)
-                    .to.eql(proj.output.replace('{{projectDir}}', runner.builder.ctx.projectDir))
+                  proj.output(output, runner.builder.ctx.projectDir)
                 }
               } catch (error) {
                 console.log(project, JSON.stringify(build, null, 2))
