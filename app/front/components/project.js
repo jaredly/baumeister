@@ -27,6 +27,11 @@ function smallT(ms) {
   return '>1h'
 }
 
+function noLeadZero(str) {
+  if (str[0] === '0') return str.slice(1)
+  return str
+}
+
 @fluxify({
   actions(props) {
     const id = props.id
@@ -143,7 +148,7 @@ export default class Project extends React.Component {
           {project.latestBuild && (
             project.latestBuild.status === 'running' ?
               <i className='fa fa-cog fa-spin'/>
-            : smallT(project.latestBuild.duration))}
+            : noLeadZero(smallT(project.latestBuild.duration)))}
         </span>
         <span className='Project_name'>{project.name}</span>
         <span className='flex-spacer'/>
