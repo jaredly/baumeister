@@ -8,6 +8,7 @@ module.exports = {
     schema: {
       dataPath: {
         type: 'text',
+        title: 'Base path for storing project data',
         default: __dirname + '/.data',
       }
     },

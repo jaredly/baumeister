@@ -77,7 +77,11 @@ export default class Apparate extends React.Component {
     node.style.height = aheight
     node.style.width = awidth
 
-    /** failed attempt and preemting jank.
+    /** failed attempt at preemting jank.
+     * Another possibility is to do ease-in until halfway and then ease-out
+     * for the rest of the way, with the recalculated "rest". However, that
+     * might also result in jank.
+     * I could also roll my own js-based animations...
     clearTimeout(this._tout2)
     if (this.state.motion === 'expanding') {
       this._tout2 = setTimeout(() => {

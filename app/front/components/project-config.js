@@ -215,35 +215,3 @@ class PluginConfig extends React.Component {
   }
 }
 
-function pluginConfig() {
-  const choices = {}
-  for (let name in plugins) {
-    choices[name] = plugins[name].title
-  }
-
-  return <div>
-    {Object.keys(plugins).map(id => {
-      const plugin = plugins[id]
-      const Comp = plugin.comp
-      return <Radio
-        key={id}
-        name={plugin.name ? plugin.name : 'plugins.' + id}
-        title={plugin.title}
-        choices={{
-          on: 'Using',
-          off: 'Not using',
-        }}
-        switchOn={plugin.switchOn || (val => {
-          if (val) return 'on'
-          return 'off'
-        })}
-        defaultData={{
-          on: plugin.defaultConfig,
-          off: null,
-        }}>
-        <Comp name='*' switchWhere='on'/>
-      </Radio>
-    })}
-  </div>
-}
-

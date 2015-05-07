@@ -16,9 +16,9 @@ import {ConfigError, InterruptError, ShellError} from '../../../lib/errors'
 export default class DockerBuilder extends BaseBuild {
   static type = 'docker'
 
-  constructor(io, project, id, config) {
-    super(io, project, id, config)
-    this.docker = new Docker() // TODO use config to custom docker connection
+  constructor(io, project, id, globalConfig, projectConfig) {
+    super(io, project, id, globalConfig, projectConfig)
+    this.docker = new Docker(globalConfig.connection) // TODO use config to custom docker connection
     this.ctx = {
       cacheContainer: `dci-${this.project.id}-cache`,
       projectContainer: `dci-${this.id}-project`,
@@ -69,7 +69,7 @@ export default class DockerBuilder extends BaseBuild {
 
     return prom(done => {
       this.docker.version((err, data) => {
-        if (err) return done(new ConfigError(`Unable to connect to docker daemon: ${err.message}`))
+        if (err) return done(new ConfigError(`Unable to connect to docker daemon: ${err.message}`, 'docker builder', `Current config is: ${JSON.stringify(this.globalConfig)}. Make sure the docker daemon is running and accessible`))
         done()
       })
     }).then(() => Promise.all(promises))
