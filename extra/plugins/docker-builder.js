@@ -8,11 +8,6 @@ import fs from 'fs'
 import tar from 'tar-stream'
 
 class DockerBuilder {
-  constructor(manager, app) {
-    this.manager = manager
-    this.app = app
-  }
-
   onBuild(project, build, onStep, config) {
     //if (config.context && config.context !== true) {
       //throw new ConfigError('Sub contexts not yet supported', 'docker-builder')

@@ -1,13 +1,6 @@
 
 class TimeTracker {
-  constructor(manager, app) {
-    this.manager = manager
-    this.app = app
-  }
-
-  onBuild(project, build, onStep, config) {
-  }
-
+  // called after a build finishes
   projectDataFromBuild(build, config, currentData, project) {
     const datum = {
       status: build.status,

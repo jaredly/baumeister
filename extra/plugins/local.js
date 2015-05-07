@@ -5,10 +5,6 @@ import {ConfigError} from '../../lib/errors'
 import fs from 'fs'
 
 class Local {
-  constructor(manager, app) {
-    //
-  }
-
   onBuild(project, build, onStep, config) {
     onStep('init', (builder, ctx, io) => {
       if (config.inPlace) {

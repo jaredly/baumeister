@@ -8,6 +8,7 @@ import bodyParser from 'body-parser'
 import cors from 'cors'
 import url from 'url'
 import qs from 'querystring'
+import express from 'express'
 
 function urlify(req, res, next) {
   req.purl = url.parse(req.url)
@@ -17,7 +18,7 @@ function urlify(req, res, next) {
 
 export default function makeApp(port, views, clients) {
 
-  const app = connect()
+  const app = express()
   app.use(cors())
   app.use(compression())
   app.use(bodyParser.json({limit: '5mb'}))

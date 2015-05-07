@@ -60,7 +60,7 @@ function pluginConfig() {
     plugins.push(<div key={name}>
       <h2>{plugin.title}</h2>
       <p>{plugin.description}</p>
-      {FormSection.fromSpec({
+      {plugin.globalConfig.form ? <plugin.globalConfig.form name={name}/> : FormSection.fromSpec({
         name: name,
         spec: plugin.globalConfig.schema,
       })}

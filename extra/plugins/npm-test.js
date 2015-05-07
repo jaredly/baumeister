@@ -1,10 +1,5 @@
 
 class NPMTest {
-  constructor(manager, app) {
-    this.manager = manager
-    this.app = app
-  }
-
   onBuild(project, build, onStep, config) {
     onStep('test', (builder, ctx, io) => {
       return builder.run('npm test', {

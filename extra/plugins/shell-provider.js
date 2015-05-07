@@ -1,10 +1,5 @@
 
 class ShellProvider {
-  constructor(manager, app) {
-    this.manager = manager
-    this.app = app
-  }
-
   onBuild(project, build, onStep, config) {
     onStep('getproject', (builder, ctx, io) => {
       if (!config.update) {

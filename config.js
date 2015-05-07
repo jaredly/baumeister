@@ -17,11 +17,13 @@ module.exports = {
     'docker-builder': require('./extra/plugins/docker-builder'),
     'local-provider': require('./extra/plugins/local'),
     'git-provider': require('./extra/plugins/git-provider'),
+    'github-provider': require('./extra/plugins/github-provider'),
     'npm-install': require('./extra/plugins/npm-install'),
     'npm-test': require('./extra/plugins/npm-test'),
     'shell-provider': require('./extra/plugins/shell-provider'),
     'shell-tester': require('./extra/plugins/shell-tester'),
     'time-tracker': require('./extra/plugins/time-tracker'),
+    'example-eventer': require('./extra/plugins/example-eventer'),
   },
   database: {
     path: __dirname + '/test/.test.db',

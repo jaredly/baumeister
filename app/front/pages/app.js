@@ -20,13 +20,14 @@ import Apparate from '../lib/apparate'
   }
 })
 export default class App extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {config: null}
+  static contextTypes = {
+    router: React.PropTypes.func
   }
 
   toggleConfig() {
-    this.setState({config: !this.state.config})
+    const configOpen = this.context.router.getCurrentPathname() === '/config'
+    if (configOpen) return this.context.router.replaceWith('home')
+    return this.context.router.replaceWith('config')
   }
 
   renderConnState() {
@@ -38,6 +39,7 @@ export default class App extends React.Component {
   }
 
   render () {
+    const configOpen = this.context.router.getCurrentPathname() === '/config'
     return <div className='App'>
       <header className='App_header'>
         <h1>Jaeger</h1>
@@ -47,7 +49,7 @@ export default class App extends React.Component {
           <Link to="latest">Latest build</Link>
         </nav>
         */}
-       <button className={classnames('App_header_button', this.state.config && 'App_header_button-active')} onClick={_ => this.toggleConfig()}>Config</button>
+       <button className={classnames('App_header_button', configOpen && 'App_header_button-active')} onClick={_ => this.toggleConfig()}>Config</button>
 
        <span className='App_flex'/>
 
@@ -55,7 +57,7 @@ export default class App extends React.Component {
       </header>
       <section className='App_main'>
         <Apparate>
-        {this.state.config && <AppConfig onClose={() => this.setState({config: false})}/>}
+        {configOpen && <AppConfig onClose={() => this.toggleConfig()}/>}
         </Apparate>
         <RouteHandler/>
       </section>

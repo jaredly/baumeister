@@ -10,6 +10,8 @@ import Apparate from '../lib/apparate'
 import "./stream.less";
 import "./events.less";
 
+import appConfig from '../../../config'
+
 export default class BuildSection extends React.Component {
   constructor(props) {
     super(props)
@@ -66,6 +68,14 @@ export default class BuildSection extends React.Component {
       </li>
     }
     if (evt.evt === 'status') return
+    if (evt.evt === 'plugin-event') {
+      if (appConfig.plugins[evt.val.plugin]) {
+        const plugin = appConfig.plugins[evt.val.plugin]
+        if (plugin.events && plugin.events[evt.val.evt]) {
+          return plugin.events[evt.val.evt](evt.val.val)
+        }
+      }
+    }
     return <li key={i} className='Evt'>{evt.evt}: {evt.val}</li>
   }
 

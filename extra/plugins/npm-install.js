@@ -1,10 +1,5 @@
 
 class NPMInstall {
-  constructor(manager, app) {
-    this.manager = manager
-    this.app = app
-  }
-
   onBuild(project, build, onStep, config) {
     onStep('pretest', (builder, ctx, io) => {
       if (!config.cache) {

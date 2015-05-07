@@ -8,6 +8,7 @@ import NotFound from './pages/not-found'
 
 const routes = <Route handler={App} path="/">
   <DefaultRoute name="home" handler={Home}/>
+  <Route name="config" handler={Home}/>
   <Route name="project" path="/:project" handler={Home}/>
   <Route name="build" path="/:project/:build" handler={Home}/>
   <NotFoundRoute handler={NotFound}/>

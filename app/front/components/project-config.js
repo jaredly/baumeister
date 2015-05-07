@@ -203,7 +203,7 @@ class PluginConfig extends React.Component {
                 {globalConfig.builders[currentBuildType].title || currentBuildType}
               </span> builder. It only works with {builderTitles(installed[name].buildTypes)}.
             </div>
-            : FormSection.fromSpec({
+            : installed[name].projectConfig && FormSection.fromSpec({
             className: 'ProjectConfig_section_body',
             value: plugins.get(name),
             spec: installed[name].projectConfig.schema,
