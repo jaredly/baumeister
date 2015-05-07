@@ -123,9 +123,25 @@ const fixtures = {
     output: 'working local\n{{projectDir}}',
   },
 
-  shell: {
+  localCache: {
     builder: {
       id: 'local',
+    },
+    plugins: {
+      'shell-provider': {
+        get: 'echo "hi" > hi.txt',
+        update: 'echo "ho" >> hi.txt',
+      },
+      'shell-tester': {
+        command: 'grep hi hi.txt',
+      },
+    },
+    output: 'hi',
+  },
+
+  dockerCache: {
+    builder: {
+      id: 'docker',
     },
     plugins: {
       'shell-provider': {
