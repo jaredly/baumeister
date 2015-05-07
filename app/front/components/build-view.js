@@ -4,7 +4,6 @@ import {Link} from 'react-router'
 import classnames from 'classnames'
 import {fluxify} from 'flammable/react'
 
-import Morpher from '../lib/morpher'
 import Build from './build'
 
 import './build-view.less'

@@ -10,7 +10,11 @@ import BuildView from './build-view'
 import ProjectConfig from './project-config'
 import {fluxify} from 'flammable/react'
 
+import getBlocks from './blocks'
+
 import './project.less'
+
+const projectHeaderBlocks = getBlocks('projectHeader')
 
 function smallT(ms) {
   if (!ms) return ''
@@ -115,8 +119,24 @@ export default class Project extends React.Component {
     }
   }
 
+  renderEnd() {
+    const project = this.props.project
+    if (project.latestBuild && project.latestBuild.status === 'running') {
+      return <Ticker className='Project_ticker' start={project.latestBuild.started}/>
+    }
+    return <button className="Project_start" onClick={
+      e => {e.preventDefault();e.stopPropagation();this._startBuild()} }>
+      <i className='fa fa-play'/>
+    </button>
+  }
+
   render () {
     const project = this.props.project
+    const blocks = []
+    projectHeaderBlocks.forEach(({id, block}) => {
+      if (!project.plugins[id]) return
+      blocks.push(block(project, project.plugins[id]))
+    })
     return <div className={classnames('Project', this.props.isOpen && 'Project-open')}>
       <div onClick={this._toggleOpen.bind(this)} className='Project_head'>
         <span className={classnames('Project_status', 'Project_status-' + (project.latestBuild ? project.latestBuild.status : 'inactive'))}>
@@ -127,12 +147,10 @@ export default class Project extends React.Component {
         </span>
         <span className='Project_name'>{project.name}</span>
         <span className='flex-spacer'/>
-        {project.latestBuild && project.latestBuild.status === 'running' ?
-          <Ticker className='Project_ticker' start={project.latestBuild.started}/> : null}
-        {(!project.latestBuild || project.latestBuild.status !== 'running') ? <button className="Project_start" onClick={ e => {e.preventDefault();e.stopPropagation();this._startBuild()} }>
-          <i className='fa fa-play'/>
-        </button> : null}
+        {blocks}
+        <span className='Project_end'>{this.renderEnd()}</span>
       </div>
+
       <Apparate>
       {this.props.isOpen &&
         <div className='Project_body'>

@@ -21,6 +21,7 @@ module.exports = {
     'npm-test': require('./extra/plugins/npm-test'),
     'shell-provider': require('./extra/plugins/shell-provider'),
     'shell-tester': require('./extra/plugins/shell-tester'),
+    'time-tracker': require('./extra/plugins/time-tracker'),
   },
   database: {
     path: __dirname + '/test/.test.db',
