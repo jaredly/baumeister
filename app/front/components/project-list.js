@@ -39,7 +39,7 @@ export default class ProjectList extends React.Component {
   }
 
   render() {
-    if (this.props.loadStatus === 'unloaded' || this.props.loadStatus === 'loading') {
+    if (this.props.loadStatus === 'unloaded' || this.props.loadStatus === 'loading' && !this.props.projects) {
       return <span>Loading</span>
     }
     if (this.props.loadStatus === 'error') {

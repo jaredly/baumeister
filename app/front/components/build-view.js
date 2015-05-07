@@ -39,7 +39,7 @@ function newBuilds(prev, next) {
 export default class BuildView extends React.Component {
   componentDidMount() {
     if (this.props.builds) {
-      this.setOpenBuild(null)
+      // this.setOpenBuild(null)
     }
     this.props.getBuilds()
   }
@@ -47,7 +47,7 @@ export default class BuildView extends React.Component {
   componentWillReceiveProps(nextProps) {
     let news = false
     if (newBuilds(this.props.builds, nextProps.builds)) {
-      return this.setOpenBuild(null, nextProps.builds)
+      // return this.setOpenBuild(null, nextProps.builds)
     }
     /*
     if (nextProps.builds === this.props.builds) return

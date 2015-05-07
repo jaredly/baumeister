@@ -28,7 +28,7 @@ export const projectStore = {
       }
     },
     'build:history': ({project, id}, update, state) => {
-      if (!state[project] || state[project].latestBuild.id !== id) return
+      if (!state[project] || !state[project].latestBuild || state[project].latestBuild.id !== id) return
       update({
         [project]: {
           latestBuild: {
@@ -59,7 +59,7 @@ export const projectStore = {
     'build:status': (data, update, state) => {
       const {project, build, status, duration, finished} = data
       const proj = state[project]
-      if (!proj || proj.latestBuild.id !== build) return
+      if (!proj || !proj.latestBuild || proj.latestBuild.id !== build) return
       update({
         [project]: {
           latestBuild: {

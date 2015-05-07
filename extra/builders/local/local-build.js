@@ -13,10 +13,13 @@ import assign from 'object-assign'
 export default class LocalBuilder extends BaseBuild {
   static type = 'local'
 
-  constructor(io, project, id, config) {
-    super(io, project, id, config)
+  constructor(io, project, id, globalConfig, projectConfig) {
+    super(io, project, id, globalConfig, projectConfig)
 
-    const projectDir = path.join(this.config.basePath, 'projects',
+    if (!this.globalConfig || !this.globalConfig.dataPath) {
+      throw new ConfigError('No basepath specified', 'LocalBuilder', 'Specify a basePath for LocalBuilder in the global config')
+    }
+    const projectDir = path.join(this.globalConfig.dataPath, 'projects',
                                 this.project.id.replace(/:/, '_'))
     this.ctx = {
       runnerConfig: {
@@ -34,17 +37,14 @@ export default class LocalBuilder extends BaseBuild {
   }
 
   init() {
-    if (!this.config || !this.config.basePath) {
-      throw new ConfigError('No basepath specified', 'LocalBuilder')
-    }
-    if (!fs.existsSync(this.config.basePath)) {
-      mkdirp.sync(this.config.basePath)
-      // throw new ConfigError(`Basepath ${this.config.basePath} does not exist`, 'LocalBuilder')
+    if (!fs.existsSync(this.globalConfig.dataPath)) {
+      mkdirp.sync(this.globalConfig.dataPath)
+      // throw new ConfigError(`Basepath ${this.config.dataPath} does not exist`, 'LocalBuilder')
     }
 
-    return prom(done => fs.exists(this.config.basePath, exists => {
+    return prom(done => fs.exists(this.globalConfig.dataPath, exists => {
       if (exists) return done()
-      mkdirp(this.config.basePath, done)
+      mkdirp(this.globalConfig.dataPath, done)
     }))
     .then(() => prom(done => {
       mkdirp(this.ctx.cacheDir, done)

@@ -216,7 +216,7 @@ const config = {
     docker: {
     },
     local: {
-      basePath: '/tmp/fixtures-test',
+      dataPath: '/tmp/fixtures-test',
     },
   },
   defaultBuilder: 'local',
@@ -239,7 +239,7 @@ const config = {
   this.timeout(30000)
   Object.keys(fixtures).forEach(name => {
     beforeEach(done => {
-      const dr = config.builderConfig.local.basePath
+      const dr = config.builderConfig.local.dataPath
       rimraf(dr, err => {
         if (err) return done(err)
         mkdirp(dr, done)

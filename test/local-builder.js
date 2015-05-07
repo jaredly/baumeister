@@ -15,7 +15,7 @@ import BaseBuild from '../lib/base-build'
 import LocalBuilder from '../extra/builders/local/local-build'
 
 LocalBuilder.globalConfig = {
-  basePath: '/tmp/localBuilder'
+  dataPath: '/tmp/localBuilder'
 }
 
 const fixture = {
@@ -71,9 +71,9 @@ describe('local-builder', () => {
       }
     }).then(({clients, builds, dao}) => {
       builds.addBuilders({
-        docker: LocalBuilder,
+        local: LocalBuilder,
       })
-      builds.setDefaultBuilder('docker')
+      builds.setDefaultBuilder('local')
       builds.addPlugins(PLUGINS)
 
       dao.putProject(fixture)
