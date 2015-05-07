@@ -122,6 +122,23 @@ const fixtures = {
     },
     output: 'working local\n{{projectDir}}',
   },
+
+  shell: {
+    builder: {
+      id: 'local',
+    },
+    plugins: {
+      'shell-provider': {
+        get: 'echo "hi" > hi.txt',
+        update: 'echo "ho" >> hi.txt',
+      },
+      'shell-tester': {
+        command: 'grep hi hi.txt',
+      },
+    },
+    output: 'hi',
+  },
+
   localInPlace: {
     plugins: {
       'local-provider': {
