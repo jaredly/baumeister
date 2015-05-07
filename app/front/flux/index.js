@@ -86,6 +86,9 @@ export default function setupFlux(config) {
     setOpen(id) {
       api.send('build:view', id)
     },
+    getHistory(id) {
+      api.send('build:get-history', id)
+    },
     stop(projectId, buildId) {
       api.stopBuild(projectId, buildId)
     }

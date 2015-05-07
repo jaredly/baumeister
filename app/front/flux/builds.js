@@ -6,48 +6,34 @@ export const buildStore = {
     'build:new': (build, update, state) => {
       if (!state[build.project]) {
         return update({
-          [build.project]: {$set: [build]}
+          [build.project]: {$set: {[build.id]: build}}
         })
       }
       update({
-        [build.project]: {$unshift: [build]}
+        [build.project]: {
+          [build.id]: {$set: build}
+        }
       })
     },
 
     'build:update': (build, update, state) => {
-      let ix = -1
-      let builds = state[build.project]
-      for (let i=0; i<builds.length; i++) {
-        if (builds[i].id === build.id) {
-          ix = i; break
-        }
-      }
-      if (ix === -1) {
-        return console.warn('got update for unknown build')
-      }
       update({
         [build.project]: {
-          [ix]: {$set: build}
+          [build.id]: {$set: build}
         }
       })
     },
 
-    'build:event': ({project, build, event}, update, state) => {
-      let ix = -1
-      let builds = state[project]
-      for (let i=0; i<builds.length; i++) {
-        if (builds[i].id === build) {
-          ix = i; break
-        }
-      }
-      if (ix === -1) {
+    'build:event': ({project, build, event}, update, state, sendAction) => {
+      if (!state[project][build]) {
+        sendAction('builds.getHistory', build)
         return console.warn('got event for unknown build')
       }
       update({
         [project]: {
-          [ix]: {
+          [build]: {
             events: {
-              $set: aggEvents([event], builds[ix].events)
+              $set: aggEvents([event], state[project][build].events)
             }
           }
         }
@@ -55,19 +41,12 @@ export const buildStore = {
     },
 
     'build:history': ({id, project, events}, update, state) => {
-      let ix = -1
-      let builds = state[project]
-      for (let i=0; i<builds.length; i++) {
-        if (builds[i].id === id) {
-          ix = i; break
-        }
-      }
-      if (ix === -1) {
+      if (!state[project][id]) {
         return console.warn('got history for unknown build')
       }
       update({
         [project]: {
-          [ix]: {
+          [id]: {
             events: {$set: events}
           }
         }
@@ -77,8 +56,12 @@ export const buildStore = {
 
   builds: {
     fetch({projectId, builds}, update) {
+      const bmap = builds.reduce((bmap, b) => {
+        bmap[b.id] = b
+        return bmap
+      }, {})
       update({
-        [projectId]: {$set: builds}
+        [projectId]: {$set: bmap}
       })
     }
   },

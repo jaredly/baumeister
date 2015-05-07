@@ -104,11 +104,7 @@ export default (builds, clients, dao) => {
 
       post(req, res, next) {
         dao.setConfig(req.body)
-          // TODO publish config change to attached clients?
-          .then(config => {
-            clients.handleConfigChange(req.body)
-            json(res, config)
-          })
+          .then(config => json(res, config))
           .catch(err => json(res, err, 500))
       },
     },

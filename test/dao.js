@@ -1,5 +1,6 @@
 import expect from 'expect.js'
 import memdown from 'memdown'
+import {EventEmitter} from 'events'
 
 import uuid from '../lib/uuid'
 import Db from '../lib/db'
@@ -17,7 +18,7 @@ describe('Dao', () => {
       config: [],
     }
     db = new Db('', spec, memdown)
-    dao = new Dao(db, logger)
+    dao = new Dao(new EventEmitter(), db, logger)
   })
 
   it('should clean up zombies', done => {

@@ -44,23 +44,22 @@ export default class BuildView extends React.Component {
     this.props.getBuilds()
   }
 
+  /*
   componentWillReceiveProps(nextProps) {
     let news = false
     if (newBuilds(this.props.builds, nextProps.builds)) {
       // return this.setOpenBuild(null, nextProps.builds)
     }
-    /*
     if (nextProps.builds === this.props.builds) return
     if (!nextProps.builds) return
     this.setOpenBuild(null, nextProps.builds)
-    */
   }
+  */
 
   setOpenBuild(id, builds) {
     const build = this.getCurrentBuild(id, builds)
     if (!build) return console.warn('tried to open unknown build', id)
     this.props.setOpenBuild(build.id)
-    // this.props.flux.getActions('builds').setOpenBuild(build.id)
     if (id) {
       this.props.router.replaceWith('build', {
         project: build.project, build: id})
@@ -81,12 +80,10 @@ export default class BuildView extends React.Component {
     }
     builds = builds || this.props.builds
     if (!id) {
-      return builds[0]
+      const firstId = Object.keys(builds).sort((a, b) => builds[b].num - builds[a].num)[0]
+      return builds[firstId]
     }
-    for (let i=0; i<builds.length; i++) {
-      if (builds[i].id === id) return builds[i]
-    }
-    throw new Error('id not found')
+    return builds[id]
   }
 
   static contextTypes = {
@@ -97,7 +94,7 @@ export default class BuildView extends React.Component {
     if (!this.props.builds) {
       return <span className='BuildView BuildView-loading'>Loading</span>
     }
-    if (!this.props.builds.length) {
+    if (!Object.keys(this.props.builds).length) {
       return <div className='BuildView BuildView-empty'>
         No builds for this project!
         <button onClick={this.props.startBuild} type='button' className='Button'>
@@ -106,6 +103,8 @@ export default class BuildView extends React.Component {
       </div>
     }
     const current = this.getCurrentBuild()
+    const builds = this.props.builds
+    const ids = Object.keys(builds).sort((a, b) => builds[b].num - builds[a].num)
     return <div className='BuildView'>
       <div className='BuildView_main'>
         <Build
@@ -113,11 +112,14 @@ export default class BuildView extends React.Component {
           build={current}/>
       </div>
       <ul className='BuildView_right'>
-        {this.props.builds.map(build => <li
-            key={build.id}
-            onClick={_ => this.setOpenBuild(build.id)}
-            className={classnames('BuildView_icon', 'BuildView_icon-' + build.status, build.id === current.id && 'BuildView_icon-active')}>
-          {build.num}
+        {ids.map(id => <li
+            key={id}
+            onClick={_ => this.setOpenBuild(id)}
+            className={classnames(
+              'BuildView_icon',
+              'BuildView_icon-' + builds[id].status,
+              id === current.id && 'BuildView_icon-active')}>
+          {builds[id].num}
         </li>)}
       </ul>
     </div>
