@@ -2,7 +2,6 @@
 import setupManager from '../lib'
 import setupApp from '../app/back/setup'
 import makeViews from '../app/back/views'
-import loadPlugins from '../lib/load-plugins'
 
 export default function setup(config) {
   return setupManager(config)
