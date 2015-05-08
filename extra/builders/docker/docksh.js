@@ -118,13 +118,14 @@ export default class Docksh {
     })
   }
 
-  run(cmd, io, plugin) {
+  run(cmd, io, plugin, clean) {
     const sid = uuid()
     const start = Date.now()
     io.emit('stream-start', {
       id: sid, 
       time: start,
       plugin,
+      cleanCmd: clean,
       cmd,
     })
 

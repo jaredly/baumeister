@@ -38,7 +38,7 @@ function getAllPages(uri) {
 }
 
 function getApi(endpoint, token) {
-  return getAllPages(API + endpoint + '?access_token=' + token)
+  return getAllPages(API + endpoint + '?per_page=100&access_token=' + token)
 }
 
 export default function getRepos(token) {

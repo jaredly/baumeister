@@ -26,4 +26,14 @@ router.run(Handler => {
   RCSS.injectAll()
 })
 
+if (module.hot) {
+  module.hot.accept('../../config', () => {
+    RCSS.injectAll()
+  })
+
+  module.hot.accept('./routes', () => {
+    RCSS.injectAll()
+  })
+}
+
 

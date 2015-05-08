@@ -110,6 +110,13 @@ export default class DockerBuilder extends BaseBuild {
         return interprom(io, sh.init())
       },
       run(cmd, options) {
+        if ('string' !== typeof cmd) {
+          options = cmd
+          cmd = cmd.cmd
+        }
+        if (!cmd) {
+          throw new Error(`No command given`)
+        }
         options = options || {}
         if (options.silent) {
           return sh.runSilent(cmd, io)
@@ -120,7 +127,7 @@ export default class DockerBuilder extends BaseBuild {
               return result
             })
         }
-        return sh.run(cmd, io, config.plugin)
+        return sh.run(cmd, io, config.plugin, options.cleanCmd)
           .then(code => {
             if (code !== 0 && !options.badExitOK) {
               throw new ShellError(cmd, code)

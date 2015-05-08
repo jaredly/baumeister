@@ -23,7 +23,7 @@ export default {
 
     actions: {
       getRepos() {
-        return api.get('/github-provider/repos')
+        return api.get('/plugins/github-provider/repos')
         /*
         var xhr = new XMLHttpRequest()
         xhr.open('GET', 'https://api.github.com/user/repos?type=all&access_token=' + flux.stores.config.plugins['github-provider'].token)

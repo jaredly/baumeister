@@ -64,6 +64,10 @@ export default class LocalBuilder extends BaseBuild {
         return Promise.resolve()
       },
       run(cmd, options) {
+        if ('string' !== typeof cmd) {
+          options = cmd
+          cmd = cmd.cmd
+        }
         if (!cmd) {
           throw new Error(`No command given`)
         }

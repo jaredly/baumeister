@@ -69,7 +69,7 @@ export default class GithubProvider {
         getRepos(this.config.token)
           .then(items => {
             res.send(items)
-            return this.manager.setCache({token, items})
+            return this.manager.setCache({token: this.config.token, items})
           }, error => {
             console.log(error)
             res.end(500, 'failed to do things')
@@ -81,8 +81,21 @@ export default class GithubProvider {
   onBuild(project, build, onStep, config) {
     onStep('getproject', (builder, ctx, io) => {
       return builder.runCached({
-        get: `git init && git pull https://${this.config.token}@github.com/${config.repo}`,
-        update: `git pull https://${this.config.token}@github.com/${config.repo}`
+        docker: {
+          image: 'docker-ci/git',
+        },
+        env: ['GIT_TERMINAL_PROMPT=0'],
+      }, {
+        get: {
+          cmd: `git init && git pull https://${this.config.token}@github.com/${config.repo}`,
+          cleanCmd: `git init && git pull https://[token]@github.com/${config.repo}`
+        },
+        update: {
+          cmd: `git pull https://${this.config.token}@github.com/${config.repo}`,
+          cleanCmd: `git pull https://[token]@github.com/${config.repo}`
+        },
+        cachePath: 'project',
+        projectPath: '.',
       })
     })
   }

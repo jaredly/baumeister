@@ -56,8 +56,6 @@ export default (builds, clients, dao) => {
         if (parts.length === 1) {
           dao.updateProject(parts[0], req.body)
             .then(project => {
-              clients.emit('project:update', project)
-              builds.handleProjectUpdate(parts[0], project)
               json(res, project)
             })
             .catch(err => json(res, err, 500))
