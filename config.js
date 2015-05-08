@@ -26,6 +26,7 @@ module.exports = {
     'example-eventer': require('./extra/plugins/example-eventer'),
   },
   database: {
+    // mongo: 'localhost/baumeister',
     path: __dirname + '/test/.test.db',
   },
   // TODO allow the admin to set plugin/config defaults here. Like for

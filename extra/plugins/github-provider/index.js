@@ -14,6 +14,9 @@ export default {
       },
       listeners: {
         'github-provider': {
+          refreshRepos(value, update) {
+            update({repos: {$set: value}})
+          },
           getRepos(value, update) {
             update({repos: {$set: value}})
           }
@@ -22,6 +25,9 @@ export default {
     },
 
     actions: {
+      refreshRepos() {
+        return api.get('/plugins/github-provider/repos/refresh')
+      },
       getRepos() {
         return api.get('/plugins/github-provider/repos')
         /*

@@ -46,23 +46,29 @@ export default function runPyTTY(cmd, spawnOptions, options, io) {
     })
     childProcess = child
 
-    if (!options.silent) {
-      child.stdout.on('data', function (data) {
-        io.emit('stream', {
-          id: sid,
-          value: data.toString('utf8'),
-          time: Date.now(),
-        })
-      })
+    let out = ''
 
-      child.stderr.on('data', function (data) {
+    child.stdout.on('data', function (data) {
+      if (!options.silent) {
         io.emit('stream', {
           id: sid,
           value: data.toString('utf8'),
           time: Date.now(),
         })
-      })
-    }
+      }
+      out += data.toString('utf8')
+    })
+
+    child.stderr.on('data', function (data) {
+      if (!options.silent) {
+        io.emit('stream', {
+          id: sid,
+          value: data.toString('utf8'),
+          time: Date.now(),
+        })
+      }
+      out += data.toString('utf8')
+    })
 
     child.on('exit', function (code, signal) {
       const end = Date.now()
@@ -77,7 +83,7 @@ export default function runPyTTY(cmd, spawnOptions, options, io) {
             exitCode: code
           })
         }
-        return done(new ShellError(cmd, code))
+        return done(new ShellError(cmd, code, out))
       }
       if (!options.silent) {
         io.emit('stream-end', {
@@ -86,7 +92,11 @@ export default function runPyTTY(cmd, spawnOptions, options, io) {
           duration: dur,
         })
       }
-      done(null, options.badExitOK ? {code} : code)
+      done(null, {
+        out: out,
+        code,
+        duration: dur,
+      })
     })
   })
 }

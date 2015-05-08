@@ -157,6 +157,7 @@ export default class Docksh {
         if (err) return done(err)
         exec.start({}, (err, stream) => {
           if (err) return done(err)
+          let out = ''
           stream
             .on('data', chunk => {
               io.emit('stream', {
@@ -164,6 +165,7 @@ export default class Docksh {
                 value: chunk.toString('utf8'),
                 time: Date.now()
               })
+              out += chunk.toString('utf8')
             })
             .on('error', err => {
               console.log('ERRR', err)
@@ -191,7 +193,7 @@ export default class Docksh {
                   time: end,
                   duration: dur,
                 })
-                done(null, data.ExitCode)
+                done(null, {out, code: data.ExitCode, duration: dur})
               })
             })
         })

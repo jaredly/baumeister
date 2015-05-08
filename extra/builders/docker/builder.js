@@ -109,6 +109,7 @@ export default class DockerBuilder extends BaseBuild {
       init() {
         return interprom(io, sh.init())
       },
+
       run(cmd, options) {
         if ('string' !== typeof cmd) {
           options = cmd
@@ -122,19 +123,20 @@ export default class DockerBuilder extends BaseBuild {
           return sh.runSilent(cmd, io)
             .then(result => {
               if (result.code !== 0 && !options.badExitOK) {
-                throw new ShellError(cmd, result.code)
+                throw new ShellError(cmd, result.code, result.out)
               }
               return result
             })
         }
         return sh.run(cmd, io, config.plugin, options.cleanCmd)
-          .then(code => {
-            if (code !== 0 && !options.badExitOK) {
-              throw new ShellError(cmd, code)
+          .then(result => {
+            if (result.code !== 0 && !options.badExitOK) {
+              throw new ShellError(cmd, result.code, result.out)
             }
-            return code
+            return result
           })
       },
+
       stop() {
         return config.dontRemove ? sh.stop() : sh.stopAndRemove()
       },

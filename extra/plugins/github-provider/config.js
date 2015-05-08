@@ -9,6 +9,7 @@ import css from '../../../app/front/lib/css'
 @fluxify({
   actions: {
     getRepos: 'github-provider.getRepos',
+    refreshRepos: 'github-provider.refreshRepos',
   },
   data: {
     'github-provider': {
@@ -66,6 +67,7 @@ export default class GithubConfig extends React.Component {
     const needle = this.state.search.toLowerCase()
     return <div className={styles.main}>
       <input autoFocus onKeyDown={this.onKeyDown.bind(this)} value={this.state.search} onChange={e => this.setState({search: e.target.value})}/>
+      <button onClick={this.props.refreshRepos} type='button' className='Button'>Refresh</button>
       <ul style={{
         height: this.maxHeight,
       }} className={styles.list}>

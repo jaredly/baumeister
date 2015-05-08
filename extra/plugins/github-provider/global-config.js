@@ -6,12 +6,12 @@ export default class GithubGlobalConfig extends React.Component {
     if (this.props.value && this.props.value.get('token')) {
       return <div>
         Authorized with github.
-        <a className="Button" href="http://localhost:3005/auth/github">Reauthorize</a>
+        <a className="Button" href="http://localhost:3005/plugins/github-provider/auth">Reauthorize</a>
       </div>
     }
     return <div>
       No token set. 
-      <a className="Button" href="http://localhost:3005/auth/github">Authorize with Github</a>
+      <a className="Button" href="http://localhost:3005/plugins/github-provider/auth">Authorize with Github</a>
     </div>
   }
 }

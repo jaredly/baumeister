@@ -63,6 +63,17 @@ export default class GithubProvider {
       })
     });
 
+    app.get('/repos/refresh', (req, res) => {
+      getRepos(this.config.token)
+        .then(items => {
+          res.send(items)
+          return this.manager.setCache({token: this.config.token, items})
+        }, error => {
+          console.log(error)
+          res.end(500, 'failed to do things')
+        })
+    })
+
     app.get('/repos', (req, res) => {
       this.manager.getCache().then(cache => {
         if (cache && cache.token === this.config.token) return res.send(cache.items)
@@ -79,6 +90,21 @@ export default class GithubProvider {
   }
 
   onBuild(project, build, onStep, config) {
+    if (!config.repo) {
+      throw new ConfigError('No githuhb repo selected', 'gtihub-provider', 'Go to config and select a repository to use.')
+    }
+    if (build.trigger && build.trigger.info.sha) {
+      onStep('init', (builder, ctx, io) => {
+        io.emit('info', 'Notifying github of pending build')
+        return sendStatus('pending', {
+          repo: config.repo,
+          sha: build.trigger.info.sha,
+          projectId: project.id,
+          buildId: build.id,
+        })
+      })
+    }
+
     onStep('getproject', (builder, ctx, io) => {
       return builder.runCached({
         docker: {
@@ -97,7 +123,38 @@ export default class GithubProvider {
         cachePath: 'project',
         projectPath: '.',
       })
+      .then(() => {
+        if (build.trigger && build.trigger.info.sha) return
+        return builder.run('git rev-parse HEAD', {
+          docker: {
+            image: 'docker-ci/git',
+          },
+          env: ['GIT_TERMINAL_PROMPT=0'],
+        }, {
+          silent: true,
+        }).then(({out, code}) => {
+          console.log('got', out)
+          return sendStatus('pending', {
+            repo: config.repo,
+            sha: out.trim(),
+            projectId: project.id,
+            buildId: build.id,
+          })
+        })
+      })
     })
   }
+}
+
+function sendStatus(status, {repo, sha, projectId, buildId}) {
+  return prom(done =>
+    superagent.post(`https://api.github.com/repos${repo}/statuses/${sha}`)
+      .send({
+        state: 'pending',
+        target_url: `http://localhost:3000/#/${projectId}/${buildId}`,
+      })
+      .end((err, res) => {
+        done(err)
+      }))
 }
 
