@@ -67,13 +67,13 @@ describe('ClientBuilder', () => {
       database: {
         inMemory: true,
       }
-    }).then(({clients, builds, dao}) => {
-      builds.addBuilders({
+    }).then(({clients, plugins, dao}) => {
+      plugins.addBuilders({
         dummy: DummyBuilder,
       })
-      builds.setDefaultBuilder('dummy')
+      plugins.setDefaultBuilder('dummy')
 
-      builds.addPlugins({
+      plugins.addPlugins({
         getprojecter: {
           onBuild(project, data, onStep) {
             onStep('getproject', () => {

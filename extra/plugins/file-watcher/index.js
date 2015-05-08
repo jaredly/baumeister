@@ -6,11 +6,9 @@ function projectPatterns(config) {
 }
 
 class FileWatcher {
-  constructor(config, builds, clients, app) {
+  constructor(config, manager) {
     this.config = config
-    this.builds = builds
-    this.clients = clients
-    this.app = app
+    this.manager = manager
     this.watchers = {}
     this.paused = {}
   }
@@ -25,11 +23,11 @@ class FileWatcher {
     this.watchers[project.id] = new Gaze(patterns, {
       cwd: project.plugins['local-provider'].path
     })
-    this.builds.logger.info('filewatcher', 'watching', patterns)
+    this.manager.logger.info('filewatcher', 'watching', patterns)
     this.watchers[project.id].on('all', () => {
-      this.builds.logger.info('filewatcher', 'triggering', project.id)
+      this.manager.logger.info('filewatcher', 'triggering', project.id)
       if (this.paused[project.id]) return
-      this.clients.startBuild(project.id)
+      this.manager.startBuild(project.id)
     })
     this.paused[project.id] = false
   }

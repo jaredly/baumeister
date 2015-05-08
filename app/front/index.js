@@ -6,8 +6,11 @@ import RCSS from 'rcss'
 import setupFlux from './flux'
 import routes from './routes';
 
+import appConfig from '../../config'
+
 const flux = setupFlux({
   apiHost: 'localhost:3005',
+  plugins: appConfig.plugins,
 })
 
 const router = Router.create({

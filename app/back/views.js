@@ -70,8 +70,7 @@ export default (builds, clients, dao) => {
 
       delete(req, res, next) {
         const id = req.purl.pathname.slice(1)
-        builds.deleteProject(id)
-          .then(() => clients.emit('project:delete', id))
+        dao.deleteProject(id)
           .then(() => json(res, 'success'))
           .catch(err => json(res, err, 500))
       }

@@ -73,17 +73,18 @@ describe('BuildManager', () => {
     setup({
       silentConsole: true,
       logDest: __dirname + '/test.log',
-      database: {inMemory: true}}).then(({clients, builds, dao}) => {
-      builds.addBuilders({
+      database: {inMemory: true}}).then(({clients, builds, plugins, dao}) => {
+      plugins.addBuilders({
         dummy: DummyBuilder,
       })
-      builds.setDefaultBuilder('dummy')
+      plugins.setDefaultBuilder('dummy')
 
       locoFixture.id = '1111_proj'
       dao.putProject(locoFixture)
       .then(() => dao.getProjects())
       .then(() => builds.startBuild(locoFixture.name, io))
       .then(({project, build}) => {
+        console.dir(build)
         expect(build.status).to.equal('errored')
         expect(build.errorCause).to.equal('configuration')
         done()
@@ -111,13 +112,13 @@ describe('BuildManager', () => {
       database: {
         inMemory: true,
       }
-    }).then(({clients, builds, dao}) => {
-      builds.addBuilders({
+    }).then(({clients, builds, plugins, dao}) => {
+      plugins.addBuilders({
         dummy: DummyBuilder,
       })
-      builds.setDefaultBuilder('dummy')
+      plugins.setDefaultBuilder('dummy')
 
-      builds.addPlugins({
+      plugins.addPlugins({
         getprojecter: {
           onBuild(project, data, onStep) {
             onStep('getproject', () => {
@@ -178,13 +179,13 @@ describe('BuildManager', () => {
       database: {
         inMemory: true,
       }
-    }).then(({clients, builds, dao}) => {
-      builds.addBuilders({
+    }).then(({clients, builds, plugins, dao}) => {
+      plugins.addBuilders({
         dummy: DummyBuilder,
       })
-      builds.setDefaultBuilder('dummy')
+      plugins.setDefaultBuilder('dummy')
 
-      builds.addPlugins({
+      plugins.addPlugins({
         'shell-provider': {
           onBuild(project, data, onStep, config) {
             onStep('getproject', builder => {

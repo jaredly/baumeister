@@ -13,6 +13,22 @@ export default function setupFlux(config) {
   const flux = new Flux()
   window.flux = flux
 
+  Object.keys(config.plugins).forEach(id => {
+    if (!config.plugins[id].flux) return
+    let pluginFlux = config.plugins[id].flux
+
+    if ('function' === typeof pluginFlux) {
+      pluginFlux = pluginFlux(api, flux)
+    }
+
+    if (pluginFlux.actions) {
+      flux.addActions(id, pluginFlux.actions)
+    }
+    if (pluginFlux.store) {
+      flux.addStore(id, pluginFlux.store.init, pluginFlux.store.listeners)
+    }
+  })
+
   /** websocket stuff **/
 
   const wsActions = {

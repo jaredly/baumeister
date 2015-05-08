@@ -9,15 +9,21 @@ reset-db:
 	./cli/cli.js initdb -f
 
 test:
-	mocha -b --compilers "js:babel/register" test/*.js
+	mocha --compilers "js:./node_modules/babel/register" test/*.js
+
+test-cov:
+	babel-node node_modules/.bin/isparta cover --report text --report html node_modules/.bin/_mocha -- --reporter spec ./test/*.js
+	cp istanbulcss/* coverage
+
+## Old things
 
 test-fixtures:
-	mocha -b --compilers "js:babel/register" test/fixtures.js
+	mocha --compilers "js:./node_modules/babel/register" test/fixtures.js
 
 test-build:
 	mocha --require babel-core/browser-polyfill build/test/fixtures.js
 
-test-cov:
+old-test-cov:
 	${MOCHA} -b build/test/*.js
 
 babel: b-test
@@ -47,4 +53,4 @@ fixtures:
 	rsync -azrh test/fixtures/local-git/ build/test/fixtures/local-git/
 	rsync -azrh test/fixtures/local-project/ build/test/fixtures/local-project/
 
-.PHONY: test b-test
+.PHONY: test b-test test-cov

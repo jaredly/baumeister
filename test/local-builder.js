@@ -69,12 +69,12 @@ describe('local-builder', () => {
       database: {
         inMemory: true,
       }
-    }).then(({clients, builds, dao}) => {
-      builds.addBuilders({
+    }).then(({clients, builds, plugins, dao}) => {
+      plugins.addBuilders({
         local: LocalBuilder,
       })
-      builds.setDefaultBuilder('local')
-      builds.addPlugins(PLUGINS)
+      plugins.setDefaultBuilder('local')
+      plugins.addPlugins(PLUGINS)
 
       dao.putProject(fixture)
       .then(() => {

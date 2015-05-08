@@ -1,6 +1,6 @@
 import classnames from 'classnames'
 
-import React from 'react'
+import React from 'react/addons'
 import {Link} from 'react-router'
 import {Map, fromJS} from 'immutable'
 
@@ -148,6 +148,46 @@ class PluginConfig extends React.Component {
     formData: PT.object,
   }
 
+  renderPlugin(name, installed, plugins) {
+    const unavailable = !installed[name]
+    const builderNames = Object.keys(globalConfig.builders)
+    const currentBuildType = this.context.formData && this.context.formData.getIn(['builder', 'id']) || globalConfig.defaultBuilder || builderNames[0]
+    const disabled = !unavailable && installed[name].buildTypes && installed[name].buildTypes.indexOf(currentBuildType) === -1
+    const Form = installed[name].projectConfig && installed[name].projectConfig.form
+    return <div className='ProjectConfig_section' key={name}>
+      <div className='PluginConfig_top section-title'>
+        <span className='PluginConfig_title'>
+          {unavailable ? name : installed[name].title || name}
+        </span>
+        <span className='PluginConfig_description'>
+          {unavailable ? '' : installed[name].description}
+        </span>
+        <div className='PluginConfig_spacer'/>
+        <button type='button' className='Button' onClick={this.removePlugin.bind(this, name)}>Remove</button>
+      </div>
+      {unavailable ? 
+        <div className='ProjectConfig_section_body PluginConfig_disabled'>
+          This plugin is not available in this installation of Jaeger. Check your config file.
+        </div>
+        : (disabled ?
+        <div className='ProjectConfig_section_body PluginConfig_disabled'>
+          This plugin is incompatible with the <span className='PluginConfig_builder'>
+            {globalConfig.builders[currentBuildType].title || currentBuildType}
+          </span> builder. It only works with {builderTitles(installed[name].buildTypes)}.
+        </div>
+        : installed[name].projectConfig && (
+          installed[name].projectConfig.form ? 
+            <Form value={plugins.get(name)}
+              onChange={val => this.props.onChange(plugins.set(name, val))}/>
+            : FormSection.fromSpec({
+        className: 'ProjectConfig_section_body',
+        value: plugins.get(name),
+        spec: installed[name].projectConfig.schema,
+        onChange: val => this.props.onChange(plugins.set(name, val))
+      })))}
+    </div>
+  }
+
   render() {
     const plugins = this.props.value
     const installed = globalConfig.plugins
@@ -167,9 +207,6 @@ class PluginConfig extends React.Component {
       return sa - sb
     })
 
-    const builderNames = Object.keys(globalConfig.builders)
-    const currentBuildType = this.context.formData && this.context.formData.getIn(['builder', 'id']) || globalConfig.defaultBuilder || builderNames[0]
-
     return <div>
       <div className='ProjectConfig_addplugin'>
         <span className='ProjectConfig_plugins-title'>Plugins</span>
@@ -179,39 +216,24 @@ class PluginConfig extends React.Component {
         </select>
       </div>
 
-      {using.map(name => {
-        const unavailable = !installed[name]
-        const disabled = !unavailable && installed[name].buildTypes && installed[name].buildTypes.indexOf(currentBuildType) === -1
-        return <div className='ProjectConfig_section'>
-          <div className='PluginConfig_top section-title'>
-            <span className='PluginConfig_title'>
-              {unavailable ? name : installed[name].title || name}
-            </span>
-            <span className='PluginConfig_description'>
-              {unavailable ? '' : installed[name].description}
-            </span>
-            <div className='PluginConfig_spacer'/>
-            <button type='button' className='Button' onClick={this.removePlugin.bind(this, name)}>Remove</button>
-          </div>
-          {unavailable ? 
-            <div className='ProjectConfig_section_body PluginConfig_disabled'>
-              This plugin is not available in this installation of Jaeger. Check your config file.
-            </div>
-            : (disabled ?
-            <div className='ProjectConfig_section_body PluginConfig_disabled'>
-              This plugin is incompatible with the <span className='PluginConfig_builder'>
-                {globalConfig.builders[currentBuildType].title || currentBuildType}
-              </span> builder. It only works with {builderTitles(installed[name].buildTypes)}.
-            </div>
-            : installed[name].projectConfig && FormSection.fromSpec({
-            className: 'ProjectConfig_section_body',
-            value: plugins.get(name),
-            spec: installed[name].projectConfig.schema,
-            onChange: val => this.props.onChange(plugins.set(name, val))
-          }))}
-        </div>
-      })}
+      {using.toJS().map(name => this.renderPlugin(name, installed, plugins))}
     </div>
+  }
+}
+
+class ContextWrapper extends React.Component {
+  static contextTypes = {
+    flux: PT.object,
+  }
+  componentWillMount() {
+  }
+  render() {
+    this.context.flux
+    if (!this.context.flux) debugger
+    return <div>ContextCanary {!!this.context.flux}</div>
+    // return React.addons.cloneWithProps(this.props.children)
+    // const Comp = this.props.comp
+    // return <Comp {...this.props.props}/>
   }
 }
 

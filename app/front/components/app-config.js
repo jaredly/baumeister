@@ -20,6 +20,7 @@ export default class AppConfig extends React.Component {
 
   render() {
     return <Form className='GlobalConfig'
+        rerender={true}
         initialData={this.props.config}
         onSubmit={this.saveConfig.bind(this)}>
       <h1>Global Configuration</h1>

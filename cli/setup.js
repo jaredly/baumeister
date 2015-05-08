@@ -6,13 +6,13 @@ import loadPlugins from '../lib/load-plugins'
 
 export default function setup(config) {
   return setupManager(config)
-    .then(({builds, clients, dao}) => {
+    .then(({builds, clients, plugins, dao}) => {
       const views = makeViews(builds, clients, dao)
       const app = setupApp(config.server && config.server.port || 3005, views, clients)
-      return loadPlugins(builds, clients, dao, app, config)
+      return plugins.addFromConfig(app, config)
         .then(() => {
           builds.logger.info('plugins initialized')
-          return {builds, clients, dao, app}
+          return {builds, plugins, clients, dao, app}
         }, err => {
           builds.logger.error('Failed to load plugins', err)
           throw err

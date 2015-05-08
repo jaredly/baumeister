@@ -42,10 +42,10 @@ const config = {
 
 
 describe('plugins', () => {
-  let builds, clients, dao
+  let plugins, clients, dao
   beforeEach(done => {
     setup(config).then(data => {
-      builds = data.builds
+      plugins = data.plugins
       clients = data.clients
       dao = data.dao
       done()
@@ -59,7 +59,7 @@ describe('plugins', () => {
         example: {}
       }
     }).then(() => {
-      builds.addPlugins({
+      plugins.addPlugins({
         example: {
           onProject(project, config) {
             expect(project.name).to.equal('hello')
@@ -70,12 +70,12 @@ describe('plugins', () => {
     })
   })
 
-  it("builds.handleProjectUpdate should run newly configured plugins' 'onProject' when a project is reconfigured", done => {
+  it("plugins.handleProjectUpdate should run newly configured plugins' 'onProject' when a project is reconfigured", done => {
     dao.addProject({
       name: 'hello',
       plugins: { }
     }).then(project => {
-      builds.addPlugins({
+      plugins.addPlugins({
         example: {
           onProject(project, config) {
             expect(project.name).to.equal('hello')
@@ -84,7 +84,7 @@ describe('plugins', () => {
         }
       })
 
-      builds.handleProjectUpdate(project.id, {
+      plugins.handleProjectUpdate(project.id, {
         id: project.id,
         name: project.name,
         plugins: {

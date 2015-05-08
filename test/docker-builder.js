@@ -65,12 +65,12 @@ const PLUGINS = {
       database: {
         inMemory: true,
       }
-    }).then(({clients, builds, dao}) => {
-      builds.addBuilders({
+    }).then(({clients, builds, plugins, dao}) => {
+      plugins.addBuilders({
         docker: DockerBuilder,
       })
-      builds.setDefaultBuilder('docker')
-      builds.addPlugins(PLUGINS)
+      plugins.setDefaultBuilder('docker')
+      plugins.addPlugins(PLUGINS)
 
       dao.putProject(fixture)
       .then(() => {
