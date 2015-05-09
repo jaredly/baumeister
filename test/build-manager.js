@@ -82,7 +82,7 @@ describe('BuildManager', () => {
       locoFixture.id = '1111_proj'
       dao.putProject(locoFixture)
       .then(() => dao.getProjects())
-      .then(() => builds.startBuild(locoFixture.name, io))
+      .then(() => builds.startBuild(locoFixture.name, null, io))
       .then(({project, build}) => {
         console.dir(build)
         expect(build.status).to.equal('errored')
@@ -132,7 +132,7 @@ describe('BuildManager', () => {
       dao.putProject(locoFixture)
       .then(() => dao.getProjects())
       .then(() => {
-        builds.startBuild(locoFixture.name, io)
+        builds.startBuild(locoFixture.name, null, io)
           .then(({project, build}) => {
             try {
               expect(project.latestBuild).to.equal(build.id)
@@ -206,19 +206,26 @@ describe('BuildManager', () => {
       dao.putProject(locoFixture)
       .then(() => dao.getProjects())
       .then(() => {
-        builds.startBuild(locoFixture.name, io)
+        builds.startBuild(locoFixture.name, null, io)
           .then(({project, build}) => {
-            expect(project.latestBuild).to.equal(build.id)
-            expect(build.status).to.eql('succeeded')
-            expect(hit).to.eql([
-              '<init>',
-              'init',
-              '<getproject>',
-              ['init', locoFixture.plugins['shell-provider'].get, 'stopped'],
-              '<test>',
-              ['init', locoFixture.plugins['shell-tester'].command, 'stopped'],
-              '<postdeploy>',
-              'postdeploy'])
+            try {
+              expect(project.latestBuild).to.equal(build.id)
+              expect(build.status).to.eql('succeeded')
+              expect(hit).to.eql([
+                '<init>',
+                'init',
+                '<getproject>',
+                ['init', locoFixture.plugins['shell-provider'].get, 'stopped'],
+                '<test>',
+                ['init', locoFixture.plugins['shell-tester'].command, 'stopped'],
+                '<postdeploy>',
+                'postdeploy'])
+            } catch (er) {
+              console.log('AAAAAAAAAAAAAAa')
+              console.dir(project)
+              console.dir(build)
+              throw er
+            }
             done()
           }, done)
           .catch(done)

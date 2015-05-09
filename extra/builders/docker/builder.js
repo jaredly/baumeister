@@ -18,7 +18,7 @@ export default class DockerBuilder extends BaseBuild {
 
   constructor(io, project, id, globalConfig, projectConfig) {
     super(io, project, id, globalConfig, projectConfig)
-    this.docker = new Docker(globalConfig.connection) // TODO use config to custom docker connection
+    this.docker = new Docker(globalConfig.connection)
     this.ctx = {
       cacheContainer: `dci-${this.project.id}-cache`,
       projectContainer: `dci-${this.id}-project`,
@@ -181,111 +181,6 @@ export default class DockerBuilder extends BaseBuild {
     })
   }
 
-  getProject(done) {
-    if (this.project.source.path) {
-      return fs.exists(this.project.source.path, doesExist => {
-        if (!doesExist) {
-          return done(new ConfigError(`Local project base ${this.project.source.path} does not exist`))
-        }
-        if (this.project.source.inPlace) {
-          this.io.emit('info', `Local project ${this.project.source.path}`)
-          return done()
-        }
-        console.log('GET FROM', this.project.source.path)
-        this.io.emit('info', `Copying local project from ${this.project.source.path}`)
-        return runDocker(this.docker, {
-          image: 'busybox',
-          rmOnSuccess: true,
-          binds: [this.project.source.path + ':/localProject:rw'],
-          volumesFrom: [this.dataContainer],
-          cmd: 'cp -r /localProject/* /project',
-        }, this, done)
-      })
-    }
-
-    const pro = providers[this.project.source.provider]
-    if (!pro) {
-      const err = new ConfigError(`Unknown provider ${this.project.source.provider}`)
-      this.io.emit('error', err.message)
-      return done(err)
-    }
-
-    const config = {
-      volumesFrom: [this.cacheContainer, this.dataContainer],
-      source: this.project.source.config
-    }
-
-    pro(this.docker, config, this, err => {
-      done(err)
-    })
-  }
-
-  prepareImage(done) {
-    this.io.emit('section', 'prepare-image')
-    if (this.project.build.prefab) {
-      this.io.emit('info', 'Using prefab image: ' + this.project.build.prefab)
-      return done(null, null, this.project.build.prefab)
-    }
-    const imname = 'docker-ci/' + this.project.name + ':test'
-    if (!this.project.build.noRebuild) {
-      return this.build(imname, (err, exitCode) => {
-        done(err, exitCode, imname)
-      })
-    }
-    this.docker.listImages((err, images) => {
-      if (err) return done(err)
-      const needToBuild = !images.some(
-        im => im.RepoTags.indexOf(imname) !== -1)
-      if (!needToBuild) {
-        this.io.emit('info', `Image ${imname} already built`)
-        return done(err, null, imname)
-      }
-      this.build(imname, (err, exitCode) => {
-        done(err, exitCode, imname)
-      })
-    })
-  }
-
-  build(imname, done) {
-    if (!this.project.source.path) {
-      return done(new ConfigError('providers not yet supported'))
-    }
-    this.io.emit('info', contextMessage(imname, this.project.build.context))
-
-    getContext(this.project, (err, stream, dockerText) => {
-      if (err) return done(err)
-      this.io.emit('dockerfile', dockerText)
-
-      console.log("BUILD TONG SFKDSLF")
-      buildDocker(this.docker, stream, {
-        dockerfile: this.project.build.dockerfile || 'Dockerfile',
-        t: imname,
-      }, this, done)
-    })
-  }
-
-  test(name, done) {
-    this.io.emit('section', 'test')
-
-    const config = assign({}, this.project.test, {
-      volumesFrom: [this.cacheContainer, this.dataContainer],
-      image: name,
-    })
-    if (this.project.source.inPlace) {
-      config.volumesFrom = [this.cacheContainer]
-      config.binds = [this.project.source.path + ':/project']
-    }
-    // TODO maybe get more fancy here at some point
-    runDocker(this.docker, config, this, (err, exitCode) => {
-      if (err) this.io.emit('status', 'test:errored')
-      else if (exitCode !== 0) {
-        this.io.emit('status', 'test:failed')
-      } else {
-        this.io.emit('status', 'test:passed')
-      }
-      done(err, exitCode)
-    })
-  }
   */
 }
 

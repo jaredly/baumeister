@@ -11,6 +11,9 @@ reset-db:
 test:
 	mocha --compilers "js:./node_modules/babel/register" test/*.js
 
+quicktest:
+	NODOCKER=1 mocha --compilers "js:./node_modules/babel/register" test/*.js
+
 test-cov:
 	babel-node node_modules/.bin/isparta cover --report text --report html node_modules/.bin/_mocha -- --reporter spec ./test/*.js
 	cp istanbulcss/* coverage

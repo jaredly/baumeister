@@ -4,6 +4,8 @@
 
 import github from 'github'
 import simpleOauth2 from 'simple-oauth2'
+import superagent from 'superagent'
+import prom from '../../../lib/prom'
 
 import getRepos from './get-repos'
 
@@ -15,12 +17,18 @@ export default class GithubProvider {
     this.manager = manager
     this.config = config || {}
 
+    this.projectsByRepo = {}
+
     this.setupAuth()
   }
 
   onConfig(config) {
     console.log('got config', config)
     this.config = config
+  }
+
+  onProject(project, config) {
+    this.projectsByRepo[config.repo] = project.id
   }
 
   setupAuth() {
@@ -45,6 +53,44 @@ export default class GithubProvider {
     app.get('/auth', (req, res) => {
       res.redirect(authorization_uri);
     });
+
+    app.post('/hook', (req, res) => {
+      const event = req.headers['x-github-event']
+      console.log('hook', event)
+      const body = req.body
+
+      const repo = body.repository.full_name
+      if (!this.projectsByRepo[repo]) {
+        console.log('got hook for unknown repo', repo)
+        res.end('Unknown', 404)
+      }
+      const projectId = this.projectsByRepo[repo]
+
+      if (event === 'push') {
+        this.manager.startBuild(projectId, {
+          source: 'github-provider',
+          sha: body.head_commit.id,
+          ref: body.ref,
+        })
+        return res.end('Building', 200)
+      }
+
+      if (event === 'pull_request') {
+        if (body.action === 'opened' || body.action === 'synchronize') {
+          this.manager.startBuild(projectId, {
+            source: 'github-provider',
+            sha: body.pull_request.head.sha,
+            pull_request: body.number,
+            ref: `+refs/pull/${body.number}/merge`,
+          })
+          return res.end('Checking PR', 200)
+        } else {
+          console.log('unknown PR action', body.action)
+        }
+      }
+
+      res.end('thanks', 200)
+    })
 
     app.get('/auth/callback', (req, res) => {
       var code = req.query.code;
@@ -93,12 +139,15 @@ export default class GithubProvider {
     if (!config.repo) {
       throw new ConfigError('No githuhb repo selected', 'gtihub-provider', 'Go to config and select a repository to use.')
     }
-    if (build.trigger && build.trigger.info.sha) {
+    const isPullRequest = build.trigger && !!build.trigger.pull_request
+    if (build.trigger && build.trigger.sha) {
       onStep('init', (builder, ctx, io) => {
         io.emit('info', 'Notifying github of pending build')
-        return sendStatus('pending', {
+        ctx.githubSha = build.trigger.sha
+        return sendStatus('pending', this.config.token, {
           repo: config.repo,
-          sha: build.trigger.info.sha,
+          sha: build.trigger.sha,
+          isPR: isPullRequest,
           projectId: project.id,
           buildId: build.id,
         })
@@ -106,6 +155,9 @@ export default class GithubProvider {
     }
 
     onStep('getproject', (builder, ctx, io) => {
+      const repo = ` https://${this.config.token}@github.com/${config.repo}`
+      const ref = build.trigger && build.trigger.ref ? build.trigger.ref : 'master'
+      const sha = build.trigger && (!build.trigger.pull_request) && build.trigger.sha || 'FETCH_HEAD'
       return builder.runCached({
         docker: {
           image: 'docker-ci/git',
@@ -113,18 +165,19 @@ export default class GithubProvider {
         env: ['GIT_TERMINAL_PROMPT=0'],
       }, {
         get: {
-          cmd: `git init && git pull https://${this.config.token}@github.com/${config.repo}`,
-          cleanCmd: `git init && git pull https://[token]@github.com/${config.repo}`
+          cmd: `git init && git fetch ${repo} ${ref} && git checkout -q ${sha} && git status`,
+          cleanCmd: `git init && git fetch https://[token]@github.com/${config.repo} ${ref} && git checkout -q ${sha}`
         },
         update: {
-          cmd: `git pull https://${this.config.token}@github.com/${config.repo}`,
-          cleanCmd: `git pull https://[token]@github.com/${config.repo}`
+          cmd: `git fetch ${repo} ${ref} && git checkout -q ${sha} && git status`,
+          cleanCmd: `git fetch https://[token]@github.com/${config.repo} ${ref} && git checkout -q ${sha}`
         },
         cachePath: 'project',
         projectPath: '.',
       })
+
       .then(() => {
-        if (build.trigger && build.trigger.info.sha) return
+        if (build.trigger && build.trigger.sha) return
         return builder.run('git rev-parse HEAD', {
           docker: {
             image: 'docker-ci/git',
@@ -134,8 +187,10 @@ export default class GithubProvider {
           silent: true,
         }).then(({out, code}) => {
           console.log('got', out)
-          return sendStatus('pending', {
+          ctx.githubSha = out.trim()
+          return sendStatus('pending', this.config.token, {
             repo: config.repo,
+            isPR: isPullRequest,
             sha: out.trim(),
             projectId: project.id,
             buildId: build.id,
@@ -143,17 +198,51 @@ export default class GithubProvider {
         })
       })
     })
+
+    onStep('posttest', (builder, ctx, io) => {
+      if (!ctx.githubSha) return
+      io.emit('info', 'Reporting success to github')
+      return sendStatus('success', this.config.token, {
+        repo: config.repo,
+        sha: ctx.githubSha,
+        isPR: isPullRequest,
+        projectId: project.id,
+        buildId: build.id,
+      })
+    })
+
+    onStep('cleanup', (builder, ctx, io) => {
+      const status = builder.getTestStatus()
+      if (status === 'passed') return
+      io.emit('info', 'Reporting failure to github')
+      return sendStatus({
+        failed: 'failure',
+        passed: 'success',
+        errored: 'error',
+      }[status], this.config.token, {
+        repo: config.repo,
+        sha: ctx.githubSha,
+        projectId: project.id,
+        isPR: isPullRequest,
+        buildId: build.id,
+      })
+    })
   }
 }
 
-function sendStatus(status, {repo, sha, projectId, buildId}) {
+function sendStatus(status, token, {repo, isPR, sha, projectId, buildId}) {
+  const url = `https://api.github.com/repos/${repo}/statuses/${sha}?access_token=${token}`
+  console.log('POST', url)
   return prom(done =>
-    superagent.post(`https://api.github.com/repos${repo}/statuses/${sha}`)
+    superagent.post(url)
       .send({
-        state: 'pending',
+        state: status,
         target_url: `http://localhost:3000/#/${projectId}/${buildId}`,
+        description: isPR ? 'Baumeister Pull Request merge-tester' : 'Baumeister is working for you',
+        context: isPR ? 'baumeister/ci-pr' : 'baumeister/ci',
       })
       .end((err, res) => {
+        // console.log('GOT', err, res)
         done(err)
       }))
 }

@@ -78,7 +78,7 @@ describe('local-builder', () => {
 
       dao.putProject(fixture)
       .then(() => {
-        builds.startBuild(fixture.name, io)
+        builds.startBuild(fixture.name, null, io)
           .then(({project, build}) => {
             if (build.error) {
               console.log(build.error)
