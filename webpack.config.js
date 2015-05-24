@@ -10,9 +10,6 @@ module.exports = {
     'webpack/hot/only-dev-server',
     './app/front/index'
   ],
-  devServer: {
-    contentBase: './app/static',
-  },
   output: {
     path: path.join(__dirname, 'build'),
     filename: 'bundle.js',
