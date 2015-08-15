@@ -89,7 +89,7 @@ export default class Docksh {
 
       this.container.exec({
         Tty: true,
-        Cmd: ['/bin/bash', '-e', '-c', cmd],
+        Cmd: ['/bin/bash', '-c', cmd],
         AttachStdout: true,
         AttachStderr: true,
       }, (err, exec) => {
@@ -98,7 +98,8 @@ export default class Docksh {
           if (err) return done(err)
           let out = ''
           const start = Date.now()
-          stream.on('data', chunk => out += chunk.toString('utf8'))
+          stream.setEncoding('utf8');
+          stream.on('data', chunk => out += chunk)
           .on('error', err => console.log("ERR", err))
           .on('end', () => {
             const duration = Date.now() - start
