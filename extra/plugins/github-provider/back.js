@@ -186,8 +186,7 @@ export default class GithubProvider {
         }, {
           silent: true,
         }).then(({out, code}) => {
-          console.log('got', out)
-          ctx.githubSha = out.trim()
+          ctx.githubSha = out.trim();
           return sendStatus('pending', this.config.token, {
             repo: config.repo,
             isPR: isPullRequest,
@@ -232,7 +231,8 @@ export default class GithubProvider {
 
 function sendStatus(status, token, {repo, isPR, sha, projectId, buildId}) {
   const url = `https://api.github.com/repos/${repo}/statuses/${sha}?access_token=${token}`
-  console.log('POST', url)
+  // console.log('Sending status', status, token, sha, repo, url);
+  // console.log('POST', url)
   return prom(done =>
     superagent.post(url)
       .send({
@@ -243,7 +243,11 @@ function sendStatus(status, token, {repo, isPR, sha, projectId, buildId}) {
       })
       .end((err, res) => {
         // console.log('GOT', err, res)
-        done(err)
+        if (err) {
+          console.error('Failed to report status!', url);//, res.text);
+          done(new Error('Failed to report status (' + status + '). This is a bug in the github-provider plugin'))
+        }
+        done()
       }))
 }
 
