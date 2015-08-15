@@ -21,6 +21,9 @@ describe('runner', () => {
       postdeploy() {
         hit.push('postdeploy')
       },
+      setTestStatus(status) {
+        this.status = status;
+      },
     }
     runner.run(builder)
       .then(res => {

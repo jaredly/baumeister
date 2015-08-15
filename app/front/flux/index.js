@@ -50,8 +50,8 @@ export default function setupFlux(config) {
 
   flux.addStore('ws', {state: 'connecting'}, {
     ws: {
-      ['ws:state'](val, update) {
-        update({state: {$set: val}})
+      ['ws:state'](store, val) {
+        store.update({state: {$set: val}})
       }
     }
   })
@@ -59,16 +59,16 @@ export default function setupFlux(config) {
 
   flux.addStore('config', {
     ws: {
-      'config:update': (config, update) => {
-        update({$set: config})
+      'config:update': (store, config) => {
+        store.update({$set: config})
       },
     },
     config: {
-      fetch(config, update) {
-        update({$set: config})
+      fetch(store, config) {
+        store.update({$set: config})
       },
-      save(config, update) {
-        update({$set: config})
+      save(store, config) {
+        store.update({$set: config})
       }
     }
   })

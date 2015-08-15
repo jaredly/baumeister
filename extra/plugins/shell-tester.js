@@ -1,24 +1,33 @@
 
 import {ConfigError} from '../../lib/errors'
 
+function runMulti(config, text) {
+  return builder => {
+    const lines = text.split(/\n/g)
+    function next() {
+      return builder.run(lines.shift(), {
+        cwd: config.cwd,
+        docker: config.docker
+      }).then(val => {
+        if (lines.length) return next()
+        return val
+      })
+    }
+    return next()
+  }
+}
+
 class ShellTester {
   onBuild(project, build, onStep, config) {
-    if (!config.command) {
-      throw new ConfigError('`command` not provided', 'shell-tester.command')
+    if (!config.command && !config.pretest) {
+      throw new ConfigError('One of either `pretest` or `command` must contain a command', 'shell-tester.command')
     }
-    onStep('test', (builder, ctx, io) => {
-      const lines = config.command.split(/\n/g)
-      function next() {
-        return builder.run(lines.shift(), {
-          cwd: config.cwd,
-          docker: config.docker
-        }).then(val => {
-          if (lines.length) return next()
-          return val
-        })
-      }
-      return next()
-    })
+    if (config.pretest) {
+      onStep('pretest', runMulti(config, config.pretest));
+    }
+    if (config.command) {
+      onStep('test', runMulti(config, config.command));
+    }
   }
 }
 
@@ -43,6 +52,12 @@ export default {
         type: 'text',
         default: '',
         title: 'Working directory for the test (relative to the project directory)',
+      },
+      pretest: {
+        type: 'text',
+        default: '',
+        title: 'Shell commanf to prepare for testing',
+        multiline: true,
       },
       command: {
         type: 'text',

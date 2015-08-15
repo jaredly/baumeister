@@ -1,35 +1,35 @@
 
 export const projectStore = {
   projects: {
-    create(project, update) {
-      update({[project.id]: {$set: project}})
+    create(store, project) {
+      store.update({[project.id]: {$set: project}})
     },
-    fetch(data, update) {
-      update({$set: data})
+    fetch(store, data) {
+      store.update({$set: data})
     },
     clearCache: {
-      start(tid, [pid], update, state) {
-        update({[pid]: {cache: {$set: 'clearing'}}})
+      start(store, tid, [pid]) {
+        store.update({[pid]: {cache: {$set: 'clearing'}}})
       },
-      error(tid, {args: [pid], err}, update) {
+      error(store, tid, {args: [pid], err}) {
         console.warn('failed to clear cache', pid, err)
-        update({[pid]: {cache: {$set: 'failed'}}})
+        store.update({[pid]: {cache: {$set: 'failed'}}})
       },
-      result(tid, pid, update) {
-        update({[pid]: {cache: {$set: 'cleared'}}})
+      result(store, tid, pid) {
+        store.update({[pid]: {cache: {$set: 'cleared'}}})
       },
     },
   },
 
   ws: {
-    'ws:state': (newState, update, state, sendAction) => {
+    'ws:state': (store, newState) => {
       if (newState === 'connected') {
-        sendAction('projects.fetch')
+        store.sendAction('projects.fetch')
       }
     },
-    'build:history': ({project, id}, update, state) => {
-      if (!state[project] || !state[project].latestBuild || state[project].latestBuild.id !== id) return
-      update({
+    'build:history': (store, {project, id}) => {
+      if (!store.state[project] || !store.state[project].latestBuild || store.state[project].latestBuild.id !== id) return
+      store.update({
         [project]: {
           latestBuild: {
             status: {$set: 'running'},
@@ -37,30 +37,30 @@ export const projectStore = {
         }
       })
     },
-    'project:remove': (id, update) => {
-      update({[id]: {$set: undefined}})
+    'project:remove': (store, id) => {
+      store.update({[id]: {$set: undefined}})
     },
-    'project:update': (project, update, state) => {
+    'project:update': (store, project) => {
       if ('string' === typeof project.latestBuild) {
-        project.latestBuild = state[project.id].latestBuild
+        project.latestBuild = store.state[project.id].latestBuild
       }
-      update({
+      store.update({
         [project.id]: {$set: project}
       })
     },
-    'build:new': (build, update, state) => {
-      if (!state[build.project]) return
-      update({
+    'build:new': (store, build) => {
+      if (!store.state[build.project]) return
+      store.update({
         [build.project]: {
           latestBuild: {$set: build}
         }
       })
     },
-    'build:status': (data, update, state) => {
+    'build:status': (store, data) => {
       const {project, build, status, duration, finished} = data
-      const proj = state[project]
+      const proj = store.state[project]
       if (!proj || !proj.latestBuild || proj.latestBuild.id !== build) return
-      update({
+      store.update({
         [project]: {
           latestBuild: {
             status: {$set: status},
@@ -76,35 +76,35 @@ export const projectStore = {
 export const projectStatus = {
   projects: {
     fetch: {
-      start(tid, args, update) {
-        update({
+      start(store, tid, args) {
+        store.update({
           _status: {$set: 'loading'}
         })
       },
-      error(tid, data, update) {
-        update({
+      error(store, tid, data) {
+        store.update({
           _status: {$set: 'error'},
           _error: {$set: data.error},
         })
       },
-      done(tid, data, update) {
-        update({
+      done(store, tid, data) {
+        store.update({
           _status: {$set: 'done'}
         })
       },
     },
 
     clearCache: {
-      start(tid, [id], update, state) {
-        if (!state[id]) {
-          return update({[id]: {$set: {
+      start(store, tid, [id]) {
+        if (!store.state[id]) {
+          return store.update({[id]: {$set: {
             clearCache: {
               [tid]: true,
               latest: {tid, value: true},
             }
           }}})
         }
-        update({[id]: {
+        store.update({[id]: {
           clearCache: {
             [tid]: {$set: true},
             latest: {$set: {tid, value: true}},
@@ -112,13 +112,13 @@ export const projectStatus = {
         }})
       },
 
-      error(tid, {args: [id], err}, update, state) {
-        if (state[id].clearCache.latest.tid !== tid) {
-          return update({[id]: {
+      error(store, tid, {args: [id], err}) {
+        if (store.state[id].clearCache.latest.tid !== tid) {
+          return store.update({[id]: {
             clearCache: {[tid]: {$set: err}}
           }})
         }
-        update({[id]: {
+        store.update({[id]: {
           clearCache: {
             [tid]: {$set: err},
             latest: {value: {$set: err}}
@@ -126,13 +126,13 @@ export const projectStatus = {
         }})
       },
 
-      done(tid, {args: [id]}, update, state) {
-        if (state[id].clearCache.latest.tid !== tid) {
-          return update({[id]: {
+      done(store, tid, {args: [id]}) {
+        if (store.state[id].clearCache.latest.tid !== tid) {
+          return store.update({[id]: {
             clearCache: {[tid]: {$set: null}}
           }})
         }
-        update({[id]: {
+        store.update({[id]: {
           clearCache: {
             [tid]: {$set: null},
             latest: {value: {$set: null}}

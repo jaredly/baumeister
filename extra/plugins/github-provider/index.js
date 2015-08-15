@@ -14,11 +14,11 @@ export default {
       },
       listeners: {
         'github-provider': {
-          refreshRepos(value, update) {
-            update({repos: {$set: value}})
+          refreshRepos(store, value) {
+            store.update({repos: {$set: value}})
           },
-          getRepos(value, update) {
-            update({repos: {$set: value}})
+          getRepos(store, value) {
+            store.update({repos: {$set: value}})
           }
         }
       },

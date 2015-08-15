@@ -34,8 +34,12 @@ export default {
   plugin: TimeTracker,
   blocks: {
     projectHeader(project, config) {
-      if (!project.pluginData['time-tracker']) return
       const React = require('react')
+      if (!project.pluginData['time-tracker']) {
+        if (project.plugins['time-tracker']) {
+          return <span style={{fontSize: 10}}>No time data</span>;
+        }
+      }
       class TimeViz extends React.Component {
         componentDidMount() {
           this.draw()
@@ -44,6 +48,9 @@ export default {
           this.draw()
         }
         draw() {
+          if (this.props.times.length < 2) {
+            return;
+          }
           const fullWidth = this.props.width
           const margin = 5
           const textWidth = 20
@@ -86,6 +93,12 @@ export default {
         }
 
         render() {
+          if (!this.props.times.length) {
+            return <span style={{fontSize: 10, width: this.props.width, height: 30}}>No time data</span>;
+          }
+          if (this.props.times.length < 2) {
+            return <span style={{fontSize: 10, width: this.props.width, height: 30}}>Too little time data</span>;
+          }
           return <canvas width={this.props.width + ''} height='30'/>
         }
       }
@@ -94,30 +107,7 @@ export default {
   },
   projectConfig: {
     schema: {
-      /*
-      cache: {
-        type: 'checkbox',
-        default: true,
-        title: 'Cache modules',
-      },
-      */
     }
   }
 }
 
-/*
-module.exports = {
-  provide(build, ctx, out, done) {
-    build.runCached({
-      docker: {
-        image: config.source.base || 'ubuntu',
-      },
-    }, {
-      cachePath: 'project',
-      projectPath: '.',
-      get: config.source.get,
-      update: config.source.update,
-    }, done)
-  }
-}
-*/
