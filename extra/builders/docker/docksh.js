@@ -10,6 +10,25 @@ function envList(env) {
   return Object.keys(env).forEach(name => `${name}=${env[name]}`)
 }
 
+function demux(stream, out, err) {
+  var header = null;
+
+  stream.on('readable', function() {
+    header = header || stream.read(8);
+    while (header !== null) {
+      var type = header.readUInt8(0);
+      var payload = stream.read(header.readUInt32BE(4));
+      if (payload === null) break;
+      if (type == 2) {
+        err && err(payload);
+      } else {
+        out && out(payload);
+      }
+      header = stream.read(8);
+    }
+  });
+}
+
 /**
  * A Docker shell!
  *
@@ -98,8 +117,11 @@ export default class Docksh {
           if (err) return done(err)
           let out = ''
           const start = Date.now()
-          stream.setEncoding('utf8');
-          stream.on('data', chunk => out += chunk)
+          // slice(8) is to chop of the multiplex headers
+          // https://github.com/docker/docker/issues/7375#issuecomment-51462963
+          // stream.setEncoding('utf8')
+          demux(stream, chunk => out += chunk.toString('utf8'));
+          stream//.on('data', chunk => out += chunk)
           .on('error', err => console.log("ERR", err))
           .on('end', () => {
             const duration = Date.now() - start
@@ -159,15 +181,18 @@ export default class Docksh {
         exec.start({}, (err, stream) => {
           if (err) return done(err)
           let out = ''
-          stream
-            .on('data', chunk => {
-              io.emit('stream', {
-                id: sid,
-                value: chunk.toString('utf8'),
-                time: Date.now()
-              })
-              out += chunk.toString('utf8')
+          // stream.setEncoding('utf8');
+          demux(stream, chunk => {
+            chunk = chunk.toString('utf8')
+            io.emit('stream', {
+              id: sid,
+              value: chunk,
+              time: Date.now()
             })
+            out += chunk;
+          });
+          stream
+            // .on('data', chunk => { })
             .on('error', err => {
               console.log('ERRR', err)
             })

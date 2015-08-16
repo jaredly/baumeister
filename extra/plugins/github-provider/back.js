@@ -178,7 +178,7 @@ export default class GithubProvider {
 
       .then(() => {
         if (build.trigger && build.trigger.sha) return
-        return builder.run('echo "|"`git rev-parse HEAD`', {
+        return builder.run('git rev-parse HEAD', {
           docker: {
             image: 'docker-ci/git',
           },
@@ -186,7 +186,7 @@ export default class GithubProvider {
         }, {
           silent: true,
         }).then(({out, code}) => {
-          var sha = out.split('|')[1].trim();
+          var sha = out.trim();
           ctx.githubSha = sha
           return sendStatus('pending', this.config.token, {
             repo: config.repo,
